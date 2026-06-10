@@ -1,0 +1,958 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>一、公司定位与治理：三种完全不同的“底层逻辑”</title>
+<style>
+/* === RESET & BASE === */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { min-height: 100%; }
+body {
+  min-height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 16px;
+  line-height: 1.8;
+  color: #2d2a26;
+  background: #faf7f2;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* subtle dot-grid paper texture */
+body::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  min-height: 100%;
+  background-image: radial-gradient(circle, #d4cfc6 0.5px, transparent 0.5px);
+  background-size: 18px 18px;
+  opacity: 0.18;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.report-wrapper {
+  position: relative;
+  z-index: 2147483647;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px 28px 60px;
+}
+
+/* === HEADER / COVER === */
+.report-header {
+  border: 3px solid #2d2a26;
+  box-shadow: 5px 5px 0 #c9b99a;
+  padding: 36px 32px 28px;
+  margin-bottom: 36px;
+  background: #fff;
+  position: relative;
+}
+
+.report-header h1 {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.3;
+  color: #1a1714;
+  margin-bottom: 10px;
+  letter-spacing: -0.3px;
+}
+
+.report-header .research-question {
+  font-size: 13px;
+  color: #8a7e6e;
+  margin-bottom: 14px;
+  border-left: 3px solid #c9b99a;
+  padding-left: 10px;
+}
+
+.report-meta {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.stamp {
+  display: inline-block;
+  border: 2px solid #b85c38;
+  color: #b85c38;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  letter-spacing: 1.5px;
+  background: #fef6f0;
+}
+
+.stamp.date {
+  border-color: #6b7c5e;
+  color: #6b7c5e;
+  background: #f4f7f0;
+}
+
+/* === SECTIONS === */
+.section {
+  border: 2px solid #e0d8c8;
+  margin-bottom: 24px;
+  background: #fff;
+  box-shadow: 3px 3px 0 #e8e0d0;
+}
+
+.section-header {
+  background: #2d2a26;
+  color: #faf7f2;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-header .chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background: #b85c38;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.section-body {
+  padding: 20px 24px 16px;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* === TYPOGRAPHY === */
+h1, h2, h3, h4, h5, h6 {
+  color: #1a1714;
+  margin-top: 1.2em;
+  margin-bottom: 0.5em;
+  line-height: 1.3;
+}
+h1 { font-size: 24px; font-weight: 800; }
+h2 { font-size: 20px; font-weight: 700; border-bottom: 2px dashed #d4cfc6; padding-bottom: 6px; }
+h3 { font-size: 17px; font-weight: 700; color: #3d3830; }
+h4 { font-size: 15px; font-weight: 600; }
+
+p { margin-bottom: 1em; }
+strong { color: #1a1714; }
+
+::selection {
+  background: rgba(184, 92, 56, 0.15);
+  color: #1a1714;
+}
+
+/* === LINKS === */
+a {
+  color: #b85c38;
+  text-decoration: underline;
+  text-decoration-color: rgba(184, 92, 56, 0.3);
+  text-underline-offset: 2px;
+}
+a:hover {
+  color: #8e3f22;
+  text-decoration-color: #8e3f22;
+}
+
+/* === CITATION SUPERSCRIPTS === */
+sup.cite-ref {
+  font-size: 0.75em;
+  line-height: 0;
+  vertical-align: super;
+}
+sup.cite-ref a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  background: #f0e8d8;
+  border: 1px solid #d4cfc6;
+  color: #b85c38;
+  font-size: 10px;
+  font-weight: 700;
+  text-decoration: none;
+  margin: 0 1px;
+  vertical-align: super;
+}
+sup.cite-ref a:hover {
+  background: #b85c38;
+  color: #fff;
+  border-color: #b85c38;
+}
+
+/* === TABLES === */
+.table-wrap {
+  overflow-x: auto;
+  margin: 16px 0;
+  border: 2px solid #d4cfc6;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+thead {
+  background: #f0ebe0;
+}
+th {
+  text-align: left;
+  font-weight: 700;
+  padding: 8px 12px;
+  border-bottom: 2px solid #c9b99a;
+  color: #1a1714;
+  white-space: nowrap;
+}
+td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #e8e0d0;
+  vertical-align: top;
+}
+tr:hover td {
+  background: #faf5eb;
+}
+
+/* === LISTS === */
+ul, ol {
+  margin: 0.5em 0 0.8em;
+  padding-left: 1.6em;
+}
+li {
+  margin-bottom: 0.4em;
+}
+li > ul, li > ol {
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;
+}
+
+/* === BLOCKQUOTES === */
+blockquote {
+  border-left: 4px solid #c9b99a;
+  background: #fef9f0;
+  padding: 14px 18px;
+  margin: 14px 0;
+  color: #5a5347;
+  font-size: 0.95em;
+}
+blockquote p:last-child { margin-bottom: 0; }
+
+/* === CODE === */
+code {
+  background: #f5f0e6;
+  border: 1px solid #e0d8c8;
+  padding: 1px 5px;
+  font-size: 0.88em;
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+  color: #6b4226;
+}
+pre {
+  background: #faf5eb;
+  border: 2px solid #e0d8c8;
+  padding: 14px 16px;
+  overflow-x: auto;
+  margin: 12px 0;
+  font-size: 13px;
+}
+pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+/* === IMAGES === */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* === HORIZONTAL RULE === */
+hr {
+  border: none;
+  border-top: 3px dashed #d4cfc6;
+  margin: 28px 0;
+}
+
+/* === FOOTER === */
+.report-footer {
+  text-align: center;
+  padding: 20px 0;
+  margin-top: 40px;
+  border-top: 2px solid #e0d8c8;
+}
+.report-footer .footer-brand {
+  display: inline-block;
+  border: 2px solid #c9b99a;
+  padding: 4px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #8a7e6e;
+  text-transform: lowercase;
+}
+
+/* === REFERENCE LIST at bottom === */
+.references-section {
+  margin-top: 28px;
+  padding: 20px;
+  border: 2px dashed #d4cfc6;
+  background: #fef9f0;
+}
+.references-section h2,
+.references-section h3 {
+  font-size: 16px;
+  border-bottom: none;
+  margin-top: 0;
+}
+.references-section p {
+  font-size: 13px;
+  line-height: 1.6;
+  word-break: break-all;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 640px) {
+  body { font-size: 15px; line-height: 1.75; }
+  .report-wrapper { padding: 12px 10px 32px; }
+  .report-header {
+    padding: 18px 14px;
+    box-shadow: 3px 3px 0 #c9b99a;
+  }
+  .report-header h1 { font-size: 19px; }
+  .report-meta { gap: 8px; }
+  .stamp { font-size: 9px; padding: 2px 8px; }
+  .section { margin-bottom: 16px; }
+  .section-header { font-size: 13px; padding: 7px 12px; }
+  .section-body { padding: 14px 12px; }
+  h2 { font-size: 17px; }
+  h3 { font-size: 15px; }
+  blockquote { padding: 10px 12px; margin: 8px 0; }
+  pre { padding: 10px 12px; font-size: 12px; }
+  table { font-size: 12px; }
+  th, td { padding: 6px 8px; }
+  .references-section { padding: 14px; }
+  sup.cite-ref a { min-width: 16px; height: 16px; font-size: 9px; }
+  img { max-width: 100%; height: auto; }
+}
+
+/* === PRINT === */
+@media print {
+  body { background: #fff; font-size: 12px; }
+  body::before { display: none; }
+  .report-wrapper { max-width: 100%; padding: 0; }
+  .report-header { box-shadow: none; border-width: 1px; }
+  .section { box-shadow: none; border-width: 1px; page-break-inside: avoid; }
+  sup.cite-ref a { background: transparent; border: 1px solid #999; }
+  a { color: #333; }
+}
+</style>
+</head>
+<body>
+<div class="report-wrapper">
+
+  <!-- HEADER -->
+  <div class="report-header">
+    <h1>一、公司定位与治理：三种完全不同的“底层逻辑”</h1>
+    <div class="research-question">Research question: 全面且详细比较一下anthropic、openAI、Palantir这三家公司</div>
+    <div class="report-meta">
+      <span class="stamp">Generated by MiroThinker</span>
+      <span class="stamp date">2026-06-10</span>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <p>下面是基于目前已收集信息，对 <strong>Anthropic、OpenAI、Palantir</strong> 三家公司的系统性、对比式研究。内容偏向企业/供应链决策视角，而不仅是概念介绍。</p>
+<hr>
+<h1>一、公司定位与治理：三种完全不同的“底层逻辑”</h1>
+<h3>1. Anthropic：安全优先的 AI 基础设施公司</h3>
+<ul>
+<li><strong>法律形态</strong>：特拉华州 Public Benefit Corporation（PBC），公司章程写明“长期造福人类”的公共利益目标<sup class="cite-ref"><a href="https://www.anthropic.com/company&gt;" target="_blank" rel="noopener noreferrer" title="COMPANY / ANTHROPIC – Company page. &lt;">[1]</a></sup><sup class="cite-ref"><a href="https://en.wikipedia.org/wiki/Anthropic&gt;" target="_blank" rel="noopener noreferrer" title="Anthropic – Wikipedia. &lt;">[2]</a></sup>。</li>
+<li><strong>治理结构</strong>：<ul>
+<li>设有 <strong>Long-Term Benefit Trust（LTBT）</strong>，受托人没有股权激励，长期可控制董事会多数席位，用来制衡资本、保证安全与长期主义优先<sup class="cite-ref"><a href="https://www.longtermwiki.com/wiki/E407&gt;" target="_blank" rel="noopener noreferrer" title="Anthropic Long-Term Benefit Trust – LongtermWiki. &lt;">[16]</a></sup>。</li>
+</ul>
+</li>
+<li><strong>商业重心</strong>：B 端为主，约 80–85% 收入来自企业和开发者，ToC 占比较小<sup class="cite-ref"><a href="https://www.anthropic.com/research/anthropic-economic-index-january-2026-report&gt;" target="_blank" rel="noopener noreferrer" title="Anthropic Economic Index report. &lt;">[7]</a></sup><sup class="cite-ref"><a href="https://support.claude.com/en/articles/11049762-choose-a-claude-plan&gt;" target="_blank" rel="noopener noreferrer" title="Choose a Claude plan – Claude Help Center. &lt;">[20]</a></sup>[48]。</li>
+<li><strong>战略倾向</strong>：<ul>
+<li>“安全与治理”写进公司权力结构；</li>
+<li>模式更像 “企业级 AI 公共基础设施公司”。</li>
+</ul>
+</li>
+</ul>
+<h3>2. OpenAI：从研究机构走向大众 AI 平台</h3>
+<ul>
+<li><strong>法律形态</strong>：从“非营利 + capped-profit 子公司”演化为 PBC 结构，非营利基金会仍控制其股权与董事会<sup class="cite-ref"><a href="https://openai.com/index/evolving-our-structure/&gt;" target="_blank" rel="noopener noreferrer" title="Evolving OpenAI’s structure. &lt;">[34]</a></sup><sup class="cite-ref"><a href="https://openai.com/our-structure/&gt;" target="_blank" rel="noopener noreferrer" title="Our structure – OpenAI. &lt;">[35]</a></sup>。</li>
+<li><strong>治理特征</strong>：<ul>
+<li>同样写入公共利益目标，但同时为大规模融资、IPO 与利润增长留足空间<sup class="cite-ref"><a href="https://openai.com/index/evolving-our-structure/&gt;" target="_blank" rel="noopener noreferrer" title="Evolving OpenAI’s structure. &lt;">[34]</a></sup>[56]。</li>
+</ul>
+</li>
+<li><strong>商业重心</strong>：<ul>
+<li>ToC（ChatGPT）+ ToB（API、ChatGPT Enterprise）双线并行；</li>
+<li>2026 年 ARR 超过 <strong>$12.7B</strong>，ToC 占据多数收入，但企业部分快速上升<sup class="cite-ref"><a href="https://searchlab.nl/en/statistics/openai-statistics-2026&gt;" target="_blank" rel="noopener noreferrer" title="OpenAI Statistics 2026. &lt;">[8]</a></sup>[50][54]。</li>
+</ul>
+</li>
+<li><strong>战略倾向</strong>：<ul>
+<li>强调 <strong>“能力规模化 + 产品生态扩张”</strong>；</li>
+<li>以 ChatGPT 和 Copilot 形成面向大众的入口，再向企业渗透。</li>
+</ul>
+</li>
+</ul>
+<h3>3. Palantir：数据与决策平台，而不是“模型公司”</h3>
+<ul>
+<li><strong>法律形态</strong>：美股上市公司（NYSE: PLTR），传统 C-Corp<sup class="cite-ref"><a href="https://en.wikipedia.org/wiki/Anthropic&gt;" target="_blank" rel="noopener noreferrer" title="Anthropic – Wikipedia. &lt;">[2]</a></sup>。</li>
+<li><strong>业务本质</strong>：<ul>
+<li>核心是 <strong>数据集成与分析软件</strong>：Foundry（商业）、Gotham（政府）和 AIP（AI Platform）<sup class="cite-ref"><a href="https://en.wikipedia.org/wiki/Anthropic&gt;" target="_blank" rel="noopener noreferrer" title="Anthropic – Wikipedia. &lt;">[2]</a></sup><sup class="cite-ref"><a href="https://platform.claude.com/docs/en/about-claude/models/overview&gt;" target="_blank" rel="noopener noreferrer" title="Models overview – Claude API Docs. &lt;">[3]</a></sup>；</li>
+<li>通过软件订阅 + 咨询/实施项目收费。</li>
+</ul>
+</li>
+<li><strong>商业重心</strong>：<ul>
+<li>以政府、国防、制造、能源、金融等行业大客户为主<sup class="cite-ref"><a href="https://en.wikipedia.org/wiki/Anthropic&gt;" target="_blank" rel="noopener noreferrer" title="Anthropic – Wikipedia. &lt;">[2]</a></sup><sup class="cite-ref"><a href="https://medium.com/data-science-collective/how-i-deployed-an-ai-agent-for-sustainable-supply-chain-optimisation-c8b2e0fbf6c3&gt;" target="_blank" rel="noopener noreferrer" title="Sustainable Supply Chain Optimisation Agent. &lt;">[5]</a></sup><sup class="cite-ref"><a href="https://www.instinctools.com/blog/how-palantir-works/&gt;" target="_blank" rel="noopener noreferrer" title="How Palantir works – Foundry and AIP. &lt;">[6]</a></sup>；</li>
+<li>强调“帮助组织把分散数据转成可执行的运营决策”<sup class="cite-ref"><a href="https://www.anthropic.com/company&gt;" target="_blank" rel="noopener noreferrer" title="COMPANY / ANTHROPIC – Company page. &lt;">[1]</a></sup><sup class="cite-ref"><a href="https://www.instinctools.com/blog/how-palantir-works/&gt;" target="_blank" rel="noopener noreferrer" title="How Palantir works – Foundry and AIP. &lt;">[6]</a></sup>。</li>
+</ul>
+</li>
+<li><strong>战略倾向</strong>：<ul>
+<li>从“重咨询+定制项目”逐步走向“平台化 + 预置行业方案”，又在 2024–2026 主推 AIP，把 LLM 纳入其决策平台<sup class="cite-ref"><a href="https://platform.claude.com/docs/en/about-claude/models/overview&gt;" target="_blank" rel="noopener noreferrer" title="Models overview – Claude API Docs. &lt;">[3]</a></sup><sup class="cite-ref"><a href="https://www.instinctools.com/blog/how-palantir-works/&gt;" target="_blank" rel="noopener noreferrer" title="How Palantir works – Foundry and AIP. &lt;">[6]</a></sup>。</li>
+</ul>
+</li>
+</ul>
+<p><strong>简要对比：</strong></p>
+<table>
+<thead>
+<tr>
+  <th>维度</th>
+  <th>Anthropic</th>
+  <th>OpenAI</th>
+  <th>Palantir</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>核心身份</td>
+  <td>安全优先的模型与企业 AI 平台公司</td>
+  <td>大众化 AI 引擎与平台</td>
+  <td>数据+决策操作系统</td>
+</tr>
+<tr>
+  <td>主要收入</td>
+  <td>企业/API 为主</td>
+  <td>ToC 为主，企业快速增长</td>
+  <td>企业长期合同（政府+大企业）</td>
+</tr>
+<tr>
+  <td>治理重心</td>
+  <td>安全 &amp; 长期主义</td>
+  <td>能力规模化 &amp; 盈利</td>
+  <td>持续盈利与股东价值</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h1>二、技术与产品：模型公司 vs 平台公司</h1>
+
+<div class="section" id="21-anthropicclaude-模型--企业-ai-平台"><div class="section-header"><span class="chip">1</span>2.1 Anthropic：Claude 模型 + 企业 AI 平台</div><div class="section-body">
+<h3 id="模型与技术-1">模型与技术</h3>
+<ul>
+<li><strong>Claude 4.x 系列</strong>（Opus / Sonnet / Haiku）<sup class="cite-ref"><a href="https://platform.claude.com/docs/en/about-claude/models/overview&gt;" target="_blank" rel="noopener noreferrer" title="Models overview – Claude API Docs. &lt;">[3]</a></sup><sup class="cite-ref"><a href="https://www.anthropic.com/news/claude-4&gt;" target="_blank" rel="noopener noreferrer" title="Claude 4 release – technical specs. &lt;">[23]</a></sup>：<ul>
+<li>Opus：旗舰高能力模型，擅长复杂推理、长链路 Agent；</li>
+<li>Sonnet：性价比主力模型，企业日常工作负载核心；</li>
+<li>Haiku：轻量高效模型，适合高并发、响应要求高的应用。</li>
+</ul>
+</li>
+<li><strong>长上下文优势</strong>：<ul>
+<li>新版本上下文可达 <strong>100 万 tokens</strong>（beta），输出最多 128K tokens<sup class="cite-ref"><a href="https://www.instinctools.com/blog/how-palantir-works/&gt;" target="_blank" rel="noopener noreferrer" title="How Palantir works – Foundry and AIP. &lt;">[6]</a></sup><sup class="cite-ref"><a href="https://www.anthropic.com/news/claude-4&gt;" target="_blank" rel="noopener noreferrer" title="Claude 4 release – technical specs. &lt;">[23]</a></sup>；</li>
+<li>特别适合全量合同、全仓代码库、长年供应链数据分析。</li>
+</ul>
+</li>
+<li><strong>安全与对齐</strong>：<ul>
+<li>提出了 <strong>Constitutional AI</strong>：利用显式“宪法原则”自我对齐输出，减少 RLHF 对人力标注的依赖，同时让行为更可预测、更便于合规审计<sup class="cite-ref"><a href="https://en.wikipedia.org/wiki/Anthropic&gt;" target="_blank" rel="noopener noreferrer" title="Anthropic – Wikipedia. &lt;">[2]</a></sup><sup class="cite-ref"><a href="https://www.sohu.com/a/989726270_121124363&gt;" target="_blank" rel="noopener noreferrer" title="Claude Code one-year anniversary: Agentic AI infrastructure &amp; standardization. &lt;">[15]</a></sup>。</li>
+</ul>
+</li>
+</ul>
+<h3 id="to-b-产品体系你前面已经看过这里只抓关键点">To B 产品体系（你前面已经看过，这里只抓关键点）</h3>
+<ul>
+<li><strong>Claude API + 多云部署</strong>：<ul>
+<li>通过 Anthropic 自有 API、Amazon Bedrock、Google Vertex AI、Azure AI Foundry 提供服务<sup class="cite-ref"><a href="https://platform.claude.com/docs/en/about-claude/models/overview&gt;" target="_blank" rel="noopener noreferrer" title="Models overview – Claude API Docs. &lt;">[3]</a></sup><sup class="cite-ref"><a href="https://www.instinctools.com/blog/how-palantir-works/&gt;" target="_blank" rel="noopener noreferrer" title="How Palantir works – Foundry and AIP. &lt;">[6]</a></sup><sup class="cite-ref"><a href="https://www.anthropic.com/transparency&gt;" target="_blank" rel="noopener noreferrer" title="Anthropic Transparency Hub. &lt;">[18]</a></sup>。</li>
+</ul>
+</li>
+<li><strong>Claude Enterprise</strong>：<ul>
+<li>SSO/SCIM、RBAC、审计日志、Compliance API、数据不用于训练、区域数据驻留等企业级特性<sup class="cite-ref"><a href="https://www.palantir.com/offerings/supply-chain/&gt;" target="_blank" rel="noopener noreferrer" title="Supply Chain Solutions – Palantir Foundry. &lt;">[10]</a></sup><sup class="cite-ref"><a href="https://intuitionlabs.ai/articles/claude-enterprise-deployment-training-guide-2026&gt;" target="_blank" rel="noopener noreferrer" title="Claude Enterprise Guide 2026 – IntuitionLabs. &lt;">[22]</a></sup><sup class="cite-ref"><a href="https://www.anthropic.com/product/enterprise&gt;" target="_blank" rel="noopener noreferrer" title="Claude Enterprise – Anthropic product page. &lt;">[33]</a></sup>。</li>
+</ul>
+</li>
+<li><strong>Claude Code</strong>：<ul>
+<li>工程级编码 Agent，支持读写大规模代码仓、本地终端、IDE（VS Code/JetBrains 等），也是改造供应链 IT 系统的重要工具<sup class="cite-ref"><a href="https://www.instinctools.com/blog/how-palantir-works/&gt;" target="_blank" rel="noopener noreferrer" title="How Palantir works – Foundry and AIP. &lt;">[6]</a></sup><sup class="cite-ref"><a href="https://www.longtermwiki.com/wiki/E407&gt;" target="_blank" rel="noopener noreferrer" title="Anthropic Long-Term Benefit Trust – LongtermWiki. &lt;">[16]</a></sup><sup class="cite-ref"><a href="https://mcpmarket.com/tools/skills/sustainable-supply-chain-analysis&gt;" target="_blank" rel="noopener noreferrer" title="Sustainable Supply Chain Analysis Claude Code Skill. &lt;">[17]</a></sup>。</li>
+</ul>
+</li>
+<li><strong>Cowork / Managed Agents</strong>：<ul>
+<li>Cowork：桌面/协作智能体，可连接日常工具（Mail、Slack、Drive 等）自动执行多步知识工作<sup class="cite-ref"><a href="https://platform.claude.com/docs/en/home&gt;" target="_blank" rel="noopener noreferrer" title="Documentation – Claude API Docs. &lt;">[21]</a></sup>；</li>
+<li>Managed Agents：官方托管的 Agent 运行时，按 session-hour 计费，适用于长时间跑的业务流程自动化<sup class="cite-ref"><a href="https://www.objectedge.com/blog/palantir-for-demand-planning-transforming-supply-chain-management&gt;" target="_blank" rel="noopener noreferrer" title="Palantir for Demand Planning: Transforming Supply Chain Management. &lt;">[9]</a></sup><sup class="cite-ref"><a href="https://www.anthropic.com/product/enterprise&gt;" target="_blank" rel="noopener noreferrer" title="Claude Enterprise – Anthropic product page. &lt;">[33]</a></sup>。</li>
+</ul>
+</li>
+</ul>
+<p><strong>总结一句</strong>：Anthropic 的技术与产品“主轴”是 <strong>Claude 模型 + 面向企业的安全治理 + 工程级工具（Claude Code / MCP / Managed Agents）</strong>。</p>
+<hr>
+</div></div>
+<div class="section" id="22-openaigpt-家族--chatgpt-平台"><div class="section-header"><span class="chip">2</span>2.2 OpenAI：GPT 家族 + ChatGPT 平台</div><div class="section-body">
+<h3 id="模型与技术-1">模型与技术</h3>
+<ul>
+<li><strong>GPT-5 / GPT-5.5 / GPT-4o 等系列</strong><sup class="cite-ref"><a href="https://intuitionlabs.ai/articles/claude-vs-chatgpt-vs-copilot-vs-gemini-enterprise-comparison&gt;" target="_blank" rel="noopener noreferrer" title="Claude vs ChatGPT vs Copilot vs Gemini: 2026 Enterprise Guide. &lt;">[36]</a></sup><sup class="cite-ref"><a href="https://www.datacamp.com/blog/gpt-5-5-vs-claude-opus-4-7&gt;" target="_blank" rel="noopener noreferrer" title="GPT‑5.5 vs Claude Opus 4.7 – DataCamp. &lt;">[37]</a></sup><sup class="cite-ref"><a href="https://lushbinary.com/blog/gpt-5-5-vs-claude-opus-4-7-comparison-benchmarks-pricing/&gt;" target="_blank" rel="noopener noreferrer" title="GPT‑5.5 vs Claude Opus 4.7 – Lushbinary. &lt;">[38]</a></sup>：<ul>
+<li>GPT-5.5 在通用推理、多语言、代码生成方面处于行业顶级水平<sup class="cite-ref"><a href="https://www.datacamp.com/blog/gpt-5-5-vs-claude-opus-4-7&gt;" target="_blank" rel="noopener noreferrer" title="GPT‑5.5 vs Claude Opus 4.7 – DataCamp. &lt;">[37]</a></sup><sup class="cite-ref"><a href="https://lushbinary.com/blog/gpt-5-5-vs-claude-opus-4-7-comparison-benchmarks-pricing/&gt;" target="_blank" rel="noopener noreferrer" title="GPT‑5.5 vs Claude Opus 4.7 – Lushbinary. &lt;">[38]</a></sup><sup class="cite-ref"><a href="https://www.mindstudio.ai/blog/gpt-55-vs-claude-opus-47-coding-comparison/&gt;" target="_blank" rel="noopener noreferrer" title="MindStudio – GPT‑5.5 vs Claude Opus 4.7 coding comparison. &lt;">[39]</a></sup>；</li>
+<li>GPT-4o 主打多模态（文本+语音+图像+视频）实时交互。</li>
+</ul>
+</li>
+<li><strong>对齐与安全策略</strong>：<ul>
+<li>以 RLHF + 大规模红队 + 平台策略为主<sup class="cite-ref"><a href="https://openai.com/index/evolving-our-structure/&gt;" target="_blank" rel="noopener noreferrer" title="Evolving OpenAI’s structure. &lt;">[34]</a></sup><sup class="cite-ref"><a href="https://openai.com/our-structure/&gt;" target="_blank" rel="noopener noreferrer" title="Our structure – OpenAI. &lt;">[35]</a></sup>；</li>
+<li>没有类似 Constitutional AI 那样公开透明的“宪法式”对齐框架，更偏向运营策略层的控制。</li>
+</ul>
+</li>
+<li><strong>Agentic 能力</strong>：<ul>
+<li>Function Calling、Code Interpreter、内嵌工具使用（如浏览器、文件操作等），在 ChatGPT 与 API 层普及；</li>
+<li>官方尚未提供类似 Anthropic“托管 Agent 运行时”的产品，多数 Agent 还是由第三方或客户自建。</li>
+</ul>
+</li>
+</ul>
+<h3 id="to-b-产品体系2026">To B 产品体系（2026）</h3>
+<ul>
+<li><strong>ChatGPT Enterprise / Team / Business</strong>：<ul>
+<li>提供组织级的 ChatGPT 使用：SSO、企业数据加密、合规报告、使用分析等<sup class="cite-ref"><a href="https://intuitionlabs.ai/articles/claude-vs-chatgpt-vs-copilot-vs-gemini-enterprise-comparison&gt;" target="_blank" rel="noopener noreferrer" title="Claude vs ChatGPT vs Copilot vs Gemini: 2026 Enterprise Guide. &lt;">[36]</a></sup>[50]；</li>
+<li>Microsoft 365 / Teams / Outlook / SharePoint 深度集成，通过 Copilot 产品族触达。</li>
+</ul>
+</li>
+<li><strong>OpenAI API / Azure OpenAI Service</strong>：<ul>
+<li>提供 GPT-5.5、GPT-4o 等模型的 API 接入，支持 function calling、批处理、嵌入等[54]；</li>
+<li>Azure OpenAI 上整合了虚拟网络隔离、密钥管理、监控等 Azure 原生企业能力[52][54]。</li>
+</ul>
+</li>
+</ul>
+<p><strong>简要对比 Anthropic vs OpenAI 技术风格</strong>（站在企业角度）：</p>
+<ul>
+<li>Anthropic：<strong>更长上下文、更强安全治理、更像“企业基础设施”</strong>；</li>
+<li>OpenAI：<strong>能力上略更激进、生态更广、ToC 与 Microsoft 生态优势明显</strong>。</li>
+</ul>
+<hr>
+</div></div>
+<div class="section" id="23-palantirfoundry--aip-的数据与-ai-平台"><div class="section-header"><span class="chip">3</span>2.3 Palantir：Foundry + AIP 的数据与 AI 平台</div><div class="section-body">
+<h3 id="技术与产品核心">技术与产品核心</h3>
+<ul>
+<li><strong>Foundry</strong>（商业数据平台）<sup class="cite-ref"><a href="https://www.anthropic.com/company&gt;" target="_blank" rel="noopener noreferrer" title="COMPANY / ANTHROPIC – Company page. &lt;">[1]</a></sup><sup class="cite-ref"><a href="https://platform.claude.com/docs/en/about-claude/models/overview&gt;" target="_blank" rel="noopener noreferrer" title="Models overview – Claude API Docs. &lt;">[3]</a></sup><sup class="cite-ref"><a href="https://www.instinctools.com/blog/how-palantir-works/&gt;" target="_blank" rel="noopener noreferrer" title="How Palantir works – Foundry and AIP. &lt;">[6]</a></sup>：<ul>
+<li>数据接入：支持连接 SAP、Oracle、各类 ERP/WMS/TMS、数据库、数据湖等，强调“不要求改造原系统”<sup class="cite-ref"><a href="https://www.instinctools.com/blog/how-palantir-works/&gt;" target="_blank" rel="noopener noreferrer" title="How Palantir works – Foundry and AIP. &lt;">[6]</a></sup>；</li>
+<li>数据建模：低代码或图形化方式统一建模，管理数据血缘、权限、质量；</li>
+<li>分析与应用：时间序列分析、地理空间分析、流程监控仪表盘等。</li>
+</ul>
+</li>
+<li><strong>AIP（Artificial Intelligence Platform）</strong>：<ul>
+<li>允许企业在 Foundry 数据之上，集成多种 AI 模型（包括 OpenAI、Anthropic 等 LLM 以及自有机器学习模型），并以安全、可控方式嵌入到业务流程中<sup class="cite-ref"><a href="https://platform.claude.com/docs/en/about-claude/models/overview&gt;" target="_blank" rel="noopener noreferrer" title="Models overview – Claude API Docs. &lt;">[3]</a></sup><sup class="cite-ref"><a href="https://www.instinctools.com/blog/how-palantir-works/&gt;" target="_blank" rel="noopener noreferrer" title="How Palantir works – Foundry and AIP. &lt;">[6]</a></sup><sup class="cite-ref"><a href="https://www.anthropic.com/research/anthropic-economic-index-january-2026-report&gt;" target="_blank" rel="noopener noreferrer" title="Anthropic Economic Index report. &lt;">[7]</a></sup>；</li>
+<li>本身提供预制工作流，如需求预测、生产优化、库存优化、维护预测等。</li>
+</ul>
+</li>
+<li><strong>行业供给</strong>：<ul>
+<li>在供应链、制造、医疗、公共卫生等领域，有大量模板和成功案例（如美国 HHS 疫苗分配、英国 NHS 的医疗物资供应链、Lear 汽车零部件制造运营等）<sup class="cite-ref"><a href="https://www.anthropic.com/company&gt;" target="_blank" rel="noopener noreferrer" title="COMPANY / ANTHROPIC – Company page. &lt;">[1]</a></sup><sup class="cite-ref"><a href="https://medium.com/data-science-collective/how-i-deployed-an-ai-agent-for-sustainable-supply-chain-optimisation-c8b2e0fbf6c3&gt;" target="_blank" rel="noopener noreferrer" title="Sustainable Supply Chain Optimisation Agent. &lt;">[5]</a></sup><sup class="cite-ref"><a href="https://www.palantir.com/offerings/supply-chain/&gt;" target="_blank" rel="noopener noreferrer" title="Supply Chain Solutions – Palantir Foundry. &lt;">[10]</a></sup>。</li>
+</ul>
+</li>
+</ul>
+<p><strong>总结</strong>：Palantir 不主打“某个模型能力最强”，而是强调它能把 <strong>多源数据 + 各种算法（LLM + 传统 ML/OR） + 业务用户</strong> 组合起来，形成端到端的操作系统。</p>
+<hr>
+<h1>三、商业模式与价格结构：卖“模型”vs 卖“平台”</h1>
+</div></div>
+<div class="section" id="31-anthropic"><div class="section-header"><span class="chip">4</span>3.1 Anthropic</div><div class="section-body">
+<ul>
+<li><strong>收入模式</strong>：<ul>
+<li>Claude API 按 tokens 计费；</li>
+<li>Claude Enterprise / Team 按座位 + 使用量计费<sup class="cite-ref"><a href="https://www.palantir.com/offerings/supply-chain/&gt;" target="_blank" rel="noopener noreferrer" title="Supply Chain Solutions – Palantir Foundry. &lt;">[10]</a></sup><sup class="cite-ref"><a href="https://intuitionlabs.ai/articles/claude-enterprise-deployment-training-guide-2026&gt;" target="_blank" rel="noopener noreferrer" title="Claude Enterprise Guide 2026 – IntuitionLabs. &lt;">[22]</a></sup><sup class="cite-ref"><a href="https://www.anthropic.com/product/enterprise&gt;" target="_blank" rel="noopener noreferrer" title="Claude Enterprise – Anthropic product page. &lt;">[33]</a></sup>；</li>
+<li>Claude Code / Managed Agents 则是在上面叠加增值功能。</li>
+</ul>
+</li>
+<li><strong>定价大致结构</strong>（2026 公开信息综合）：<ul>
+<li>Sonnet：输入约 $3 / 1M tokens、输出 $15 / 1M tokens 量级<sup class="cite-ref"><a href="https://www.anthropic.com/news/claude-4&gt;" target="_blank" rel="noopener noreferrer" title="Claude 4 release – technical specs. &lt;">[23]</a></sup>；</li>
+<li>Opus：高阶复杂任务模型，单价更高，但在使用策略上通过 Prompt Caching 降本<sup class="cite-ref"><a href="https://www.anthropic.com/news/claude-4&gt;" target="_blank" rel="noopener noreferrer" title="Claude 4 release – technical specs. &lt;">[23]</a></sup>；</li>
+<li>Enterprise：座位费约 $20–$60/用户/月，重度用量场景总 TCO 往往到 $60–$250+/人/月<sup class="cite-ref"><a href="https://www.gosearch.ai/faqs/what-is-claude-enterprise-pricing-in-2026/&gt;" target="_blank" rel="noopener noreferrer" title="What is Claude Enterprise pricing in 2026? – GoSearch. &lt;">[19]</a></sup><sup class="cite-ref"><a href="https://intuitionlabs.ai/articles/claude-enterprise-deployment-training-guide-2026&gt;" target="_blank" rel="noopener noreferrer" title="Claude Enterprise Guide 2026 – IntuitionLabs. &lt;">[22]</a></sup>。</li>
+</ul>
+</li>
+</ul>
+<p><strong>特点</strong>：</p>
+<ul>
+<li>对企业来说，更像是「<strong>买云上算力+模型服务</strong>」，价格与用量高度挂钩；</li>
+<li>对高合规场景，Enterprise 提供的数据不用于训练、审计日志等加值，支撑“内部 AI 平台”的定位。</li>
+</ul>
+</div></div>
+<div class="section" id="32-openai"><div class="section-header"><span class="chip">5</span>3.2 OpenAI</div><div class="section-body">
+<ul>
+<li><strong>收入模式</strong>：<ul>
+<li>ChatGPT Plus / Team / Enterprise 的订阅；</li>
+<li>OpenAI API / Azure OpenAI 的按量计费；</li>
+<li>新增广告、插件分成、计算平台等多元模式<sup class="cite-ref"><a href="https://en.wikipedia.org/wiki/Anthropic&gt;" target="_blank" rel="noopener noreferrer" title="Anthropic – Wikipedia. &lt;">[2]</a></sup><sup class="cite-ref"><a href="https://www.anthropic.com/research/anthropic-economic-index-january-2026-report&gt;" target="_blank" rel="noopener noreferrer" title="Anthropic Economic Index report. &lt;">[7]</a></sup><sup class="cite-ref"><a href="https://searchlab.nl/en/statistics/openai-statistics-2026&gt;" target="_blank" rel="noopener noreferrer" title="OpenAI Statistics 2026. &lt;">[8]</a></sup>。</li>
+</ul>
+</li>
+<li><strong>定价特点</strong>：<ul>
+<li>GPT-5.5 旗舰模型单价略高于 Claude Opus，但在很多企业任务中 token 使用量更少，实际 TCO 要看具体 workload<sup class="cite-ref"><a href="https://www.datacamp.com/blog/gpt-5-5-vs-claude-opus-4-7&gt;" target="_blank" rel="noopener noreferrer" title="GPT‑5.5 vs Claude Opus 4.7 – DataCamp. &lt;">[37]</a></sup><sup class="cite-ref"><a href="https://lushbinary.com/blog/gpt-5-5-vs-claude-opus-4-7-comparison-benchmarks-pricing/&gt;" target="_blank" rel="noopener noreferrer" title="GPT‑5.5 vs Claude Opus 4.7 – Lushbinary. &lt;">[38]</a></sup><sup class="cite-ref"><a href="https://www.mindstudio.ai/blog/gpt-55-vs-claude-opus-47-coding-comparison/&gt;" target="_blank" rel="noopener noreferrer" title="MindStudio – GPT‑5.5 vs Claude Opus 4.7 coding comparison. &lt;">[39]</a></sup>[55]；</li>
+<li>中低挡模型（如 GPT-5 mini / GPT-4o）在 To B 日常场景性价比较高[55]。</li>
+</ul>
+</li>
+</ul>
+<p><strong>特点</strong>：</p>
+<ul>
+<li>更接近“<strong>把智能出租给开发者和终端用户</strong>”的模式；</li>
+<li>对企业来说，若已经深度使用 Microsoft 云，会顺理成章地通过 Azure 采购部署。</li>
+</ul>
+</div></div>
+<div class="section" id="33-palantir"><div class="section-header"><span class="chip">6</span>3.3 Palantir</div><div class="section-body">
+<ul>
+<li><strong>收入模式</strong>：<ul>
+<li>软件订阅（Foundry/AIP 底座 license）+ 专业服务（实施、配置、运营辅导）；</li>
+<li>合同经常是多年期、数百万到数千万美元级别<sup class="cite-ref"><a href="https://platform.claude.com/docs/en/about-claude/models/overview&gt;" target="_blank" rel="noopener noreferrer" title="Models overview – Claude API Docs. &lt;">[3]</a></sup><sup class="cite-ref"><a href="https://www.anthropic.com/research/anthropic-economic-index-january-2026-report&gt;" target="_blank" rel="noopener noreferrer" title="Anthropic Economic Index report. &lt;">[7]</a></sup><sup class="cite-ref"><a href="https://www.palantir.com/offerings/supply-chain/&gt;" target="_blank" rel="noopener noreferrer" title="Supply Chain Solutions – Palantir Foundry. &lt;">[10]</a></sup>。</li>
+</ul>
+</li>
+<li><strong>成本结构</strong>：<ul>
+<li>上线成本高（数据接入 + 模型配置 + 业务流程重构），但一旦成功落地，可在多业务线复用；</li>
+<li>典型 ROI：在需求预测与供应链案例中，6–18 个月内可实现 5–10x 投资回报<sup class="cite-ref"><a href="https://www.objectedge.com/blog/palantir-for-demand-planning-transforming-supply-chain-management&gt;" target="_blank" rel="noopener noreferrer" title="Palantir for Demand Planning: Transforming Supply Chain Management. &lt;">[9]</a></sup>。</li>
+</ul>
+</li>
+</ul>
+<p><strong>特点</strong>：</p>
+<ul>
+<li>对于中小企业来说成本门槛偏高；</li>
+<li>对于大型制造、3PL、政府或高度复杂供应链企业，是能够“收回成本”的重资产项目。</li>
+</ul>
+<hr>
+<h1>四、供应链与类似场景的适配度比较（重点）</h1>
+<p>从你之前的诉求看，供应链是核心场景之一。下面按几个常见链路比较三家公司在“可落地性”和“性价比”上的差异。</p>
+</div></div>
+<div class="section" id="41-文档密集合同rfirfq报关单发票"><div class="section-header"><span class="chip">7</span>4.1 文档密集：合同、RFI/RFQ、报关单、发票</div><div class="section-body">
+<ul>
+<li><p><strong>Anthropic</strong>：</p>
+<ul>
+<li>超长上下文 + 多模态解析（PDF/扫描件/表格），可以一次性处理几十到几百页合同/RFI<sup class="cite-ref"><a href="https://hidekazu-konishi.com/entry/anthropic_claude_model_release_timeline.html&gt;" target="_blank" rel="noopener noreferrer" title="Anthropic Claude Model Release Timeline. &lt;">[4]</a></sup><sup class="cite-ref"><a href="https://www.instinctools.com/blog/how-palantir-works/&gt;" target="_blank" rel="noopener noreferrer" title="How Palantir works – Foundry and AIP. &lt;">[6]</a></sup><sup class="cite-ref"><a href="https://www.boldare.com/blog/automated-purchase-order-processing-claude-vision-databricks/&gt;" target="_blank" rel="noopener noreferrer" title="Automated Purchase Order Processing with Claude Vision. &lt;">[12]</a></sup>；</li>
+<li>已有真实案例：<ul>
+<li>消费品公司用 Claude Cowork 对 8 家供应商 RFI 做自动比对，2 分钟产出 CSV，对比人工 3 小时<sup class="cite-ref"><a href="https://www.anthropic.com/company&gt;" target="_blank" rel="noopener noreferrer" title="COMPANY / ANTHROPIC – Company page. &lt;">[1]</a></sup>；</li>
+<li>n8n+Claude 校验海关清关单证（商业发票、装箱单、提单、原产地证等），自动做字段一致性和合规检查<sup class="cite-ref"><a href="https://aws.amazon.com/blogs/china/claude-code-open-source-model-enterprise-practice/&gt;" target="_blank" rel="noopener noreferrer" title="Claude Code open-source model enterprise practice – AWS Blog. &lt;">[14]</a></sup>。</li>
+</ul>
+</li>
+<li>适合：<strong>合同审查、供应商评估、清关文件校验、结算对账</strong>。</li>
+</ul>
+</li>
+<li><p><strong>OpenAI</strong>：</p>
+<ul>
+<li>GPT-5.5 在理解和生成层面同样很强，但在超长文档（&gt;200K tokens）时需要分段处理；</li>
+<li>文档结构化抽取能力不弱，但往往需要更多 Prompt 工程来保证稳定性<sup class="cite-ref"><a href="https://lushbinary.com/blog/gpt-5-5-vs-claude-opus-4-7-comparison-benchmarks-pricing/&gt;" target="_blank" rel="noopener noreferrer" title="GPT‑5.5 vs Claude Opus 4.7 – Lushbinary. &lt;">[38]</a></sup><sup class="cite-ref"><a href="https://www.mindstudio.ai/blog/gpt-55-vs-claude-opus-47-coding-comparison/&gt;" target="_blank" rel="noopener noreferrer" title="MindStudio – GPT‑5.5 vs Claude Opus 4.7 coding comparison. &lt;">[39]</a></sup>。</li>
+<li>适合：<strong>中等长度文档、标准化程度高的场景</strong>。</li>
+</ul>
+</li>
+<li><p><strong>Palantir</strong>：</p>
+<ul>
+<li>自身不做 OCR/LLM，但可以在 Foundry 中接入 Anthropic/OpenAI 做文档解析，在平台层对解析结果进行治理与可视化<sup class="cite-ref"><a href="https://www.instinctools.com/blog/how-palantir-works/&gt;" target="_blank" rel="noopener noreferrer" title="How Palantir works – Foundry and AIP. &lt;">[6]</a></sup>。</li>
+<li>对于供应链场景：擅长在解析后，把合同/发票数据与生产、库存、物流数据一起分析，例如合同条款对 COGS 的影响<sup class="cite-ref"><a href="https://medium.com/data-science-collective/how-i-deployed-an-ai-agent-for-sustainable-supply-chain-optimisation-c8b2e0fbf6c3&gt;" target="_blank" rel="noopener noreferrer" title="Sustainable Supply Chain Optimisation Agent. &lt;">[5]</a></sup>。</li>
+</ul>
+</li>
+</ul>
+<p><strong>小结</strong>：</p>
+<ul>
+<li>“只想把文档场景先自动化起来”：优先 <strong>Anthropic</strong>；</li>
+<li>打算将文档数据纳入统一数据湖进行更复杂分析：<strong>Palantir+Anthropic/OpenAI 组合</strong>。</li>
+</ul>
+</div></div>
+<div class="section" id="42-运营执行层订单履约异常处理客户沟通"><div class="section-header"><span class="chip">8</span>4.2 运营执行层：订单履约、异常处理、客户沟通</div><div class="section-body">
+<ul>
+<li><strong>Anthropic</strong>：<ul>
+<li>DoorDash 类案例：用 Claude 自动归因配送异常、起草沟通信件、生成班次报告，复杂异常处理时间减少 ~44%<sup class="cite-ref"><a href="https://en.wikipedia.org/wiki/Anthropic&gt;" target="_blank" rel="noopener noreferrer" title="Anthropic – Wikipedia. &lt;">[2]</a></sup><sup class="cite-ref"><a href="https://platform.claude.com/docs/en/about-claude/models/overview&gt;" target="_blank" rel="noopener noreferrer" title="Models overview – Claude API Docs. &lt;">[3]</a></sup>；</li>
+<li>Cowork + Managed Agents 可以挂接 Ticket 系统、TMS/WMS/CRM，自动做事件分类、回复草稿、升级决策<sup class="cite-ref"><a href="https://intuitionlabs.ai/articles/claude-enterprise-deployment-training-guide-2026&gt;" target="_blank" rel="noopener noreferrer" title="Claude Enterprise Guide 2026 – IntuitionLabs. &lt;">[22]</a></sup><sup class="cite-ref"><a href="https://www.anthropic.com/product/enterprise&gt;" target="_blank" rel="noopener noreferrer" title="Claude Enterprise – Anthropic product page. &lt;">[33]</a></sup>。</li>
+</ul>
+</li>
+<li><strong>OpenAI</strong>：<ul>
+<li>通过 GPT-5.5 + 自建 Agent，同样能处理异常文本、生成回复，但稳定性和可控性取决于你自建的中间件与策略；</li>
+<li>相较之下，OpenAI 在“对外客户体验”（语气自然度、创意表达）上往往略优。</li>
+</ul>
+</li>
+<li><strong>Palantir</strong>：<ul>
+<li>强项是在 Foundry 中构建 <strong>端到端可视化流程</strong>：从订单、库存、运输、客户反馈等数据入手，识别系统性瓶颈，然后再接入 LLM 做解释和自动化动作<sup class="cite-ref"><a href="https://hidekazu-konishi.com/entry/anthropic_claude_model_release_timeline.html&gt;" target="_blank" rel="noopener noreferrer" title="Anthropic Claude Model Release Timeline. &lt;">[4]</a></sup><sup class="cite-ref"><a href="https://www.instinctools.com/blog/how-palantir-works/&gt;" target="_blank" rel="noopener noreferrer" title="How Palantir works – Foundry and AIP. &lt;">[6]</a></sup>；</li>
+<li>Lear 与 Palantir 合作案例中，Palantir 帮助其在质量、供应链和采购上形成统一运营中枢<sup class="cite-ref"><a href="https://www.palantir.com/offerings/supply-chain/&gt;" target="_blank" rel="noopener noreferrer" title="Supply Chain Solutions – Palantir Foundry. &lt;">[10]</a></sup>。</li>
+</ul>
+</li>
+</ul>
+<p><strong>小结</strong>：</p>
+<ul>
+<li>“先把异常处理、客服、报告这些高频任务自动化”：倾向 <strong>Anthropic/OpenAI</strong>，其中 <strong>Anthropic</strong> 在企业控制与合规上更强；</li>
+<li>“要从全链路层面重构运营决策”：需要 <strong>Palantir</strong> 这样的数据与决策平台。</li>
+</ul>
+</div></div>
+<div class="section" id="43-计划与优化需求预测补货网络设计"><div class="section-header"><span class="chip">9</span>4.3 计划与优化：需求预测、补货、网络设计</div><div class="section-body">
+<ul>
+<li><p><strong>Anthropic</strong>：</p>
+<ul>
+<li>Arahi AI 用 Claude 构建“库存补货 Agent”，连接 NetSuite、SAP、各类 WMS/电商平台，每晚扫描库存和历史销售，生成补货建议单及原因，并写回台账<sup class="cite-ref"><a href="https://www.sohu.com/a/989726270_121124363&gt;" target="_blank" rel="noopener noreferrer" title="Claude Code one-year anniversary: Agentic AI infrastructure &amp; standardization. &lt;">[15]</a></sup>；</li>
+<li>供应链网络优化案例：Claude 作为“解释器”和“场景编排者”，背后调用混合整数规划（MIP）求解器，为多工厂多市场网络做成本/碳排平衡优化，然后输出可读策略和可视化说明<sup class="cite-ref"><a href="https://medium.com/data-science-collective/how-i-deployed-an-ai-agent-for-sustainable-supply-chain-optimisation-c8b2e0fbf6c3&gt;" target="_blank" rel="noopener noreferrer" title="Sustainable Supply Chain Optimisation Agent. &lt;">[5]</a></sup><sup class="cite-ref"><a href="https://mcpmarket.com/tools/skills/sustainable-supply-chain-analysis&gt;" target="_blank" rel="noopener noreferrer" title="Sustainable Supply Chain Analysis Claude Code Skill. &lt;">[17]</a></sup>。</li>
+<li>本质：<strong>Claude 不是预测/优化模型本身，而是调度现有模型+解释结果</strong>。</li>
+</ul>
+</li>
+<li><p><strong>OpenAI</strong>：</p>
+<ul>
+<li>可以做类似的“预测+解释”组合，但在长上下文、解释链路上略逊于 Claude；</li>
+<li>优点在于开发生态更多工具和示例，可快速试验不同 Agent 架构。</li>
+</ul>
+</li>
+<li><p><strong>Palantir</strong>：</p>
+<ul>
+<li>Foundry 自带大量统计分析与机器学习组件，AIP 里也可以挂接 LLM 和优化引擎；</li>
+<li>多个公开案例强调：<ul>
+<li>使用 ERP 数据和运营数据，在 Foundry 上搭建 <strong>跨工厂、跨渠道的需求与生产优化应用</strong>，在 6 个月内实现 5–10x ROI、最高 70% 操作成本降低<sup class="cite-ref"><a href="https://medium.com/data-science-collective/how-i-deployed-an-ai-agent-for-sustainable-supply-chain-optimisation-c8b2e0fbf6c3&gt;" target="_blank" rel="noopener noreferrer" title="Sustainable Supply Chain Optimisation Agent. &lt;">[5]</a></sup><sup class="cite-ref"><a href="https://www.objectedge.com/blog/palantir-for-demand-planning-transforming-supply-chain-management&gt;" target="_blank" rel="noopener noreferrer" title="Palantir for Demand Planning: Transforming Supply Chain Management. &lt;">[9]</a></sup>。</li>
+</ul>
+</li>
+<li>本质：<strong>Palantir 是解决“从数据到业务决策落地”全链路的主力；LLM 是其中一个“智能模块”</strong>。</li>
+</ul>
+</li>
+</ul>
+<p><strong>小结</strong>：</p>
+<ul>
+<li>若已有内部数据科学/OR 团队和预测模型，想增强“解释+交互+自动化执行”：优先 <strong>Anthropic/OpenAI</strong>；</li>
+<li>若缺乏统一数据平台与算法基础，希望“一套系统解决数据集成+预测+优化+可视化”：倾向 <strong>Palantir</strong>。</li>
+</ul>
+</div></div>
+<div class="section" id="44-it系统层改造-erpwmstms构建-ai-中台"><div class="section-header"><span class="chip">10</span>4.4 IT/系统层：改造 ERP/WMS/TMS、构建 AI 中台</div><div class="section-body">
+<ul>
+<li><p><strong>Anthropic</strong>（Claude Code 是关键）：</p>
+<ul>
+<li>真实案例显示：<ul>
+<li>工业 OEM 用 Claude Code 迁移约 <strong>240 万行 COBOL</strong> 的旧 MES 系统，迁移速度达到传统人工的 10 倍<sup class="cite-ref"><a href="https://aws.amazon.com/blogs/china/claude-code-open-source-model-enterprise-practice/&gt;" target="_blank" rel="noopener noreferrer" title="Claude Code open-source model enterprise practice – AWS Blog. &lt;">[14]</a></sup><sup class="cite-ref"><a href="https://www.sohu.com/a/989726270_121124363&gt;" target="_blank" rel="noopener noreferrer" title="Claude Code one-year anniversary: Agentic AI infrastructure &amp; standardization. &lt;">[15]</a></sup>；</li>
+<li>Tier1 汽车供应商在全工程团队部署 Claude Code，代码审查吞吐提升 3.2 倍，1 个月内完成推广<sup class="cite-ref"><a href="https://www.sohu.com/a/989726270_121124363&gt;" target="_blank" rel="noopener noreferrer" title="Claude Code one-year anniversary: Agentic AI infrastructure &amp; standardization. &lt;">[15]</a></sup>。</li>
+</ul>
+</li>
+<li>对供应链而言：<ul>
+<li>可用于读懂旧 WMS/TMS/产线系统、写脚本、开发 API、构建 MCP Server，把旧系统挂接到新 AI 中台。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>OpenAI</strong>：</p>
+<ul>
+<li>GPT-5.5/Codex 在代码生成上的原始能力非常强，token 效率高，适合新项目开发与快速原型<sup class="cite-ref"><a href="https://www.datacamp.com/blog/gpt-5-5-vs-claude-opus-4-7&gt;" target="_blank" rel="noopener noreferrer" title="GPT‑5.5 vs Claude Opus 4.7 – DataCamp. &lt;">[37]</a></sup><sup class="cite-ref"><a href="https://www.finout.io/blog/openai-vs-anthropic-api-pricing-comparison&gt;" target="_blank" rel="noopener noreferrer" title="OpenAI vs Anthropic API Pricing Comparison (2026). &lt;">[45]</a></sup>；</li>
+<li>但在“读超大代码仓+跨多文件重构”上，开发者反馈往往更偏向 Claude Code<sup class="cite-ref"><a href="https://www.datacamp.com/blog/gpt-5-5-vs-claude-opus-4-7&gt;" target="_blank" rel="noopener noreferrer" title="GPT‑5.5 vs Claude Opus 4.7 – DataCamp. &lt;">[37]</a></sup><sup class="cite-ref"><a href="https://www.anthropic.com/news/claude-opus-4-7&gt;" target="_blank" rel="noopener noreferrer" title="Introducing Claude Opus 4.7 – Anthropic. &lt;">[40]</a></sup><sup class="cite-ref"><a href="https://electroiq.com/stats/openai-vs-anthropic-statistics/&gt;" target="_blank" rel="noopener noreferrer" title="OpenAI Vs. Anthropic Statistics 2026. &lt;">[46]</a></sup>。</li>
+</ul>
+</li>
+<li><p><strong>Palantir</strong>：</p>
+<ul>
+<li>不直接重写你现有系统代码，而是在其之上构建新的数据与应用层；</li>
+<li>会接入 ERP/WMS/TMS 等系统的数据，作为“上层操作系统”，而非替换底层业务系统。</li>
+</ul>
+</li>
+</ul>
+<p><strong>小结</strong>：</p>
+<ul>
+<li>若你痛点在于 <strong>旧系统难维护/难集成</strong>：应优先上 <strong>Claude Code（Anthropic）</strong>；</li>
+<li>若你痛点在于 <strong>系统之间数据不贯通</strong>：应考虑 <strong>Palantir</strong> 搭建上层数据与分析平台。</li>
+</ul>
+<hr>
+<h1>五、整体优势与适用场景对比</h1>
+</div></div>
+<div class="section" id="51-高层总结表"><div class="section-header"><span class="chip">11</span>5.1 高层总结表</div><div class="section-body">
+<div class="table-wrap"><table>
+<thead>
+<tr>
+  <th>维度</th>
+  <th>Anthropic</th>
+  <th>OpenAI</th>
+  <th>Palantir</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>核心定位</td>
+  <td>安全优先的企业级模型与 AI 平台</td>
+  <td>面向大众和开发者的通用 AI 引擎</td>
+  <td>数据+决策操作系统（含 AI）</td>
+</tr>
+<tr>
+  <td>技术护城河</td>
+  <td>Constitutional AI、安全与长上下文，Claude Code</td>
+  <td>GPT 系列能力、ChatGPT 生态、Microsoft 绑定</td>
+  <td>Foundry/AIP 的数据治理和行业模板</td>
+</tr>
+<tr>
+  <td>对供应链的直接能力</td>
+  <td>文档智能、异常处理 Agent、智能补货/解释、IT 重构</td>
+  <td>对外产品、客服、创意内容、快速原型</td>
+  <td>端到端供应链可视化、需求/生产/库存联合优化</td>
+</tr>
+<tr>
+  <td>上线门槛</td>
+  <td>中（需一定工程团队）</td>
+  <td>中（尤其 Azure 生态企业较低）</td>
+  <td>高（项目制、长周期、昂贵）</td>
+</tr>
+<tr>
+  <td>合规与安全</td>
+  <td>架构级重视，PBC + LTBT 加固</td>
+  <td>策略控制为主，PBC 但偏商业化</td>
+  <td>政府级安全标准，数据治理极强</td>
+</tr>
+<tr>
+  <td>典型适合企业</td>
+  <td>受监管、技术团队强的制造/供应链企业</td>
+  <td>Microsoft 生态、需要面向客户/SaaS 产品的公司</td>
+  <td>大制造、能源、3PL、政府等复杂供应链巨头</td>
+</tr>
+</tbody>
+</table></div>
+<hr>
+<h1>六、针对企业/供应链决策者的可操作建议</h1>
+<p>假设你是 <strong>中大型供应链/制造/零售企业的 CIO/供应链负责人</strong>，如何在三者之间做选择或组合？</p>
+</div></div>
+<div class="section" id="61-不要单押建议的主辅组合思路"><div class="section-header"><span class="chip">12</span>6.1 不要单押：建议的“主辅组合”思路</div><div class="section-body">
+<ol>
+<li><strong>数据和决策难题特别大</strong>（多工厂、多国家、多系统）：<ul>
+<li>预算充足、愿意做 2–3 年转型项目：<ul>
+<li>以 <strong>Palantir Foundry/AIP</strong> 为底座，负责数据统一与决策应用；</li>
+<li>在 AIP 里集成 <strong>Anthropic Claude</strong>（处理文档、解释结果、生成报告）和必要的 GPT 模型（对外交互/创意内容）。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>已经有较好数据仓库/数据平台，只缺“AI 层”</strong>：<ul>
+<li>治理与合规压力大（跨境贸易、医药、金融供应链等）：<ul>
+<li>以 <strong>Anthropic（Claude Enterprise + API + Claude Code）</strong> 为主；</li>
+</ul>
+</li>
+<li>已高度微软化（Azure + M365 + Dynamics）：<ul>
+<li>以 <strong>OpenAI（GPT-5.x/4o + ChatGPT Enterprise/Copilot）</strong> 为主，必要时再补充 Claude 做长文档与 Coding。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>预算有限，希望 3–6 个月内看到业务 ROI</strong>：<ul>
+<li>先用 <strong>Claude / GPT</strong> 在以下 1–2 个点做试点：<ul>
+<li>工单异常处理 + 客诉邮件；</li>
+<li>RFI/RFQ 对比 + 合同审查；</li>
+<li>清关文档/结算单多文档校验。</li>
+</ul>
+</li>
+<li>成功后再考虑是否引入像 Palantir 这样的重量级平台。</li>
+</ul>
+</li>
+</ol>
+</div></div>
+<div class="section" id="62-结合你之前的关注点anthropic-研究--claude-vs-openai"><div class="section-header"><span class="chip">13</span>6.2 结合你之前的关注点（Anthropic 研究 + Claude vs OpenAI）</div><div class="section-body">
+<p>综合你前面反复提到的需求（深度研究 Anthropic、对比 OpenAI、关注供应链与 B 端产品），可以给出一个更“偏向性”的结论：</p>
+<ol>
+<li><p><strong>如果只能选一个作为“核心 AI 合作伙伴”</strong>：</p>
+<ul>
+<li>在 <strong>供应链/制造/跨境企业</strong> 场景下，我会建议：<blockquote>
+<p><strong>首选 Anthropic（Claude）</strong> 作为主力模型和企业 AI 能力底座，<br>
+在特定对外产品/快速创新场景下再补充 OpenAI，<br>
+如有重资产、巨复杂数据时，再引入 Palantir 作为数据与决策平台。</p>
+</blockquote>
+</li>
+</ul>
+</li>
+<li><p><strong>如果要做 3 年级别的“供应链智能化升级蓝图”</strong>：</p>
+<ul>
+<li>技术架构可以考虑：<ul>
+<li>底层：现有 ERP/WMS/TMS +（可选）Palantir Foundry 或自建数据平台；</li>
+<li>中间层：MCP/中间件 + Claude Code 支撑的 IT/开发团队；</li>
+<li>上层：Claude Cowork / Managed Agents / ChatGPT-based 助手，分别服务内部运营与对外客户/供应商。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>与三家供应商的合作策略</strong>：</p>
+<ul>
+<li><strong>合同与治理</strong>：<ul>
+<li>Anthropic、OpenAI 均通过 Enterprise 级别提供“数据不用于训练”等承诺，签约时要明确写入 DPA；</li>
+<li>Palantir 合同更重视数据驻留、行业合规（如国防、医疗），应重点审阅其数据使用和模型责任条款。</li>
+</ul>
+</li>
+<li><strong>技术路线</strong>：<ul>
+<li>内部要有一个“AI 中台/Agent 中台”团队，负责封装对三家供应商的访问，避免直接在业务系统中写死某家 API；</li>
+<li>这样即使未来供应商价格变动或能力差异拉开，你仍可灵活切换模型或增加新供应商。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h1>七、结论：一句话概括三家公司与选型要点</h1>
+<ul>
+<li><p><strong>Anthropic</strong>：</p>
+<blockquote>
+<p>“一个把安全、治理和长上下文做到极致的企业级 AI 基础设施公司，特别适合供应链、金融、医疗等高合规场景。”</p>
+</blockquote>
+</li>
+<li><p><strong>OpenAI</strong>：</p>
+<blockquote>
+<p>“一个以 GPT 和 ChatGPT 为核心的通用 AI 引擎与大众平台，更适合快速创新、对外产品和微软生态深度整合。”</p>
+</blockquote>
+</li>
+<li><p><strong>Palantir</strong>：</p>
+<blockquote>
+<p>“一个以 Foundry 和 AIP 为核心的端到端数据与决策平台，适合复杂、资金充足、愿意做长期数字化转型的大企业和政府。”</p>
+</blockquote>
+</li>
+</ul>
+<p>对一个重供应链的企业而言，<strong>最现实、稳健的策略不是“选谁替代谁”，而是：用 Palantir 或自建数据平台统一数据，用 Anthropic 和 OpenAI 作为上层可插拔的智能引擎</strong>。在这个结构下，你对未来模型格局的变化保持最大弹性。</p>
+<hr>
+</div></div><div class="references-section"><h3>References</h3>
+<p>[1] COMPANY / ANTHROPIC – Company page. <a href="https://www.anthropic.com/company">https://www.anthropic.com/company</a><br>
+[2] Anthropic – Wikipedia. <a href="https://en.wikipedia.org/wiki/Anthropic">https://en.wikipedia.org/wiki/Anthropic</a><br>
+[3] Models overview – Claude API Docs. <a href="https://platform.claude.com/docs/en/about-claude/models/overview">https://platform.claude.com/docs/en/about-claude/models/overview</a><br>
+[4] Anthropic Claude Model Release Timeline. <a href="https://hidekazu-konishi.com/entry/anthropic_claude_model_release_timeline.html">https://hidekazu-konishi.com/entry/anthropic_claude_model_release_timeline.html</a><br>
+[5] Sustainable Supply Chain Optimisation Agent. <a href="https://medium.com/data-science-collective/how-i-deployed-an-ai-agent-for-sustainable-supply-chain-optimisation-c8b2e0fbf6c3">https://medium.com/data-science-collective/how-i-deployed-an-ai-agent-for-sustainable-supply-chain-optimisation-c8b2e0fbf6c3</a><br>
+[6] How Palantir works – Foundry and AIP. <a href="https://www.instinctools.com/blog/how-palantir-works/">https://www.instinctools.com/blog/how-palantir-works/</a><br>
+[7] Anthropic Economic Index report. <a href="https://www.anthropic.com/research/anthropic-economic-index-january-2026-report">https://www.anthropic.com/research/anthropic-economic-index-january-2026-report</a><br>
+[8] OpenAI Statistics 2026. <a href="https://searchlab.nl/en/statistics/openai-statistics-2026">https://searchlab.nl/en/statistics/openai-statistics-2026</a><br>
+[9] Palantir for Demand Planning: Transforming Supply Chain Management. <a href="https://www.objectedge.com/blog/palantir-for-demand-planning-transforming-supply-chain-management">https://www.objectedge.com/blog/palantir-for-demand-planning-transforming-supply-chain-management</a><br>
+[10] Supply Chain Solutions – Palantir Foundry. <a href="https://www.palantir.com/offerings/supply-chain/">https://www.palantir.com/offerings/supply-chain/</a><br>
+[11] Introducing Claude 3.5 Sonnet – Anthropic. <a href="https://www.anthropic.com/news/claude-3-5-sonnet">https://www.anthropic.com/news/claude-3-5-sonnet</a><br>
+[12] Automated Purchase Order Processing with Claude Vision. <a href="https://www.boldare.com/blog/automated-purchase-order-processing-claude-vision-databricks/">https://www.boldare.com/blog/automated-purchase-order-processing-claude-vision-databricks/</a><br>
+[13] Claude AI applications for logistics &amp; supply chain. <a href="https://claudereadiness.com/industries/logistics/">https://claudereadiness.com/industries/logistics/</a><br>
+[14] Claude Code open-source model enterprise practice – AWS Blog. <a href="https://aws.amazon.com/blogs/china/claude-code-open-source-model-enterprise-practice/">https://aws.amazon.com/blogs/china/claude-code-open-source-model-enterprise-practice/</a><br>
+[15] Claude Code one-year anniversary: Agentic AI infrastructure &amp; standardization. <a href="https://www.sohu.com/a/989726270_121124363">https://www.sohu.com/a/989726270_121124363</a><br>
+[16] Anthropic Long-Term Benefit Trust – LongtermWiki. <a href="https://www.longtermwiki.com/wiki/E407">https://www.longtermwiki.com/wiki/E407</a><br>
+[17] Sustainable Supply Chain Analysis Claude Code Skill. <a href="https://mcpmarket.com/tools/skills/sustainable-supply-chain-analysis">https://mcpmarket.com/tools/skills/sustainable-supply-chain-analysis</a><br>
+[18] Anthropic Transparency Hub. <a href="https://www.anthropic.com/transparency">https://www.anthropic.com/transparency</a><br>
+[19] What is Claude Enterprise pricing in 2026? – GoSearch. <a href="https://www.gosearch.ai/faqs/what-is-claude-enterprise-pricing-in-2026/">https://www.gosearch.ai/faqs/what-is-claude-enterprise-pricing-in-2026/</a><br>
+[20] Choose a Claude plan – Claude Help Center. <a href="https://support.claude.com/en/articles/11049762-choose-a-claude-plan">https://support.claude.com/en/articles/11049762-choose-a-claude-plan</a><br>
+[21] Documentation – Claude API Docs. <a href="https://platform.claude.com/docs/en/home">https://platform.claude.com/docs/en/home</a><br>
+[22] Claude Enterprise Guide 2026 – IntuitionLabs. <a href="https://intuitionlabs.ai/articles/claude-enterprise-deployment-training-guide-2026">https://intuitionlabs.ai/articles/claude-enterprise-deployment-training-guide-2026</a><br>
+[23] Claude 4 release – technical specs. <a href="https://www.anthropic.com/news/claude-4">https://www.anthropic.com/news/claude-4</a><br>
+[24] Anthropic Enterprise plans &amp; pricing. <a href="https://www.anthropic.com/enterprise">https://www.anthropic.com/enterprise</a><br>
+[25] Making frontier cybersecurity capabilities available to defenders – Anthropic. <a href="https://www.anthropic.com/news/claude-code-security">https://www.anthropic.com/news/claude-code-security</a><br>
+[26] OpenAI – Wikipedia. <a href="https://en.wikipedia.org/wiki/OpenAI">https://en.wikipedia.org/wiki/OpenAI</a><br>
+[27] A business that scales with the value of intelligence – OpenAI. <a href="https://openai.com/index/a-business-that-scales-with-the-value-of-intelligence/">https://openai.com/index/a-business-that-scales-with-the-value-of-intelligence/</a><br>
+[28] Inside OpenAI’s Plan To Make Money – Forbes. <a href="https://www.forbes.com/sites/the-prompt/2026/01/20/inside-openais-plan-to-make-money/">https://www.forbes.com/sites/the-prompt/2026/01/20/inside-openais-plan-to-make-money/</a><br>
+[29] The next phase of enterprise AI – OpenAI. <a href="https://openai.com/index/next-phase-of-enterprise-ai/">https://openai.com/index/next-phase-of-enterprise-ai/</a><br>
+[30] Enterprise Will Be a Top OpenAI Priority In 2026. <a href="https://www.bigtechnology.com/p/enterprise-will-be-a-top-openai-priority">https://www.bigtechnology.com/p/enterprise-will-be-a-top-openai-priority</a><br>
+[31] Introducing GPT‑5 – OpenAI. <a href="https://openai.com/index/introducing-gpt-5/">https://openai.com/index/introducing-gpt-5/</a><br>
+[32] Everything You Need to Know About GPT‑5.5 – Vellum. <a href="https://www.vellum.ai/blog/everything-you-need-to-know-about-gpt-5-5">https://www.vellum.ai/blog/everything-you-need-to-know-about-gpt-5-5</a><br>
+[33] Claude Enterprise – Anthropic product page. <a href="https://www.anthropic.com/product/enterprise">https://www.anthropic.com/product/enterprise</a><br>
+[34] Evolving OpenAI’s structure. <a href="https://openai.com/index/evolving-our-structure/">https://openai.com/index/evolving-our-structure/</a><br>
+[35] Our structure – OpenAI. <a href="https://openai.com/our-structure/">https://openai.com/our-structure/</a><br>
+[36] Claude vs ChatGPT vs Copilot vs Gemini: 2026 Enterprise Guide. <a href="https://intuitionlabs.ai/articles/claude-vs-chatgpt-vs-copilot-vs-gemini-enterprise-comparison">https://intuitionlabs.ai/articles/claude-vs-chatgpt-vs-copilot-vs-gemini-enterprise-comparison</a><br>
+[37] GPT‑5.5 vs Claude Opus 4.7 – DataCamp. <a href="https://www.datacamp.com/blog/gpt-5-5-vs-claude-opus-4-7">https://www.datacamp.com/blog/gpt-5-5-vs-claude-opus-4-7</a><br>
+[38] GPT‑5.5 vs Claude Opus 4.7 – Lushbinary. <a href="https://lushbinary.com/blog/gpt-5-5-vs-claude-opus-4-7-comparison-benchmarks-pricing/">https://lushbinary.com/blog/gpt-5-5-vs-claude-opus-4-7-comparison-benchmarks-pricing/</a><br>
+[39] MindStudio – GPT‑5.5 vs Claude Opus 4.7 coding comparison. <a href="https://www.mindstudio.ai/blog/gpt-55-vs-claude-opus-47-coding-comparison/">https://www.mindstudio.ai/blog/gpt-55-vs-claude-opus-47-coding-comparison/</a><br>
+[40] Introducing Claude Opus 4.7 – Anthropic. <a href="https://www.anthropic.com/news/claude-opus-4-7">https://www.anthropic.com/news/claude-opus-4-7</a><br>
+[41] Palantir – Wikipedia. <a href="https://en.wikipedia.org/wiki/Palantir">https://en.wikipedia.org/wiki/Palantir</a><br>
+[42] Palantir Technologies – deep company, platform, business model. <a href="https://seat11a.com/blog-palantir-technologies-a-deep-long-form-exploration-of-the-company/">https://seat11a.com/blog-palantir-technologies-a-deep-long-form-exploration-of-the-company/</a><br>
+[43] Palantir Strategy and Business Model – Umbrex. <a href="https://umbrex.com/resources/company-profiles/palantir/">https://umbrex.com/resources/company-profiles/palantir/</a><br>
+[44] Palantir – Q1 2026 Business Update (PDF). <a href="https://investors.palantir.com/files/Palantir%20-%20Q1%202026%20Business%20Update.pdf">https://investors.palantir.com/files/Palantir%20-%20Q1%202026%20Business%20Update.pdf</a><br>
+[45] OpenAI vs Anthropic API Pricing Comparison (2026). <a href="https://www.finout.io/blog/openai-vs-anthropic-api-pricing-comparison">https://www.finout.io/blog/openai-vs-anthropic-api-pricing-comparison</a><br>
+[46] OpenAI Vs. Anthropic Statistics 2026. <a href="https://electroiq.com/stats/openai-vs-anthropic-statistics/">https://electroiq.com/stats/openai-vs-anthropic-statistics/</a><br>
+[47] What Palantir Needs to Prove in 2026 – The Motley Fool. <a href="https://www.fool.com/investing/2026/01/07/what-palantir-needs-to-prove-in-2026/">https://www.fool.com/investing/2026/01/07/what-palantir-needs-to-prove-in-2026/</a></p>
+</div>
+
+  <!-- FOOTER -->
+  <div class="report-footer">
+    <span class="footer-brand">mirothinker</span>
+  </div>
+
+</div>
+</body>
+</html>

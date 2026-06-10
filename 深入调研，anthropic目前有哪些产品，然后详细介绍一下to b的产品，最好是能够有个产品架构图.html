@@ -1,0 +1,812 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>深入调研，anthropic目前有哪些产品，然后详细介绍一下to b的产品，最好是能够有个产品架构图</title>
+<style>
+/* === RESET & BASE === */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { min-height: 100%; }
+body {
+  min-height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 16px;
+  line-height: 1.8;
+  color: #2d2a26;
+  background: #faf7f2;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* subtle dot-grid paper texture */
+body::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  min-height: 100%;
+  background-image: radial-gradient(circle, #d4cfc6 0.5px, transparent 0.5px);
+  background-size: 18px 18px;
+  opacity: 0.18;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.report-wrapper {
+  position: relative;
+  z-index: 2147483647;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px 28px 60px;
+}
+
+/* === HEADER / COVER === */
+.report-header {
+  border: 3px solid #2d2a26;
+  box-shadow: 5px 5px 0 #c9b99a;
+  padding: 36px 32px 28px;
+  margin-bottom: 36px;
+  background: #fff;
+  position: relative;
+}
+
+.report-header h1 {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.3;
+  color: #1a1714;
+  margin-bottom: 10px;
+  letter-spacing: -0.3px;
+}
+
+.report-header .research-question {
+  font-size: 13px;
+  color: #8a7e6e;
+  margin-bottom: 14px;
+  border-left: 3px solid #c9b99a;
+  padding-left: 10px;
+}
+
+.report-meta {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.stamp {
+  display: inline-block;
+  border: 2px solid #b85c38;
+  color: #b85c38;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  letter-spacing: 1.5px;
+  background: #fef6f0;
+}
+
+.stamp.date {
+  border-color: #6b7c5e;
+  color: #6b7c5e;
+  background: #f4f7f0;
+}
+
+/* === SECTIONS === */
+.section {
+  border: 2px solid #e0d8c8;
+  margin-bottom: 24px;
+  background: #fff;
+  box-shadow: 3px 3px 0 #e8e0d0;
+}
+
+.section-header {
+  background: #2d2a26;
+  color: #faf7f2;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-header .chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background: #b85c38;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.section-body {
+  padding: 20px 24px 16px;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* === TYPOGRAPHY === */
+h1, h2, h3, h4, h5, h6 {
+  color: #1a1714;
+  margin-top: 1.2em;
+  margin-bottom: 0.5em;
+  line-height: 1.3;
+}
+h1 { font-size: 24px; font-weight: 800; }
+h2 { font-size: 20px; font-weight: 700; border-bottom: 2px dashed #d4cfc6; padding-bottom: 6px; }
+h3 { font-size: 17px; font-weight: 700; color: #3d3830; }
+h4 { font-size: 15px; font-weight: 600; }
+
+p { margin-bottom: 1em; }
+strong { color: #1a1714; }
+
+::selection {
+  background: rgba(184, 92, 56, 0.15);
+  color: #1a1714;
+}
+
+/* === LINKS === */
+a {
+  color: #b85c38;
+  text-decoration: underline;
+  text-decoration-color: rgba(184, 92, 56, 0.3);
+  text-underline-offset: 2px;
+}
+a:hover {
+  color: #8e3f22;
+  text-decoration-color: #8e3f22;
+}
+
+/* === CITATION SUPERSCRIPTS === */
+sup.cite-ref {
+  font-size: 0.75em;
+  line-height: 0;
+  vertical-align: super;
+}
+sup.cite-ref a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  background: #f0e8d8;
+  border: 1px solid #d4cfc6;
+  color: #b85c38;
+  font-size: 10px;
+  font-weight: 700;
+  text-decoration: none;
+  margin: 0 1px;
+  vertical-align: super;
+}
+sup.cite-ref a:hover {
+  background: #b85c38;
+  color: #fff;
+  border-color: #b85c38;
+}
+
+/* === TABLES === */
+.table-wrap {
+  overflow-x: auto;
+  margin: 16px 0;
+  border: 2px solid #d4cfc6;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+thead {
+  background: #f0ebe0;
+}
+th {
+  text-align: left;
+  font-weight: 700;
+  padding: 8px 12px;
+  border-bottom: 2px solid #c9b99a;
+  color: #1a1714;
+  white-space: nowrap;
+}
+td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #e8e0d0;
+  vertical-align: top;
+}
+tr:hover td {
+  background: #faf5eb;
+}
+
+/* === LISTS === */
+ul, ol {
+  margin: 0.5em 0 0.8em;
+  padding-left: 1.6em;
+}
+li {
+  margin-bottom: 0.4em;
+}
+li > ul, li > ol {
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;
+}
+
+/* === BLOCKQUOTES === */
+blockquote {
+  border-left: 4px solid #c9b99a;
+  background: #fef9f0;
+  padding: 14px 18px;
+  margin: 14px 0;
+  color: #5a5347;
+  font-size: 0.95em;
+}
+blockquote p:last-child { margin-bottom: 0; }
+
+/* === CODE === */
+code {
+  background: #f5f0e6;
+  border: 1px solid #e0d8c8;
+  padding: 1px 5px;
+  font-size: 0.88em;
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+  color: #6b4226;
+}
+pre {
+  background: #faf5eb;
+  border: 2px solid #e0d8c8;
+  padding: 14px 16px;
+  overflow-x: auto;
+  margin: 12px 0;
+  font-size: 13px;
+}
+pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+/* === IMAGES === */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* === HORIZONTAL RULE === */
+hr {
+  border: none;
+  border-top: 3px dashed #d4cfc6;
+  margin: 28px 0;
+}
+
+/* === FOOTER === */
+.report-footer {
+  text-align: center;
+  padding: 20px 0;
+  margin-top: 40px;
+  border-top: 2px solid #e0d8c8;
+}
+.report-footer .footer-brand {
+  display: inline-block;
+  border: 2px solid #c9b99a;
+  padding: 4px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #8a7e6e;
+  text-transform: lowercase;
+}
+
+/* === REFERENCE LIST at bottom === */
+.references-section {
+  margin-top: 28px;
+  padding: 20px;
+  border: 2px dashed #d4cfc6;
+  background: #fef9f0;
+}
+.references-section h2,
+.references-section h3 {
+  font-size: 16px;
+  border-bottom: none;
+  margin-top: 0;
+}
+.references-section p {
+  font-size: 13px;
+  line-height: 1.6;
+  word-break: break-all;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 640px) {
+  body { font-size: 15px; line-height: 1.75; }
+  .report-wrapper { padding: 12px 10px 32px; }
+  .report-header {
+    padding: 18px 14px;
+    box-shadow: 3px 3px 0 #c9b99a;
+  }
+  .report-header h1 { font-size: 19px; }
+  .report-meta { gap: 8px; }
+  .stamp { font-size: 9px; padding: 2px 8px; }
+  .section { margin-bottom: 16px; }
+  .section-header { font-size: 13px; padding: 7px 12px; }
+  .section-body { padding: 14px 12px; }
+  h2 { font-size: 17px; }
+  h3 { font-size: 15px; }
+  blockquote { padding: 10px 12px; margin: 8px 0; }
+  pre { padding: 10px 12px; font-size: 12px; }
+  table { font-size: 12px; }
+  th, td { padding: 6px 8px; }
+  .references-section { padding: 14px; }
+  sup.cite-ref a { min-width: 16px; height: 16px; font-size: 9px; }
+  img { max-width: 100%; height: auto; }
+}
+
+/* === PRINT === */
+@media print {
+  body { background: #fff; font-size: 12px; }
+  body::before { display: none; }
+  .report-wrapper { max-width: 100%; padding: 0; }
+  .report-header { box-shadow: none; border-width: 1px; }
+  .section { box-shadow: none; border-width: 1px; page-break-inside: avoid; }
+  sup.cite-ref a { background: transparent; border: 1px solid #999; }
+  a { color: #333; }
+}
+</style>
+</head>
+<body>
+<div class="report-wrapper">
+
+  <!-- HEADER -->
+  <div class="report-header">
+    <h1>深入调研，anthropic目前有哪些产品，然后详细介绍一下to b的产品，最好是能够有个产品架构图</h1>
+    <div class="research-question">Research question: 深入调研，anthropic目前有哪些产品，然后详细介绍一下to b的产品，最好是能够有个产品架构图</div>
+    <div class="report-meta">
+      <span class="stamp">Generated by MiroThinker</span>
+      <span class="stamp date">2026-06-09</span>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <p>下面的回答基于你给出的对话历史与已检索到的公开资料，在 2026 年语境下梳理 <strong>Anthropic / Claude 的完整产品谱系</strong>，然后重点展开 <strong>To B（企业级）产品</strong>，并给出一个尽量接近官方视角的 <strong>产品架构图（文本版）</strong>，方便你用于内部沟通或方案汇报。</p>
+<hr>
+
+<div class="section" id="一anthropic--claude-产品总体盘点2026"><div class="section-header"><span class="chip">1</span>一、Anthropic / Claude 产品总体盘点（2026）</div><div class="section-body">
+<p>可以把 Anthropic 的产品看成四层：<strong>模型层 → 平台与接口层 → 终端与工具层 → 订阅/商业包装层</strong>。围绕这四层，再叠加一些面向特定细分的解决方案（如 Small Business）。</p>
+<h3 id="1-模型层model-layer">1. 模型层（Model Layer）</h3>
+<p>核心是 Claude 4.x 族系（2026 上半年）<sup class="cite-ref"><a href="https://en.wikipedia.org/wiki/Claude_(language_model)&gt;" target="_blank" rel="noopener noreferrer" title="Claude (language model) – Wikipedia. &lt;">[2]</a></sup><sup class="cite-ref"><a href="https://platform.claude.com/docs/en/about-claude/models/overview&gt;" target="_blank" rel="noopener noreferrer" title="Models overview – Claude API Docs. &lt;">[3]</a></sup>：</p>
+<ul>
+<li><p><strong>Claude Opus 4.6 / 4.7 / 4.8</strong></p>
+<ul>
+<li>定位：旗舰模型，面向复杂推理、长链路 Agent、复杂编码与企业级知识工作。</li>
+<li>能力点：<ul>
+<li>高难推理、数学证明、系统架构设计、复杂多步骤规划<sup class="cite-ref"><a href="https://en.wikipedia.org/wiki/Claude_(language_model)&gt;" target="_blank" rel="noopener noreferrer" title="Claude (language model) – Wikipedia. &lt;">[2]</a></sup>。</li>
+<li>4.8 在推理、编码与“动态工作流”方面进一步增强，引入更强的 agentic 能力（Dynamic Workflows）<sup class="cite-ref"><a href="https://support.claude.com/en/articles/12138966-release-notes&gt;" target="_blank" rel="noopener noreferrer" title="Release notes | Claude Help Center. &lt;">[1]</a></sup><sup class="cite-ref"><a href="https://www.anthropic.com/news/claude-opus-4-8&gt;" target="_blank" rel="noopener noreferrer" title="Introducing Claude Opus 4.8 – Anthropic. &lt;">[7]</a></sup>。</li>
+<li>支持最高 1M tokens 上下文（beta），适合整库代码、长文档与多源数据场景<sup class="cite-ref"><a href="https://support.claude.com/en/articles/12138966-release-notes&gt;" target="_blank" rel="noopener noreferrer" title="Release notes | Claude Help Center. &lt;">[1]</a></sup><sup class="cite-ref"><a href="https://hidekazu-konishi.com/entry/anthropic_claude_model_release_timeline.html&gt;" target="_blank" rel="noopener noreferrer" title="Anthropic Claude Model Release Timeline. &lt;">[5]</a></sup>。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>Claude Sonnet 4.x 系列</strong></p>
+<ul>
+<li>定位：性价比主力模型，日常企业工作负载主力。</li>
+<li>能力点：推理与编码能力接近 Opus，但成本和时延更低，在多数企业应用中是更优解<sup class="cite-ref"><a href="https://platform.claude.com/docs/en/about-claude/models/overview&gt;" target="_blank" rel="noopener noreferrer" title="Models overview – Claude API Docs. &lt;">[3]</a></sup><sup class="cite-ref"><a href="https://hidekazu-konishi.com/entry/anthropic_claude_model_release_timeline.html&gt;" target="_blank" rel="noopener noreferrer" title="Anthropic Claude Model Release Timeline. &lt;">[5]</a></sup>。</li>
+</ul>
+</li>
+<li><p><strong>Claude Haiku 4.x 系列</strong></p>
+<ul>
+<li>定位：轻量高速，适合高 QPS、响应延迟敏感场景（对话中台、小工具等）<sup class="cite-ref"><a href="https://platform.claude.com/docs/en/about-claude/models/overview&gt;" target="_blank" rel="noopener noreferrer" title="Models overview – Claude API Docs. &lt;">[3]</a></sup>。</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>总结：<strong>Anthropic 的“产品树根”其实就这三类模型：Opus / Sonnet / Haiku</strong>。所有 B 端产品，最终都要落到对这些模型的调用和编排上。</p>
+</blockquote>
+<hr>
+<h3 id="2-平台与接口层platform--interfaces">2. 平台与接口层（Platform &amp; Interfaces）</h3>
+<p>这层是 To B 非常关键的“基础设施”。</p>
+<ol>
+<li><p><strong>Claude API / Claude Developer Platform</strong></p>
+<ul>
+<li>提供标准 REST / SDK 接口调用 Claude 模型<sup class="cite-ref"><a href="https://platform.claude.com/docs/en/about-claude/models/overview&gt;" target="_blank" rel="noopener noreferrer" title="Models overview – Claude API Docs. &lt;">[3]</a></sup><sup class="cite-ref"><a href="https://platform.claude.com/docs/en/home&gt;" target="_blank" rel="noopener noreferrer" title="Documentation – Claude API Docs. &lt;">[21]</a></sup>。</li>
+<li>支持：<ul>
+<li>Messages API（对话/补全）</li>
+<li>Batch API（离线大批量任务）</li>
+<li>Prompt Caching（提示缓存降本）</li>
+<li>Compaction / token 管理工具（自动摘要和上下文裁剪）等<sup class="cite-ref"><a href="https://platform.claude.com/docs/en/home&gt;" target="_blank" rel="noopener noreferrer" title="Documentation – Claude API Docs. &lt;">[21]</a></sup>。</li>
+</ul>
+</li>
+<li>可在 <strong>Anthropic 自有云</strong> 或第三方云（AWS Bedrock、Google Gemini Enterprise Agent Platform / Vertex AI、Microsoft Foundry 等）上使用<sup class="cite-ref"><a href="https://hidekazu-konishi.com/entry/anthropic_claude_model_release_timeline.html&gt;" target="_blank" rel="noopener noreferrer" title="Anthropic Claude Model Release Timeline. &lt;">[5]</a></sup><sup class="cite-ref"><a href="https://www.anthropic.com/product/claude-code&gt;" target="_blank" rel="noopener noreferrer" title="Claude Code | Anthropic&#x27;s agentic coding system. &lt;">[6]</a></sup><sup class="cite-ref"><a href="https://linas.substack.com/p/anthropic-claude-2026-every-launch-guide&gt;" target="_blank" rel="noopener noreferrer" title="Anthropic 2026: Every Claude Model, Agent &amp; Tool. &lt;">[18]</a></sup>。</li>
+</ul>
+</li>
+<li><p><strong>Model Context Protocol（MCP）</strong></p>
+<ul>
+<li>Anthropic 提出的开放标准，用于把 LLM 与外部数据源、工具、SaaS API 做标准化连接<sup class="cite-ref"><a href="https://www.anthropic.com/news/model-context-protocol&gt;" target="_blank" rel="noopener noreferrer" title="Introducing the Model Context Protocol – Anthropic. &lt;">[8]</a></sup>。</li>
+<li>功能：<ul>
+<li>定义统一协议，让 Claude 能“安全地”访问数据库、HTTP API、本地文件、SaaS（如 Jira、Salesforce、Figma）等<sup class="cite-ref"><a href="https://www.anthropic.com/news/model-context-protocol&gt;" target="_blank" rel="noopener noreferrer" title="Introducing the Model Context Protocol – Anthropic. &lt;">[8]</a></sup>。</li>
+<li>现在已经被捐赠给 Linux Foundation 下的 Agentic AI Foundation，成为行业通用标准之一<sup class="cite-ref"><a href="https://www.anthropic.com/news/model-context-protocol&gt;" target="_blank" rel="noopener noreferrer" title="Introducing the Model Context Protocol – Anthropic. &lt;">[8]</a></sup>。</li>
+</ul>
+</li>
+<li>对企业意义：<ul>
+<li>让 Claude 作为“智能体中枢”时，可以更容易、安全地挂接到你现有 IT / 数据 / 业务系统。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>Claude Managed Agents（托管智能体平台）</strong></p>
+<ul>
+<li>2026 年 4 月发布的 <strong>Managed Agents</strong> 是专门为企业级 AI Agent 场景做的托管运行时<sup class="cite-ref"><a href="https://platform.claude.com/docs/en/managed-agents/overview&gt;" target="_blank" rel="noopener noreferrer" title="Claude Managed Agents overview – Claude API Docs. &lt;">[9]</a></sup>。</li>
+<li>核心卖点：<ul>
+<li>提供“一套托管 Agent Harness + 托管基础设施”：你只负责写 Agent 逻辑与工具列表，Anthropic 负责会话循环、长时间运行、状态管理、崩溃恢复、并发、扩缩容等<sup class="cite-ref"><a href="https://platform.claude.com/docs/en/managed-agents/overview&gt;" target="_blank" rel="noopener noreferrer" title="Claude Managed Agents overview – Claude API Docs. &lt;">[9]</a></sup>。</li>
+<li>典型计费：约 <strong>$0.08 / session-hour</strong>，另按模型 token 收费<sup class="cite-ref"><a href="https://platform.claude.com/docs/en/managed-agents/overview&gt;" target="_blank" rel="noopener noreferrer" title="Claude Managed Agents overview – Claude API Docs. &lt;">[9]</a></sup>。</li>
+</ul>
+</li>
+<li>对比“自己起一堆容器跑 Agent”：<ul>
+<li>你不再需要 DevOps 团队去维护长时间跑的 agent 服务，极大降低企业落地门槛。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h3 id="3-终端与工具层apps--tools">3. 终端与工具层（Apps &amp; Tools）</h3>
+<p>这一层是用户直接接触的“产品界面”，包含 Web、桌面端、IDE 插件等。</p>
+<ol>
+<li><p><strong>claude.ai（Web 应用）</strong></p>
+<ul>
+<li>面向个人与团队的 Web 聊天与协作环境。</li>
+<li>核心功能：<ul>
+<li>Chat + Projects（项目空间）</li>
+<li>Artifacts（结构化输出：代码片段、图表、页面等）</li>
+<li>File upload / 多文件分析</li>
+<li>Memory（持久记忆）等<sup class="cite-ref"><a href="https://platform.claude.com/docs/en/home&gt;" target="_blank" rel="noopener noreferrer" title="Documentation – Claude API Docs. &lt;">[21]</a></sup>。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>Claude Desktop / Claude Cowork</strong></p>
+<ul>
+<li><strong>Claude Cowork</strong>：2026 年 1 月发布的桌面“协作模式”[Cowork]。</li>
+<li>特点：<ul>
+<li>运行在本地桌面应用中，可读写本地文件、创建文档、生成表格、管理项目等。</li>
+<li>支持 <strong>Connectors / Plugins / Scheduled Tasks / Dispatch / Computer Use</strong> 等高级能力：<ul>
+<li>例如：定时任务、自动执行多步工作流；直接控制浏览器、Office、Slack 等<sup class="cite-ref"><a href="https://platform.claude.com/docs/en/home&gt;" target="_blank" rel="noopener noreferrer" title="Documentation – Claude API Docs. &lt;">[21]</a></sup>。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>定位：不是简单的聊天窗，而是“桌面上的数字同事”（knowledge worker agent）。</li>
+</ul>
+</li>
+<li><p><strong>Claude Code（Agentic Coding System）</strong></p>
+<ul>
+<li>终端与 IDE 原生编程助手<sup class="cite-ref"><a href="https://www.anthropic.com/product/claude-code&gt;" target="_blank" rel="noopener noreferrer" title="Claude Code | Anthropic&#x27;s agentic coding system. &lt;">[6]</a></sup><sup class="cite-ref"><a href="https://arxiv.org/html/2604.14228v1&gt;" target="_blank" rel="noopener noreferrer" title="Dive into Claude Code: The Design Space of Today&#x27;s and Future AI Agents. &lt;">[17]</a></sup>。</li>
+<li>核心能力：<ul>
+<li>读取大规模代码仓，理解架构；</li>
+<li>批量改动多文件、生成/重构代码、写测试、跑命令、操作 Git<sup class="cite-ref"><a href="https://www.anthropic.com/product/claude-code&gt;" target="_blank" rel="noopener noreferrer" title="Claude Code | Anthropic&#x27;s agentic coding system. &lt;">[6]</a></sup><sup class="cite-ref"><a href="https://arxiv.org/html/2604.14228v1&gt;" target="_blank" rel="noopener noreferrer" title="Dive into Claude Code: The Design Space of Today&#x27;s and Future AI Agents. &lt;">[17]</a></sup>；</li>
+<li>有完整的多层架构（六层上下文 / 工具治理 / UI / 扩展织物 / 记忆恢复等）<sup class="cite-ref"><a href="https://hidekazu-konishi.com/entry/claude_code_features_settings_reference_2026.html&gt;" target="_blank" rel="noopener noreferrer" title="Claude Code Features and Settings Reference 2026. &lt;">[16]</a></sup>。</li>
+</ul>
+</li>
+<li>部署形态：<ul>
+<li>CLI 工具（本地终端），支持 Pro / Max / Team / Enterprise 等账号；</li>
+<li>深度集成 VS Code、JetBrains、GitHub 等；</li>
+<li>在企业环境中，可以通过 <strong>Claude Code Enterprise 部署模式</strong> + API 网关接自建开源模型，实现“Claude + 自建模型”的混合架构<sup class="cite-ref"><a href="https://aws.amazon.com/blogs/china/claude-code-open-source-model-enterprise-practice/&gt;" target="_blank" rel="noopener noreferrer" title="Claude Code open-source model enterprise practice – AWS Blog. &lt;">[14]</a></sup>。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>Claude Design（Anthropic Labs 产品）</strong></p>
+<ul>
+<li>2026 年 4 月推出的新产品，面向视觉设计与原型制作<sup class="cite-ref"><a href="https://www.anthropic.com/news/claude-design-anthropic-labs&gt;" target="_blank" rel="noopener noreferrer" title="Introducing Claude Design by Anthropic Labs. &lt;">[11]</a></sup><sup class="cite-ref"><a href="https://agence-scroll.com/en/blog/claude-design-anthropic-2026-guide&gt;" target="_blank" rel="noopener noreferrer" title="Claude Design (Anthropic): The Complete 2026 Guide – Agence Scroll. &lt;">[12]</a></sup><sup class="cite-ref"><a href="https://support.claude.com/en/articles/14604406-claude-design-admin-guide-for-team-and-enterprise-plans&gt;" target="_blank" rel="noopener noreferrer" title="Claude Design admin guide for Team and Enterprise plans – Claude Help Center. &lt;">[13]</a></sup>。</li>
+<li>能力：<ul>
+<li>从文字 prompt 生成交互式原型、演示文稿（Slides）、落地页、UI 线框图；</li>
+<li>与代码仓和设计文件结合，在 onboarding 时自动学习团队 Design System（组件、tokens、交互规范），之后按品牌规范出图<sup class="cite-ref"><a href="https://www.anthropic.com/news/claude-design-anthropic-labs&gt;" target="_blank" rel="noopener noreferrer" title="Introducing Claude Design by Anthropic Labs. &lt;">[11]</a></sup><sup class="cite-ref"><a href="https://support.claude.com/en/articles/14604406-claude-design-admin-guide-for-team-and-enterprise-plans&gt;" target="_blank" rel="noopener noreferrer" title="Claude Design admin guide for Team and Enterprise plans – Claude Help Center. &lt;">[13]</a></sup>。</li>
+</ul>
+</li>
+<li>面向：Product / Design / Marketing 团队，用于品牌一致的视觉输出。</li>
+</ul>
+</li>
+<li><p><strong>Claude for Small Business</strong></p>
+<ul>
+<li>面向中小企业的预配置方案<sup class="cite-ref"><a href="https://www.anthropic.com/news/claude-for-small-business&gt;" target="_blank" rel="noopener noreferrer" title="Introducing Claude for Small Business – Anthropic. &lt;">[19]</a></sup>：<ul>
+<li>自带 15 个预置工作流，覆盖财务、运营、销售、市场、HR、客服等；</li>
+<li>深度集成 QuickBooks、PayPal、HubSpot、Canva、Google Workspace、Microsoft 365 等 7+ 主流 SaaS<sup class="cite-ref"><a href="https://www.anthropic.com/news/claude-for-small-business&gt;" target="_blank" rel="noopener noreferrer" title="Introducing Claude for Small Business – Anthropic. &lt;">[19]</a></sup>。</li>
+</ul>
+</li>
+<li>形式：以 <strong>Cowork 插件 / 连接器 + 预置 Skills / 工作流</strong> 形式出现，用户只需在已有 SaaS 中“打开 Claude 开关”即可。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h3 id="4-订阅与商业包装层plans--packaging">4. 订阅与商业包装层（Plans &amp; Packaging）</h3>
+<p>这一层是你从“买工具”和“签企业协议”的角度看 Claude 的方式。</p>
+<p>主线订阅产品线大致为<sup class="cite-ref"><a href="https://support.claude.com/en/articles/11049762-choose-a-claude-plan&gt;" target="_blank" rel="noopener noreferrer" title="Choose a Claude plan – Claude Help Center. &lt;">[20]</a></sup><sup class="cite-ref"><a href="https://www.finout.io/blog/claude-pricing-in-2026-for-individuals-organizations-and-developers&gt;" target="_blank" rel="noopener noreferrer" title="Claude Pricing in 2026 for Individuals, Organizations, and Developers. &lt;">[22]</a></sup>：</p>
+<ul>
+<li><strong>Free</strong>：有限额度、仅 Web，适合个人体验；</li>
+<li><strong>Pro（$20 / 月）</strong>：个人高频使用者，更多用量和更强模型访问；</li>
+<li><strong>Max（$100–$200 / 月）</strong>：超高用量及更多高级特性（如更高速/更多上下文）；</li>
+<li><strong>Team（约 $25–$30 / 人 / 月）</strong>：小团队 / 中小企业共享空间 + 管理功能；</li>
+<li><strong>Enterprise（自定义报价，通常起步 $20–$60 / 人 / 月，使用量单独计费）</strong><sup class="cite-ref"><a href="https://www.finout.io/blog/claude-pricing-in-2026-for-individuals-organizations-and-developers&gt;" target="_blank" rel="noopener noreferrer" title="Claude Pricing in 2026 for Individuals, Organizations, and Developers. &lt;">[22]</a></sup>：<ul>
+<li>提供更大的上下文（如 500K–1M tokens）、扩展安全与合规功能、SCIM、审计日志、Compliance API、区域数据驻留等<sup class="cite-ref"><a href="https://support.claude.com/en/articles/12138966-release-notes&gt;" target="_blank" rel="noopener noreferrer" title="Release notes | Claude Help Center. &lt;">[1]</a></sup><sup class="cite-ref"><a href="https://support.claude.com/en/articles/11049762-choose-a-claude-plan&gt;" target="_blank" rel="noopener noreferrer" title="Choose a Claude plan – Claude Help Center. &lt;">[20]</a></sup><sup class="cite-ref"><a href="https://tactiq.io/learn/claude-enterprise&gt;" target="_blank" rel="noopener noreferrer" title="What Is Claude Enterprise? Features, Pricing, and Plans – Tactiq. &lt;">[23]</a></sup>。</li>
+</ul>
+</li>
+</ul>
+<p><strong>To B 的重点，就是 Team / Enterprise + API / MCP + Claude Code / Cowork / Managed Agents 这几个组合。</strong></p>
+<hr>
+</div></div>
+<div class="section" id="二面向企业to-b的产品与能力详解"><div class="section-header"><span class="chip">2</span>二、面向企业（To B）的产品与能力详解</div><div class="section-body">
+<p>下面聚焦你关心的 To B 侧——即企业级、组织级的产品与功能。</p>
+<h3 id="1-claude-team--enterprise组织级-saas">1. Claude Team &amp; Enterprise（组织级 SaaS）</h3>
+<h4>1.1 Team 计划</h4>
+<ul>
+<li>定位：5–150 人左右的团队，共享 Claude 资源<sup class="cite-ref"><a href="https://support.claude.com/en/articles/11049762-choose-a-claude-plan&gt;" target="_blank" rel="noopener noreferrer" title="Choose a Claude plan – Claude Help Center. &lt;">[20]</a></sup><sup class="cite-ref"><a href="https://www.finout.io/blog/claude-pricing-in-2026-for-individuals-organizations-and-developers&gt;" target="_blank" rel="noopener noreferrer" title="Claude Pricing in 2026 for Individuals, Organizations, and Developers. &lt;">[22]</a></sup>。</li>
+<li>关键特性：<ul>
+<li>共享 Projects / Artifacts / 文档；</li>
+<li>基本的管理功能：<ul>
+<li>成员管理</li>
+<li>基本配额与消费可视化</li>
+<li>与 Slack / Microsoft 365 等协作工具集成<sup class="cite-ref"><a href="https://support.claude.com/en/articles/11049762-choose-a-claude-plan&gt;" target="_blank" rel="noopener noreferrer" title="Choose a Claude plan – Claude Help Center. &lt;">[20]</a></sup>。</li>
+</ul>
+</li>
+<li>可使用 <strong>Claude Code（Team 版本）</strong> 与部分 Cowork 功能。</li>
+</ul>
+</li>
+</ul>
+<p>适用：希望统一采购、统一管理员工 Claude 访问的小型公司或业务部门。</p>
+<h4>1.2 Enterprise 计划（重点）</h4>
+<p>Enterprise 是 Anthropic 真正意义上的 <strong>企业级 AI 平台包装</strong><sup class="cite-ref"><a href="https://support.claude.com/en/articles/12138966-release-notes&gt;" target="_blank" rel="noopener noreferrer" title="Release notes | Claude Help Center. &lt;">[1]</a></sup><sup class="cite-ref"><a href="https://support.claude.com/en/articles/11049762-choose-a-claude-plan&gt;" target="_blank" rel="noopener noreferrer" title="Choose a Claude plan – Claude Help Center. &lt;">[20]</a></sup><sup class="cite-ref"><a href="https://www.finout.io/blog/claude-pricing-in-2026-for-individuals-organizations-and-developers&gt;" target="_blank" rel="noopener noreferrer" title="Claude Pricing in 2026 for Individuals, Organizations, and Developers. &lt;">[22]</a></sup>：</p>
+<ul>
+<li>包含内容（通常“在 Team 之上”的附加项）：<ol>
+<li><strong>安全与身份治理</strong><ul>
+<li>SSO（SAML / OIDC）</li>
+<li>SCIM 用户与组同步</li>
+<li>基于角色的访问控制（RBAC）</li>
+<li>域捕获（Domain Capture）、IP 白名单等<sup class="cite-ref"><a href="https://support.claude.com/en/articles/12138966-release-notes&gt;" target="_blank" rel="noopener noreferrer" title="Release notes | Claude Help Center. &lt;">[1]</a></sup><sup class="cite-ref"><a href="https://support.claude.com/en/articles/11049762-choose-a-claude-plan&gt;" target="_blank" rel="noopener noreferrer" title="Choose a Claude plan – Claude Help Center. &lt;">[20]</a></sup>。</li>
+</ul>
+</li>
+<li><strong>数据与合规</strong><ul>
+<li>更长上下文窗口（官方提到企业版可达 1M tokens）<sup class="cite-ref"><a href="https://hidekazu-konishi.com/entry/anthropic_claude_model_release_timeline.html&gt;" target="_blank" rel="noopener noreferrer" title="Anthropic Claude Model Release Timeline. &lt;">[5]</a></sup>；</li>
+<li>自定义数据保留策略与日志留存；</li>
+<li>SOC 2、ISO 27001、HIPAA 准备度等合规标准<sup class="cite-ref"><a href="https://support.claude.com/en/articles/12138966-release-notes&gt;" target="_blank" rel="noopener noreferrer" title="Release notes | Claude Help Center. &lt;">[1]</a></sup><sup class="cite-ref"><a href="https://tactiq.io/learn/claude-enterprise&gt;" target="_blank" rel="noopener noreferrer" title="What Is Claude Enterprise? Features, Pricing, and Plans – Tactiq. &lt;">[23]</a></sup>；</li>
+<li>Compliance API：给 SIEM / GRC / CASB 等系统提供访问日志与事件流，方便审计与风险监控<sup class="cite-ref"><a href="https://intuitionlabs.ai/articles/claude-enterprise-deployment-training-guide-2026&gt;" target="_blank" rel="noopener noreferrer" title="Claude Enterprise Guide 2026: Deployment &amp; Training Specs – IntuitionLabs. &lt;">[24]</a></sup>。</li>
+</ul>
+</li>
+<li><strong>使用治理与可观察性</strong><ul>
+<li>管理控制台：自定义角色权限、消费预算、连接器管理（如限制某些连接器只允许特定团队使用）<sup class="cite-ref"><a href="https://intuitionlabs.ai/articles/claude-enterprise-deployment-training-guide-2026&gt;" target="_blank" rel="noopener noreferrer" title="Claude Enterprise Guide 2026: Deployment &amp; Training Specs – IntuitionLabs. &lt;">[24]</a></sup>；</li>
+<li>自定义 Admin Role：允许非 Owner 角色管理账单、隐私等设置<sup class="cite-ref"><a href="https://intuitionlabs.ai/articles/claude-enterprise-deployment-training-guide-2026&gt;" target="_blank" rel="noopener noreferrer" title="Claude Enterprise Guide 2026: Deployment &amp; Training Specs – IntuitionLabs. &lt;">[24]</a></sup>。</li>
+</ul>
+</li>
+<li><strong>高级产品能力</strong><ul>
+<li>更大的上下文窗口（500K–1M tokens）；</li>
+<li>企业搜索、组织级 Projects / Artifacts；</li>
+<li>Cowork / Claude Code / Claude Design 的企业级权限配置与日志；</li>
+<li>通过 MCP 和 Managed Agents 与内部系统深度集成的能力。</li>
+</ul>
+</li>
+</ol>
+</li>
+</ul>
+<p><strong>计费方式</strong>：</p>
+<ul>
+<li>基本 Seat 费用（通常 ~$20–$60 / 人 / 月）只覆盖“访问权”，<strong>所有 AI 使用量按 API token 单独计费</strong>，价格接近 API 公价<sup class="cite-ref"><a href="https://www.finout.io/blog/claude-pricing-in-2026-for-individuals-organizations-and-developers&gt;" target="_blank" rel="noopener noreferrer" title="Claude Pricing in 2026 for Individuals, Organizations, and Developers. &lt;">[22]</a></sup>。</li>
+<li>换言之，Enterprise 更像是“把 Anthropic 当成内部 AI 基础设施”（Infra），而不是只买一个 SaaS。</li>
+</ul>
+<hr>
+<h3 id="2-claude-code-enterprise企业级开发与运维场景">2. Claude Code Enterprise（企业级开发与运维场景）</h3>
+<p>Claude Code 对 B 端的影响极大，可以理解为 <strong>“企业级 AI 编程与技术运维操作系统”</strong><sup class="cite-ref"><a href="https://www.anthropic.com/product/claude-code&gt;" target="_blank" rel="noopener noreferrer" title="Claude Code | Anthropic&#x27;s agentic coding system. &lt;">[6]</a></sup><sup class="cite-ref"><a href="https://hidekazu-konishi.com/entry/claude_code_features_settings_reference_2026.html&gt;" target="_blank" rel="noopener noreferrer" title="Claude Code Features and Settings Reference 2026. &lt;">[16]</a></sup><sup class="cite-ref"><a href="https://arxiv.org/html/2604.14228v1&gt;" target="_blank" rel="noopener noreferrer" title="Dive into Claude Code: The Design Space of Today&#x27;s and Future AI Agents. &lt;">[17]</a></sup>：</p>
+<ol>
+<li><p><strong>核心价值</strong></p>
+<ul>
+<li>直接嵌入开发者日常工具链（终端 / IDE / Git / CI/CD）；</li>
+<li>具备多层架构和上下文系统：<ul>
+<li>六层架构（入口 / 命令与技能层 / 核心引擎层 / 服务层 / 通信层 / 基础设施层）<sup class="cite-ref"><a href="https://hidekazu-konishi.com/entry/claude_code_features_settings_reference_2026.html&gt;" target="_blank" rel="noopener noreferrer" title="Claude Code Features and Settings Reference 2026. &lt;">[16]</a></sup>；</li>
+<li>多级记忆（会话记忆、项目记忆、团队记忆）；</li>
+<li>Skills / Hooks / SubAgents 等可扩展机制<sup class="cite-ref"><a href="https://hidekazu-konishi.com/entry/claude_code_features_settings_reference_2026.html&gt;" target="_blank" rel="noopener noreferrer" title="Claude Code Features and Settings Reference 2026. &lt;">[16]</a></sup><sup class="cite-ref"><a href="https://arxiv.org/html/2604.14228v1&gt;" target="_blank" rel="noopener noreferrer" title="Dive into Claude Code: The Design Space of Today&#x27;s and Future AI Agents. &lt;">[17]</a></sup>。</li>
+</ul>
+</li>
+<li>在企业中已经发展成 <strong>Agentic AI 底层基础设施</strong>：从一个工具演变为核心开发底座<sup class="cite-ref"><a href="https://www.sohu.com/a/989726270_121124363&gt;" target="_blank" rel="noopener noreferrer" title="Claude Code one-year anniversary: Agentic AI infrastructure &amp; standardization. &lt;">[15]</a></sup><sup class="cite-ref"><a href="https://hidekazu-konishi.com/entry/claude_code_features_settings_reference_2026.html&gt;" target="_blank" rel="noopener noreferrer" title="Claude Code Features and Settings Reference 2026. &lt;">[16]</a></sup>。</li>
+</ul>
+</li>
+<li><p><strong>企业版特性</strong>（结合多篇企业部署指南）<sup class="cite-ref"><a href="https://aws.amazon.com/blogs/china/claude-code-open-source-model-enterprise-practice/&gt;" target="_blank" rel="noopener noreferrer" title="Claude Code open-source model enterprise practice – AWS Blog. &lt;">[14]</a></sup><sup class="cite-ref"><a href="https://www.sohu.com/a/989726270_121124363&gt;" target="_blank" rel="noopener noreferrer" title="Claude Code one-year anniversary: Agentic AI infrastructure &amp; standardization. &lt;">[15]</a></sup><sup class="cite-ref"><a href="https://arxiv.org/html/2604.14228v1&gt;" target="_blank" rel="noopener noreferrer" title="Dive into Claude Code: The Design Space of Today&#x27;s and Future AI Agents. &lt;">[17]</a></sup>：</p>
+<ul>
+<li>可通过 API 网关对 Claude Code 的出站请求统一监控与过滤；</li>
+<li>支持与自建/开源 LLM 结合，例如通过 LiteLLM Proxy 统一路由“主线任务给 Claude，简单/隐私敏感任务给自建模型”<sup class="cite-ref"><a href="https://aws.amazon.com/blogs/china/claude-code-open-source-model-enterprise-practice/&gt;" target="_blank" rel="noopener noreferrer" title="Claude Code open-source model enterprise practice – AWS Blog. &lt;">[14]</a></sup>；</li>
+<li>提供 <strong>代码安全分析（Code Security）</strong> 仪表盘：扫描代码缺陷、生成补丁、支持安全团队审批与回滚<sup class="cite-ref"><a href="https://www.anthropic.com/news/claude-code-security&gt;" target="_blank" rel="noopener noreferrer" title="Making frontier cybersecurity capabilities available to defenders – Anthropic. &lt;">[25]</a></sup>。</li>
+</ul>
+</li>
+<li><p><strong>典型 To B 用法</strong></p>
+<ul>
+<li>大企业内部：作为统一的“AI Pair Programmer / DevOps Agent”，与企业 GitLab/GitHub、Jira、内部文档、日志系统等连通；</li>
+<li>SaaS / 平台厂商：将 Claude Code 能力以白标/深度集成形式嵌入自家开发平台或 IDE 解决方案。</li>
+</ul>
+</li>
+</ol>
+<p>对 <strong>供应链类企业</strong> 而言，Claude Code 的价值并不只是“写业务代码”，更在于：</p>
+<ul>
+<li>快速改造遗留 ERP / WMS / TMS / APS 系统；</li>
+<li>自动生成 ETL、清洗脚本和分析管道；</li>
+<li>编写与维护 MCP Server / API 集成，帮助 Claude Agent 接入各个业务系统与数据库。</li>
+</ul>
+<hr>
+<h3 id="3-claude-cowork企业知识工作场景">3. Claude Cowork（企业知识工作场景）</h3>
+<p>Cowork 是一个运行在桌面端和 Web 侧的 <strong>多步知识工作智能体模式</strong>：</p>
+<ul>
+<li>为企业带来的能力<sup class="cite-ref"><a href="https://platform.claude.com/docs/en/home&gt;" target="_blank" rel="noopener noreferrer" title="Documentation – Claude API Docs. &lt;">[21]</a></sup>：<ul>
+<li>连接 Slack / Google Drive / Microsoft 365 / Asana / Figma 等应用；</li>
+<li>通过 <strong>Connectors / Plugins / Scheduled Tasks / Dispatch / Projects / Computer Use</strong> 等功能，自动执行多步骤任务：<ul>
+<li>如：收集一周销售数据 → 生成报表 → 产出 PPT → 发邮件给指定团队；</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>在 Enterprise / Team 中：<ul>
+<li>管理员可以统一控制哪些 Connectors 可用，哪些仅允许特定团队使用<sup class="cite-ref"><a href="https://intuitionlabs.ai/articles/claude-enterprise-deployment-training-guide-2026&gt;" target="_blank" rel="noopener noreferrer" title="Claude Enterprise Guide 2026: Deployment &amp; Training Specs – IntuitionLabs. &lt;">[24]</a></sup>；</li>
+<li>通过 Compliance API、MCP Governance 机制控制智能体对内部系统和工具的访问权限<sup class="cite-ref"><a href="https://intuitionlabs.ai/articles/claude-enterprise-deployment-training-guide-2026&gt;" target="_blank" rel="noopener noreferrer" title="Claude Enterprise Guide 2026: Deployment &amp; Training Specs – IntuitionLabs. &lt;">[24]</a></sup>。</li>
+</ul>
+</li>
+</ul>
+<p>对 B 端尤其是供应链企业，Cowork 非常适合：</p>
+<ul>
+<li>日常运营报表自动化；</li>
+<li>异常监控与告警（如库存偏差、订单异常）；</li>
+<li>多系统信息整合（跨 ERP/CRM/物流平台）。</li>
+</ul>
+<hr>
+<h3 id="4-claude-design-与-claude-for-small-business行业与职能解决方案">4. Claude Design 与 Claude for Small Business（行业与职能解决方案）</h3>
+<p>虽然这两类产品一部分也会被个人或小团队使用，但其设计初衷明显偏 B 端：</p>
+<ol>
+<li><p><strong>Claude Design</strong>（Anthropic Labs）<sup class="cite-ref"><a href="https://www.anthropic.com/news/claude-design-anthropic-labs&gt;" target="_blank" rel="noopener noreferrer" title="Introducing Claude Design by Anthropic Labs. &lt;">[11]</a></sup><sup class="cite-ref"><a href="https://agence-scroll.com/en/blog/claude-design-anthropic-2026-guide&gt;" target="_blank" rel="noopener noreferrer" title="Claude Design (Anthropic): The Complete 2026 Guide – Agence Scroll. &lt;">[12]</a></sup><sup class="cite-ref"><a href="https://support.claude.com/en/articles/14604406-claude-design-admin-guide-for-team-and-enterprise-plans&gt;" target="_blank" rel="noopener noreferrer" title="Claude Design admin guide for Team and Enterprise plans – Claude Help Center. &lt;">[13]</a></sup></p>
+<ul>
+<li>通过读取代码仓和设计文件，自动构建团队 Design System；</li>
+<li>支持原型 / 幻灯片 / 单页文档 / 互动站点等输出；</li>
+<li>对大中型企业内的 <strong>品牌 / 市场 / 产品 / 设计团队</strong>，是统一视觉标准和提高产能的一个组件。</li>
+</ul>
+</li>
+<li><p><strong>Claude for Small Business</strong><sup class="cite-ref"><a href="https://www.anthropic.com/news/claude-for-small-business&gt;" target="_blank" rel="noopener noreferrer" title="Introducing Claude for Small Business – Anthropic. &lt;">[19]</a></sup></p>
+<ul>
+<li>自带 15 个预构建工作流与 7 个主流应用连接器；</li>
+<li>让中小企业可以在原有财务、营销、运营工具中直接启用 Claude 做自动化处理；</li>
+<li>属于标准化程度更高的“打包方案”，本质上是 <strong>Claude + Cowork + Skills + Connectors</strong> 的行业化封装。</li>
+</ul>
+</li>
+</ol>
+<hr>
+</div></div>
+<div class="section" id="三文本版产品架构图从模型到企业场景"><div class="section-header"><span class="chip">3</span>三、文本版「产品架构图」：从模型到企业场景</div><div class="section-body">
+<p>你可以把 Anthropic 的 B 端产品架构理解为一个自底向上的四层金字塔 + 侧翼方案：</p>
+<pre><code class="language-text">              ┌─────────────────────────────────────┐
+              │         企业业务场景层（Use Cases） │
+              │  - 供应链 / 制造 / 金融 / 医疗等     │
+              └─────────────────────────────────────┘
+                     ▲                      ▲
+                     │                      │
+      ┌────────────────────────┐    ┌─────────────────────┐
+      │   终端与工具层（Apps） │    │  托管智能体层（Agents）│
+      │ - claude.ai / Desktop  │    │ - Claude Managed     │
+      │ - Claude Code          │    │   Agents (runtime)   │
+      │ - Claude Cowork        │    └─────────────────────┘
+      │ - Claude Design        │
+      └────────────────────────┘
+                     ▲
+                     │
+      ┌───────────────────────────────────────────────┐
+      │         平台与接口层（Platform）              │
+      │  - Claude API / SDK / Batch / Prompt Caching │
+      │  - Model Context Protocol (MCP)              │
+      │  - Compliance API / Logs / Governance        │
+      └───────────────────────────────────────────────┘
+                     ▲
+                     │
+      ┌───────────────────────────────────────────────┐
+      │              模型层（Models）                 │
+      │  - Claude Opus 4.8 / 4.7 / 4.6                │
+      │  - Claude Sonnet 4.x                          │
+      │  - Claude Haiku 4.x                           │
+      └───────────────────────────────────────────────┘
+                     ▲
+                     │
+      ┌───────────────────────────────────────────────┐
+      │      商业包装与订阅层（Plans / Packaging）     │
+      │ - Free / Pro / Max / Team / Enterprise       │
+      │ - Claude for Small Business                  │
+      └───────────────────────────────────────────────┘
+</code></pre>
+<p>从 <strong>企业客户视角</strong> 看：</p>
+<ul>
+<li><p>如果你只买 <strong>Enterprise 订阅</strong> 而不想自建代理：<br>
+→ 你主要使用的是：<strong>claude.ai + Cowork + Claude Code + Design</strong>，加上一些统一治理和审计功能。</p>
+</li>
+<li><p>如果你要做 <strong>深度系统集成和自动化</strong>：<br>
+→ 你会重点用到：<strong>Claude API + MCP + Managed Agents + Claude Code（作为工程支撑）</strong>，在自己 IT 架构中构建一层“AI 中台 / Agent 中台”。</p>
+</li>
+</ul>
+<hr>
+</div></div>
+<div class="section" id="四给你做内部决策或方案时的建议"><div class="section-header"><span class="chip">4</span>四、给你做内部决策或方案时的建议</div><div class="section-body">
+<ol>
+<li><p><strong>先从订阅层选主方案</strong></p>
+<ul>
+<li>中小团队：优先考虑 <strong>Team</strong>，享受较低座位价与足够的管理功能；</li>
+<li>大中型企业 / 有严格合规要求的供应链、金融、制造企业：<br>
+→ 考虑 <strong>Enterprise + API</strong>，把 Claude 当基础设施引入，并在合同中明确数据不用于训练、数据驻留与审计要求。</li>
+</ul>
+</li>
+<li><p><strong>同时规划“工具层 + 平台层”组合</strong></p>
+<ul>
+<li>研发 / IT 场景：重点压在 <strong>Claude Code + API + MCP</strong>，配合自有中间层与 API 网关；</li>
+<li>业务运营 / 供应链场景：重点压在 <strong>Cowork + Managed Agents + MCP</strong>，用 Connectors 和 Skills 把 Claude 接到你的 ERP / WMS / TMS / CRM 等系统。</li>
+</ul>
+</li>
+<li><p><strong>产品架构图可进一步细化为“本企业视角”</strong></p>
+<ul>
+<li>你可以在上面那张文本架构图基础上，再加一层：<ul>
+<li>把你现有的系统（SAP、Oracle、金蝶、用友、WMS、OMS 等）画在两侧；</li>
+<li>用箭头表示：通过 MCP / API / 自建 Agent Server 与 Claude 平台相连；</li>
+<li>将 Claude Code 放在“工程支撑”一侧，将 Cowork 放在“运营与管理者桌面”一侧，形成清晰的职责边界。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<hr>
+</div></div>
+<div class="section" id="小结"><div class="section-header"><span class="chip">5</span>小结</div><div class="section-body">
+<ul>
+<li><p><strong>Anthropic 当前的产品家族</strong>：<br>
+从底层的 <strong>Claude 模型（Opus / Sonnet / Haiku）</strong>，到上层的 <strong>API / MCP / Managed Agents</strong>，再到终端形态的 <strong>claude.ai、Claude Code、Cowork、Claude Design</strong>，最后通过 <strong>Free / Pro / Max / Team / Enterprise / Small Business</strong> 这些订阅计划面向不同客群。</p>
+</li>
+<li><p><strong>To B 产品的核心</strong>：</p>
+<ul>
+<li>组织级订阅：<strong>Team / Enterprise</strong>（身份、权限、合规、日志）。</li>
+<li>开发与运维：<strong>Claude Code Enterprise + API + MCP</strong>。</li>
+<li>知识与业务协作：<strong>Cowork + Projects + Artifacts + Connectors</strong>。</li>
+<li>托管执行：<strong>Claude Managed Agents</strong>（长时间运行的自动化智能体）。</li>
+</ul>
+</li>
+<li><p><strong>产品架构图可以抽象为四层 + 订阅包装</strong>，你可以按照上文文本版图进一步画成 PPT 图示，用于内部对齐和供应商评估。</p>
+</li>
+</ul>
+<p>如果你愿意，下一步我可以按“供应链企业落地路线”的视角，把上面这套产品架构，具体映射到：<strong>合同与单据处理 / 异常管理 / 供应商风险 / 预测与计划 / IT 改造</strong> 五个链路上，并给出典型系统集成（如 SAP + AWS / GCP + Claude）的详细蓝图。</p>
+<hr>
+</div></div><div class="references-section"><h3>References</h3>
+<p>[1] Release notes | Claude Help Center. <a href="https://support.claude.com/en/articles/12138966-release-notes">https://support.claude.com/en/articles/12138966-release-notes</a><br>
+[2] Claude (language model) – Wikipedia. <a href="https://en.wikipedia.org/wiki/Claude_(language_model)">https://en.wikipedia.org/wiki/Claude_(language_model)</a><br>
+[3] Models overview – Claude API Docs. <a href="https://platform.claude.com/docs/en/about-claude/models/overview">https://platform.claude.com/docs/en/about-claude/models/overview</a><br>
+[4] Anthropic’s Transparency Hub. <a href="https://www.anthropic.com/transparency">https://www.anthropic.com/transparency</a><br>
+[5] Anthropic Claude Model Release Timeline. <a href="https://hidekazu-konishi.com/entry/anthropic_claude_model_release_timeline.html">https://hidekazu-konishi.com/entry/anthropic_claude_model_release_timeline.html</a><br>
+[6] Claude Code | Anthropic's agentic coding system. <a href="https://www.anthropic.com/product/claude-code">https://www.anthropic.com/product/claude-code</a><br>
+[7] Introducing Claude Opus 4.8 – Anthropic. <a href="https://www.anthropic.com/news/claude-opus-4-8">https://www.anthropic.com/news/claude-opus-4-8</a><br>
+[8] Introducing the Model Context Protocol – Anthropic. <a href="https://www.anthropic.com/news/model-context-protocol">https://www.anthropic.com/news/model-context-protocol</a><br>
+[9] Claude Managed Agents overview – Claude API Docs. <a href="https://platform.claude.com/docs/en/managed-agents/overview">https://platform.claude.com/docs/en/managed-agents/overview</a><br>
+[10] Claude for Small Business – Anthropic. <a href="https://www.anthropic.com/news/claude-for-small-business">https://www.anthropic.com/news/claude-for-small-business</a><br>
+[11] Introducing Claude Design by Anthropic Labs. <a href="https://www.anthropic.com/news/claude-design-anthropic-labs">https://www.anthropic.com/news/claude-design-anthropic-labs</a><br>
+[12] Claude Design (Anthropic): The Complete 2026 Guide – Agence Scroll. <a href="https://agence-scroll.com/en/blog/claude-design-anthropic-2026-guide">https://agence-scroll.com/en/blog/claude-design-anthropic-2026-guide</a><br>
+[13] Claude Design admin guide for Team and Enterprise plans – Claude Help Center. <a href="https://support.claude.com/en/articles/14604406-claude-design-admin-guide-for-team-and-enterprise-plans">https://support.claude.com/en/articles/14604406-claude-design-admin-guide-for-team-and-enterprise-plans</a><br>
+[14] Claude Code open-source model enterprise practice – AWS Blog. <a href="https://aws.amazon.com/blogs/china/claude-code-open-source-model-enterprise-practice/">https://aws.amazon.com/blogs/china/claude-code-open-source-model-enterprise-practice/</a><br>
+[15] Claude Code one-year anniversary: Agentic AI infrastructure &amp; standardization. <a href="https://www.sohu.com/a/989726270_121124363">https://www.sohu.com/a/989726270_121124363</a><br>
+[16] Claude Code Features and Settings Reference 2026. <a href="https://hidekazu-konishi.com/entry/claude_code_features_settings_reference_2026.html">https://hidekazu-konishi.com/entry/claude_code_features_settings_reference_2026.html</a><br>
+[17] Dive into Claude Code: The Design Space of Today's and Future AI Agents. <a href="https://arxiv.org/html/2604.14228v1">https://arxiv.org/html/2604.14228v1</a><br>
+[18] Anthropic 2026: Every Claude Model, Agent &amp; Tool. <a href="https://linas.substack.com/p/anthropic-claude-2026-every-launch-guide">https://linas.substack.com/p/anthropic-claude-2026-every-launch-guide</a><br>
+[19] Introducing Claude for Small Business – Anthropic. <a href="https://www.anthropic.com/news/claude-for-small-business">https://www.anthropic.com/news/claude-for-small-business</a><br>
+[20] Choose a Claude plan – Claude Help Center. <a href="https://support.claude.com/en/articles/11049762-choose-a-claude-plan">https://support.claude.com/en/articles/11049762-choose-a-claude-plan</a><br>
+[21] Documentation – Claude API Docs. <a href="https://platform.claude.com/docs/en/home">https://platform.claude.com/docs/en/home</a><br>
+[22] Claude Pricing in 2026 for Individuals, Organizations, and Developers. <a href="https://www.finout.io/blog/claude-pricing-in-2026-for-individuals-organizations-and-developers">https://www.finout.io/blog/claude-pricing-in-2026-for-individuals-organizations-and-developers</a><br>
+[23] What Is Claude Enterprise? Features, Pricing, and Plans – Tactiq. <a href="https://tactiq.io/learn/claude-enterprise">https://tactiq.io/learn/claude-enterprise</a><br>
+[24] Claude Enterprise Guide 2026: Deployment &amp; Training Specs – IntuitionLabs. <a href="https://intuitionlabs.ai/articles/claude-enterprise-deployment-training-guide-2026">https://intuitionlabs.ai/articles/claude-enterprise-deployment-training-guide-2026</a><br>
+[25] Making frontier cybersecurity capabilities available to defenders – Anthropic. <a href="https://www.anthropic.com/news/claude-code-security">https://www.anthropic.com/news/claude-code-security</a></p>
+</div>
+
+  <!-- FOOTER -->
+  <div class="report-footer">
+    <span class="footer-brand">mirothinker</span>
+  </div>
+
+</div>
+</body>
+</html>
