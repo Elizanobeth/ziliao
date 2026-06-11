@@ -1,0 +1,883 @@
+\input{IS-TagOff}
+
+\documentclass[5GeSdc,ASOC,numref,printGA,printHL,CASflow,nocrossmark,longtitle,PROOF]{/usr/local/texlive/iTemplates/01-Templates/01-Els-Jnl/01-Standard_Templates/V1/ELS_MDL5-V1-6}
+
+\usepackage{algorithm}  
+\usepackage{algorithmic}
+
+% \usepackage{showframe}
+
+\graphicspath{{/home/prodadmin/WMS-Graphics/ASOC/ASOC114630/}}
+\begin{document}
+
+\journalid{ASOC}
+
+\journaltitle{Applied Soft Computing}
+
+\abbjournaltitle{Applied Soft Computing Journal}
+
+\journalvolume{00}
+
+\journalissue{00}
+
+\pissn{1568-4946}
+
+\articletype{FLA}
+
+\articleid{114630}
+
+\articlenumber{114630}
+
+\DOI{10.1016/j.asoc.2026.114630}
+
+\PII{S1568-4946(26)00078-5}
+
+\received{19 April 2025}
+\revised{31 October 2025}
+\accepted{6 January 2026}
+\copyrightstatement{\copyright\  2026 Elsevier B.V. All rights are reserved, including those for text and data mining, AI training, and similar technologies.}
+
+\copyrightyear{2026}
+
+\copyrightholder{Elsevier B.V.}
+
+\copyrighttype{001}	
+
+\RRH{L. Yi and N. Peng}
+
+\LRH{L. Yi and N. Peng}
+
+
+\title{Persistent \shl{h}omology \shl{s}patial \shl{p}yramid \shl{b}ag-of-\shl{w}ords for \shl{t}opological \shl{f}eature \shl{l}earning\protect\AQ{Q1}{Your article is registered as a regular item and is being processed for inclusion in a regular issue of the journal. If this is NOT correct and your article belongs to a Special Issue/Collection please contact l.s@elsevier.com immediately prior to returning your corrections.}}
+
+\augroup{
+\author{\gn{Lisha}~\sn{Yi}\protect\AQ[10pt]{Q2}{The author names have been tagged as given names and surnames (surnames are highlighted in teal color). Please confirm if they have been identified correctly.}}
+\contribrole{Conceptualization}
+}
+
+\augroup{
+\author{\gn{Ningning}~\sn{Peng}\corref{cor1}}
+\ead{pengn@whut.edu.cn}
+\orcid{0000-0003-3721-1170}
+\contribrole{Supervision}
+}
+
+
+
+\affiliation{\inst{Wuhan University of Technology}, \city{Wuhan}, \postalcode{420070}, \country[CHN]{China}\affsource{Wuhan University of Technology, Wuhan, 420070, China}}
+
+\corresnotes[cor1]{Corresponding author.}
+
+\abstract[][Abstract]{This paper proposes a novel algorithm called Persistent Homology Spatial Pyramid Bag-of-Words (PH-SPBoW), which effectively integrates persistent homology, spatial pyramid partitioning, and the bag-of-words model. {This method resolves the incompatibility of variable-sized PDs with standard machine learning models by converting persistence diagrams into fixed-length vectors.} The PH-SPBoW algorithm first extracts one-dimensional topological information from the data using Vietoris-Rips (VR) complexes to generate persistence diagrams. Subsequently, it employs spatial pyramid decomposition to partition the PDs for detailed feature extraction and utilizes the bag-of-words model for vector conversion. Addressing the shortcomings of the PH-SPBoW algorithm, this paper introduces three improved algorithms: PH-SPwBoW, PH-SPsBoW and PH-SPVLAD. We theoretically analyze the stability of PH-SPBoW and its three improved algorithms under the 1-Wasserstein distance metric defined in PD space. Experimental evaluations on {eight} datasets combined with support vector machines demonstrate that the proposed methods significantly outperform traditional kernel methods and vector algorithms in terms of effectiveness and efficiency.
+}
+
+
+\gabstract[Graphical Abstract]{\includegraphics{ga1.pdf}}
+
+\highlights[][Highlights]{
+\item Traditional methods combining machine learning and persistent homology fall into vectorization and kernel methods; this paper proposes a novel Persistent Homology Spatial Pyramid Bag-of-Words (PH-SPBoW) integrating both approaches.
+\item Building on PH-SPBoW, we introduce weighted and improved versions---PH-SPwBoW, PH-SPsBoW (using Gaussian mixture models), and PH-SPVLAD (using an extended VLAD model)---and theoretically analyze their stability under 1-Wasserstein distance.
+\item Experiments on diverse datasets and scales show that our four proposed algorithms outperform traditional methods in accuracy, stability, and efficiency, confirming their effectiveness.
+
+}
+
+\keywords[][Keywords]{Persistent homology{\sep} Bag of words{\sep} Spatial pyramid matching{\sep} Machine learning}
+
+\maketitle
+\begin{articlestyle}
+
+
+
+\section{Introduction}\label{sec1}
+
+Machine learning algorithms have achieved great success in fields such as speech recognition \cite{mehrish2023review,orken2022study}, computer vision \cite{han2022survey}, structural engineering \cite{ren2025machine,ghannadi2023review} and text analysis \cite{zhang2023survey} due to their efficiency, accuracy, scalability, and automation. However, in high-dimensional complex systems, machine learning algorithms face a series of challenges, including the curse of dimensionality, feature selection, computational complexity, and data visualization. In high-dimensional systems, there are a vast number of features, but not all of them contribute to the model's performance. Therefore, feature selection is necessary to identify useful features for the model in order to avoid the curse of dimensionality and improve model efficiency. 
+
+{
+Persistent homology is a core mathematical tool in Topological Data Analysis (TDA). By combining algebraic topology with computational geometry, it provides a unique perspective for the quantitative and qualitative analysis of complex data structures. Its central idea is to capture the evolution of topological features in data through multi-scale analysis, such as connectivity, loops (holes), or higher-dimensional voids. Concretely, persistent homology introduces a scale parameter (e.g., a distance threshold or a density radius) to construct a nested sequence of topological spaces of the data (called a ``filtration''), and then tracks the ``birth'' and ``death'' of topological features across scales. This dynamic process is encoded as a barcode or a persistence diagram (PD), where long bars (for example, persistently existing loops or higher-dimensional voids) reflect intrinsic structure in the data, while short bars typically correspond to noise or transient artifacts. Compared with traditional topological methods, persistent homology does not require dimensionality reduction or strong assumptions and is robust to data noise. This characteristic gives it strong potential in fields such as biomedical science \cite{lawson2019persistent}, materials science \cite{kramar2013persistence}, network analysis \cite{nguyen2020bot,aktas2019persistence}, and image analysis \cite{clough2020topological}. It is particularly effective at revealing global geometric and topological patterns that traditional statistical methods struggle to capture, offering a mathematically rigorous and computationally feasible new paradigm for uncovering implicit laws in complex systems.}
+
+In 2004, Zomorodian \cite{zomorodian2004computing} proposed the powerful method of Persistent Homology (PH) for extracting topological information from data, providing a new multiscale representation of data topological features. Subsequently, Carlsson \cite{carlsson2009topology} further promoted this method in 2009. PH is a mathematical tool for analyzing topological data, capable of identifying and quantifying topological structural features present in the data and representing them in a persistent manner. The data is first represented as a point cloud or a network structure, where each data point represents a feature or sample of an object, for instance, each point in a point cloud represents a coordinate. Then, based on the positions and relationships of the data points, a nested complex is constructed, typically using a simplicial complex composed of vertices, edges, and faces. Next, persistent homology is computed over the complex, describing the data structure by detecting the emergence and disappearance of topological features (such as holes) at different scales. The results of persistent homology can be represented as a Persistence Diagram (PD) or a Persistence Barcode (PB). The persistence diagram is a two-dimensional graph with the x-axis representing the birth time of the topological features and the y-axis representing their death time. A persistence barcode serves as a compact representation of the persistence diagram. By observing the persistence diagram or barcode, we can gain information about important topological features within the data.  
+The typical outputs of PH are PDs and barcodes; however, their variability is influenced by the input data, leading to differences in the sizes of PDs or barcodes from different data inputs, thereby limiting the possibility of directly applying them to further machine learning analysis. Currently, to address this issue, two main strategies are employed: kernel methods and vectorization methods. Kernel methods handle PDs or barcodes of different sizes by mapping input data into high-dimensional space, while vectorization methods convert PDs or barcodes into fixed-dimensional vector representations for subsequent machine learning analysis. These methods provide effective solutions to the challenges presented by the variability of PH outputs, opening up possibilities for further research and analysis.
+
+
+This paper proposes an innovative approach to address the challenge of integrating PH with machine learning, with the main contributions as follows:\vspace*{-3pt}  
+\begin{enumerate} 
+	\item[(1)] Traditional methods that combine machine learning with persistent homology are generally divided into two categories: vectorization methods and kernel methods. This paper introduces a novel Spatial Pyramid Bag of Words model (PH-SPBoW) that integrates vectorization methods and kernel methods.
+	\item[(2)] Based on PH-SPBoW, we weighted the dataset to eliminate points of low persistence, proposing PH-SPwBoW. Due to the instability of traditional bag of words models and weighted bag of words models in terms of 1-Wasserstein distance, we replaced k-means clustering in the bag of words model with a Gaussian mixture model, resulting in PH-SPsBoW. Additionally, we propose PH-SPVLAD, which replaces the bag of words model with an extension of the Vector of Locally Aggregated Descriptors (VLAD) concept, thereby providing enhanced expressive capacity and more effective data feature capture. For the four proposed algorithms, we analyze their stability in terms of 1-Wasserstein distance theoretically.
+	\item[(3)] We conducted experimental validation on four categories of datasets at eight different scales. Comparing our proposed algorithms PH-SPBoW, PH-SPwBoW, PH-SPsBoW, and PH-SPVLAD with traditional algorithms including PBoW, PI, PL, SWK, PSSK, and PWGK, our algorithms exhibited significant advantages in accuracy, standard deviation, and time efficiency. This series of experiments confirms the effectiveness and feasibility of our methods.\vspace*{-3pt}
+\end{enumerate}
+
+\enlargethispage*{-2pt}
+\subsection{Related \shl{w}ork}\label{sec1.1}
+
+In 2022, Pun et~al. \cite{pun2022persistent} summarized the modeling process for the combination of machine learning and persistent homology (PH) algorithms into several key steps: topological representation of data (simplicial complex), topological analysis (barcode/persistence diagram), topological features (feature engineering), and supervised/unsupervised learning. Due to the common output forms of PH, such as the variable sizes of barcodes and persistence diagrams, they cannot be directly input into machine learning. Therefore, it is necessary to process these outputs into forms that can be read by machine learning while retaining as many topological features as possible. Current mainstream solutions are primarily divided into two categories: kernel methods and vectorization methods.
+
+\subsubsection{Kernel \shl{m}ethods}\label{subsec1.1.1}
+
+The purpose of kernel methods is to define a dissimilarity measure, known as the kernel function, on persistence diagrams, allowing them to be compared. This enables the integration of persistence diagrams with kernel-based machine learning methods, such as support vector machines and kernel principal component analysis. In 2015, Reininghaus et~al. \cite{reininghaus2015stable} proposed a novel kernel function for topological machine learning, defining the kernel as a persistence scale space kernel (PSSK) that represents the inner product of feature mappings at different scales. This kernel is capable of effectively capturing topological features of data across multiple scales and is stable under the 1-Wasserstein distance, making it particularly suitable for data scenarios with complex topological structures, such as applications in computer vision and pattern recognition. In 2016, Kusano et~al. \cite{kusano2016persistence} introduced a persistence weighted Gaussian kernel (PWGK) that combines persistent homology with Gaussian kernel characteristics, which can suppress the generation of topological features close to the diagonal (small persistence), thereby effectively handling noise. Research validated the performance of the persistence weighted Gaussian kernel through experiments conducted on multiple datasets. Compared to traditional kernel functions, this kernel demonstrates better performance in classification and regression tasks. In 2017, Carriere et~al. \cite{carriere2017sliced} introduced a sliced Wasserstein kernel (SWK), which guarantees both stability and equivalence to the first diagram distance. They discussed the mathematical properties of this kernel in detail, proving its positive definiteness and stability, theoretically ensuring its applicability to various machine learning tasks.
+
+\subsubsection{Vectorization \shl{m}ethods}\label{sec1.1.2}
+
+Vectorization methods convert persistence diagrams into fixed-size vectors that can be read by machine learning algorithms, enabling integration with any machine learning method. In 2017, Adams et~al. \cite{adams2017persistence} proposed persistence images (PI), which sum the product of a Gaussian distribution corresponding to each point in the persistence diagram with a weighting function, generating a persistence surface. By integrating over the persistence surface at each pixel on a defined domain, a grayscale image is produced, which can then be represented as a vector and input into machine learning. In 2015, Bubenik et~al. \cite{bubenik2015statistical} introduced persistence landscapes (PL), generating multiple landscape functions for each feature that produce a set of values at different scales, serving as feature representations. By selecting the top k landscape functions, these values can be combined into a fixed-length feature vector, transforming the persistence diagram into a vector format suitable for machine learning and data analysis. In 2021, Zieli\'{n}ski et~al. \cite{zielinski2021persistence} combined the bag-of-words model, commonly used in text analysis and image recognition, with clustering algorithms to process persistence diagrams. This method can effectively capture the topological features of the data and represent them as fixed-length vectors.
+
+{The algorithm proposed in this paper is essentially a vectorization method that converts PDs into vectors. Unlike traditional vectorization strategies, however, we introduce a spatial pyramid kernel during the vectorization process to apply hierarchical weighting to the generated vectors, thereby more fully capturing the detailed information in the PDs. The spatial pyramid kernel is described in detail in \hyperref[sec2.4]{Section~\ref{sec2.4}}.}
+
+\section{Background}\label{sec2}
+
+
+
+\subsection{Simplices and \shl{c}omplexes}\label{subsec2.1}
+
+In n-dimensional space, a simplex is a geometric object defined by n+1 vertices. Specifically, an n-dimensional simplex is a set consisting of n+1 points (called vertices), which are linearly independent in n-dimensional space. As shown in \hyperref[fig1]{Fig.~\ref{fig1}}\tagfiglabel{fig1}, a 0-dimensional simplex is a point; a 1-dimensional simplex corresponds to a line segment; a 2-dimensional simplex corresponds to a triangle; a 3-dimensional simplex corresponds to a tetrahedron.
+\begin{figure}[!b]
+\vspace*{-12pt}
+\processfigure{\includegraphics{gr1.pdf}}{Geometric representations of 0-simplex, 1-simplex, 2-simplex, and 3-simplex.\label{fig1}}{}
+\end{figure}
+
+\begin{definition}[n-dimensional simplex]\label{definition1} Let $ S $ be a finite set, and let $ n $ be a non-negative integer. An $ n $-dimensional simplex $ \sigma $ is defined as a set of $ n+1 $ vertices:  
+	\begin{align*}  
+	\sigma = \{v_0, v_1, \ldots, v_n \} \subseteq V  
+	\end{align*}  
+	
+	Among them, $ v_i $ is a point in $ V $, and these points are linearly \nobreak{}independent. The geometric representation of the simplex is the convex hull $ \sigma $ in $ \mathbb{R}^m $:  
+	\begin{align*}  
+	\text{Conv}(\sigma) = \left\{\sum_{i=0}^{n} \lambda_i v_i \,\bigg|\, \lambda_i \geq 0, \sum_{i=0}^{n} \lambda_i = 1 \right\}  
+	\end{align*}  
+	
+\end{definition}
+Simply put, a simplicial complex is a collection of simplices, as shown in \hyperref[fig2]{Fig.~\ref{fig2}}\tagfiglabel{fig2}.
+
+\begin{figure}[!tb]
+\processfigure{\includegraphics{gr2.pdf}}{Geometric representations of a 3-dimensional simplicial complex.\label{fig2}}{}
+\end{figure}
+
+\begin{definition}[simplicial complex]\label{definition2} Let $ K $ be a set. If $ K $ satisfies the following conditions, then $ K $ is called a simplicial complex:  
+		\begin{enumerate}  
+		\item \textbf{Closure:} If $ \sigma \in K $ is an $ n $-dimensional simplex, then all its faces (i.e., all simplices of dimension \shl{less than} $ n $) also belong to $ K $. That is, for any $ \tau \subseteq \sigma $, if $ \tau $ is a face of $ \sigma $, then $ \tau \in K $.  
+		
+		\item \textbf{Finiteness:} The collection of simplices in $ K $ is finite.  
+	\end{enumerate}  
+	
+	A simplicial complex can be represented as   
+	\begin{align*}  
+	K = \{\sigma_1, \sigma_2, \ldots, \sigma_m \}  
+	\end{align*}  
+	
+	Each $ \sigma_i \, (i = 1, 2, \ldots, m) $ is a simplex that satisfies the aforementioned conditions of closure and finiteness.  
+	
+	
+\end{definition}
+
+\subsection{Persistent \shl{h}omology}\label{subsec2.2}
+
+Persistent homology provides a tool for describing the topological features of a space as they change with scale through the analysis of filtrations on topological spaces. PD diagrams serve as the primary visualization method, effectively capturing the topological characteristics of the data.
+
+\begin{definition}[filtration]\label{definition3} Let $ X $ be a topological space, and $ \mathcal{F} $ be a filtration, that is, a non-decreasing sequence of topological spaces:  
+	\begin{align*}  
+	\mathcal{F} = {\{X_r \}}_{r \in \mathbb{R}}, \quad \text{where} X_r \subseteq X \text{for} r < r'  
+	\end{align*}  
+	
+	
+\end{definition}
+The persistent homology is defined by calculating the homology groups $ H_k(X_r) $ for each subspace $ X_r $.  
+\begin{definition}[$ k $-th homology group,{ }Betti number]\label{definition4} For each $ r $, the $ k $-th homology group is defined as:  
+	\begin{align*}  
+	H_k(X_r) = \frac{\text{Ker}(\partial_k)}{\text{Im}(\partial_{k+1})} \tag{4}  
+	\end{align*}  
+where $ \text{Ker}(\partial_k) $ is the kernel of the boundary operator $ \partial_k $, representing those boundaries of $ k $-simplices (i.e., closed simplices); $ \text{Im}(\partial_{k+1}) $ is the image of the boundary operator $ \partial_{k+1} $, representing those that can be expressed as boundaries of $ k $-simplices.  
+	
+	The rank of the $ k $-th homology group $ H_k(X_r) $ is defined as the Betti number $ \beta_k(X) $:  
+	\begin{align*}  
+	\beta_k(X) = \text{rank}(H_k(X_r)) \tag{5}  
+	\end{align*}  
+\end{definition}
+Specifically, $ \beta_0(X) $ denotes the number of connected components in the space, $ \beta_1(X) $ represents the number of one-dimensional holes in the space, and $ \beta_2(X) $ indicates the number of two-dimensional holes in the space. Persistent homology involves recording the topological features that persist throughout the process of constructing a simplicial complex. The results of persistent homology are typically represented using a Persistence Diagram (PD). A PD is a set of points, represented as:  
+\begin{align*}  
+D_k = \{(b, d)\},   
+\end{align*}  
+where $ b $ is the birth time and $ d $ is the death time. Each point in the PD corresponds to a homology class, and the number and distribution of points reflect the topological features of the data.  
+
+Persistent homology extracts topological features from data in the following steps:
+\begin{enumerate}\leftskip6pt
+	\item[Step 1] Data Representation: Represent the dataset as a point cloud or another form of topological space.
+	\item[Step 2] Filter Construction: Construct a filtration, a series of nested simplicial complexes, using different scale parameters.
+	\item[Step 3] Homology Computation: Compute homology groups (e.g., connected components, loops, voids) at each scale to identify the topological features of the data.
+	\item[Step 4]  Persistence Diagram: Generate persistence barcodes or persistence diagrams (PB/PD) by comparing homology features across different scales, illustrating the persistence and significance of the features.
+	\item[Step 5] Feature Extraction: Analyze the persistence diagram to extract important topological features for subsequent data analysis or machine learning tasks.
+\end{enumerate}
+
+\subsection{Bag-of-\shl{w}ords \shl{m}odel \shl{a}lgorithm \shl{b}ased on \shl{p}ersistent \shl{h}omology}\label{sec2.3}
+
+The Bag of Words (BoW) model is a commonly used text representation method in natural language processing. In the BoW model, text is treated as a bag, ignoring the order of words in the text and focusing solely on the frequency of word occurrences. Specifically, the BoW model converts text into a vector, where each dimension of the vector corresponds to a word in the vocabulary, and the value of the vector indicates the number of times or the frequency with which that word appears in the text. The fundamental idea of the BoW model is to represent the text by counting the occurrences of each word, thereby capturing the key information of the text. This model is simple and easy to implement, and it is commonly used in tasks such as text classification \cite{hacohen2020influence}, information retrieval \cite{qiu2020fuzzy}, and sentiment analysis \cite{abubakar2022sentiment}. In 2021, Zielinski et~al. \cite{zielinski2021persistence} proposed applying the BoW model concept to Persistent Diagrams (PD), assigning points in the rotated PD graph to a pre-generated codebook. In PBoW, all PD graphs are first overlaid to create a massive synthetic PD graph, followed by weighted sampling and k-means clustering to generate the codebook. Finally, each PD graph is assigned codewords to produce fixed-length vectors, thus representing variable-sized PD graphs as fixed-length vector forms, making it more convenient for input into machine learning for further processing.
+
+\subsection{Spatial \shl{p}yramid \shl{m}atching}\label{sec2.4}
+
+In the task of object recognition in computer vision, when the feature set is unordered, the correspondence between features is unknown, and the number is not fixed, how to effectively perform discriminative classification is a pressing issue. Traditional kernel-based algorithms typically require the input to be fixed-length vectors, which cannot directly handle unordered feature sets. In 2005, Grauman et~al. \cite{grauman2005pyramid} proposed the Spatial Pyramid Matching (SPM) algorithm to address this issue. This algorithm maps unordered feature sets into multi-resolution histograms and computes similarity through a weighted histogram intersection function, thereby approximating the optimal partial match. The algorithm is efficient, robust to cluttered data points, and positive definite, making it suitable for machine learning algorithms such as support vector machines. Using this method, practical problems such as \nobreak{}unsegmented images, background variations, and occlusions can be addressed, achieving accurate object recognition.
+
+\section{PH-SPBoW algorithm}\label{sec3}
+
+Machine learning and persistent homology have widespread applications in fields such as computer vision, protein classification, and medical image processing. To fully leverage the advantages of both, this paper innovatively combines vectorization methods with kernel methods and utilizes persistent homology to extract topological information from data. Specifically, we {improved} the spatial pyramid matching algorithm by integrating the bag-of-words model concept, transforming the topological information extracted from the data into fixed-length vectors. This process is referred to as the Persistent Homology-based Spatial Pyramid Bag-of-Words Algorithm (PH-SPBoW).
+
+\subsection{Algorithm \shl{t}heory}\label{sec3.1}
+
+Place a series of grids on $ D $, designated as \textit{level}= $ l (l = 0, 1, \ldots, L) $. When \textit{level} = 0 occurs, do not partition $ D $, that is,  
+\begin{align*}  
+D_0 = B_0 \cup B_1 \cup \cdots \cup B_N.  
+\end{align*}  
+
+When \textit{level} = 1, divide $ D $ evenly into four grids, that is,  
+\begin{align*}  
+D_1 = \bigcup_{n=0}^{N} (B_{n_1}, B_{n_2}, B_{n3}. B_{n4}),  
+\end{align*}  
+
+When \textit{level} = 2, each of the four previously divided sub-grids will be further evenly divided into four sub-grids, resulting in $ D $ being divided into $ 4^2 = 16 $ sub-grids. At this point, $ D $ becomes  
+\begin{align*}  
+D_2 = \bigcup_{n=0}^{N} (B_{n_1}, B_{n_2}, \ldots, B_{n_{16}}).
+\end{align*}  
+
+Similarly, when \textit{level} = $ l $, $ D $ is evenly divided into $ 4^l $ sub-grids, thus obtaining the general formula for $ D_l $:  
+\begin{align*}  
+D_l = \bigcup_{n=0}^{N} (B_{n_1}, B_{n_2}, \ldots, B_{n_{4^l}}),  
+\end{align*}  
+
+After the division is completed, we obtain a set of gridded PD diagrams, denoted as  
+\begin{align*}  
+SD = (D_0, D_1, \ldots, D_l),  
+\end{align*}where \begin{align*} D_l = \bigcup_{n=0}^{N} (B_{n_1}, B_{n_2}, \ldots, B_{n_{4^l}}), \ l = 0, 1, 2, \ldots, L.  
+\end{align*}  
+In $ D_l $, any sublattice   
+\begin{align*}  
+\bigcup_{n=0}^{N} B_{n_m} = B_{0_m} \cup B_{1_m} \cup \cdots \cup B_{n_m}, \quad m = 1, 2, \ldots, 4^l,  
+\end{align*}  Using the PBoW algorithm, map each sub-grid PD diagram in every layer of the PD diagram to a $ d $-dimensional vector:  
+\begin{align*}  
+f_{\text{PBoW}}(B_{n_m}) = v_{n_m}, \quad m = 1, 2, \ldots, 4^l,  
+\end{align*}  Therefore, we can obtain a subvector group:  
+\begin{align*}  
+\bigcup_{n=0}^{N} v_{n_m} = v_{0_m} \cup v_{1_m} \cup \cdots \cup v_{n_m}, \quad m = 1, 2, \ldots, 4^l,  
+\end{align*}  At this time, $ D_l $ is transformed into a vector group containing $ 4^l $ \hbox{sub-vector} groups:  
+\begin{align*}  
+V_{l} = \bigcup_{n=0}^{N} (v_{n_1}, v_{n_2}, \ldots,v_{n_{4^l}}), \quad l = 0, 1, 2, \ldots, L.  
+\end{align*}  {In $ V_l $, for each $ n = 0, 1, 2, \ldots, N $, concatenate the vectors originating from the same PD diagram end-to-end to form a new ($ d \times 4^l $)-dimensional vector:}
+\begin{align*}  
+u_{l_n} = (v_{n_1}, v_{n_2}, \ldots, v_{n_{4^l}}),  
+\end{align*}  At this time, the {gridded} PD diagram group $ D_l $ is transformed into a vector group:  
+\begin{align*}  
+U_l = u_{l_0} \cup u_{l_1} \cup \cdots \cup u_{l_N} = \bigcup_{n=0}^{N} (v_{n_1}, v_{n_2}, \ldots, v_{n_{4^l}}),  
+\end{align*}  For each $ U_l $, we utilize the spatial pyramid matching kernel to connect its weighted vectors end to end, resulting in a final vector group containing $ N + 1 $ vectors:  
+\begin{align*}  
+X &= \left(\frac{1}{2^L} U_0,\frac{1}{2^L} U_1, \ldots, \frac{1}{2^{L-l+1}} U_l, \ldots,\frac{1}{2} U_L\right) \\
+&= \bigcup_{n=0}^{N}\left(\frac{1}{2^L} u_{0_n},\frac{1}{2^L} u_{1_n}, \ldots, \frac{1}{2^{L-l+1}} u_{l_n}, \frac{1}{2} u_{L_n}\right),
+\end{align*}  Let the vector group $ X $ be  
+\begin{align*}  
+X = (x_0, x_1, \ldots, x_N)  
+\end{align*}where  
+\begin{align*}  
+x_n = \left(\frac{1}{2^L} u_{0_n}, \frac{1}{2^L} u_{1_n},\ldots,\frac{1}{2^{L-l+1}} u_{l_n}, \ldots, \frac{1}{2} u_{L_n}\right), \quad n = 0, 1, \ldots, N.  
+\end{align*}  
+
+Through the above process, we transform a set of PD diagrams into a set of vectors. When \textit{level} = $ L $ and the PBoW parameter is set to $ d $, each PD diagram is processed into a vector of a specific dimension.   
+\begin{align*}  
+dim = d \cdot \left(4^0 + 4^1 + \cdots + 4^L\right) = d \cdot \frac{4^{L+1} - 1}{3}.  
+\end{align*}  
+ 
+
+The pipline of the PH-SPBoW algorithm is shown in \hyperref[fig3]{Fig.~\ref{fig3}}\tagfiglabel{fig3}.
+
+\begin{figure*}[!tb]
+\processfigure{\includegraphics{gr3.pdf}}{The pipline of PH-SPBoW.\label{fig3}}{}
+\end{figure*}
+
+\subsection{Algorithm \shl{p}rocess and \shl{p}seudocode}\label{sec3.2}
+
+Through the theoretical description of the PH-SPBoW algorithm above, we can convert the topological information extracted from the data (PD graph) into vector form, which can then be input into machine learning algorithms. This facilitates a more comprehensive extraction of information from the data, allowing us to perform tasks such as classification, clustering, and prediction on the dataset using support vector machines. The specific steps of the PH-SPBoW algorithm are as follows:\vspace*{-3pt}
+\begin{enumerate}
+	\item[a)] \textbf{Data preprocessing.} Before applying PH filtering to the dataset, it is necessary to perform steps including data cleaning, data preprocessing, and data representation to ensure the quality and suitability of the original data, thereby obtaining accurate and stable results when constructing complexes and computing persistence.
+	Data preprocessing. Before applying PH filtering to the data, the dataset must undergo steps including data cleaning, data preprocessing, and data representation to ensure the quality and suitability of the raw data, thereby obtaining accurate and stable results when constructing complexes and computing persistence.
+	
+	\item[b)] \textbf{PH filtration.} After preprocessing the dataset, we choose the VR complex (Vietoris--Rips Complex) to filtrate the dataset. The VR complex is a commonly used topological data processing method that constructs a topological structure from a set of points in space. Specifically, given a point set, the VR complex determines connectivity between points by defining a neighborhood radius. If the distance between two points is \shl{less than} or \shl{equal to} the radius, an edge is added between those two points in the complex; if three points are pairwise connected, they form a topological loop, and so on. As the neighborhood radius varies, a sequence of complexes is generated; for each complex its homology groups are computed to obtain Betti numbers, and the PD (persistence diagram) is a two-dimensional point-cloud representation of the Betti numbers.
+	
+	\item[c)] \textbf{PH-SPBoW Vectorization.}Different datasets contain distinct topological information, and the sizes of the generated persistence diagrams (PDs) vary, meaning the number of points they contain also differs. Conventional machine learning algorithms struggle to directly classify or cluster PDs. In this study, we employ the aforementioned PH-SPBoW algorithm to vectorize them, thereby converting the PDs into fixed-length vectors. Specifically, we first partition the PDs using multi-resolution grids with different parameter settings. Each grid cell is then converted into a fixed-length vector of size $n$ using the PBoW model. The resulting vectors are subsequently weighted using a spatial pyramid kernel function and concatenated end-to-end to form a new vector.
+	
+	\item[d)] \textbf{Support Vector Machine Classification.} After converting the persistent homology features into fixed-length vectors using the PH-SPBoW algorithm, machine learning methods can be employed for classification. This paper utilizes a Linear Support Vector Machine (Linear SVM) for this task. To evaluate the performance of the PH-SPBoW algorithm and enhance its generalization capability, a 5-fold cross-validation is applied to the dataset. In each fold, 80\% of the data is used for training and the remaining 20\% is used as a test set to compute the classification accuracy. Finally, the mean and standard deviation of the accuracy across all five folds are computed and compared.\vspace*{-3pt} 
+\end{enumerate}
+
+
+
+The pseudocode for the algorithm based on the above steps is as \hyperref[algo1]{Algorithm~\ref{algo1}}
+
+\begin{algorithm}[tb!]
+	\caption{PH-SPBoW Algorithm.}
+	\label{algo1}
+    \algoaltfig{fx1}	
+	\begin{algorithmic}[1]  
+		\REQUIRE Dataset $ Y = \{v_0, v_1, \ldots, v_N \} $, subgrid vectorization dimension $ d $, resolution levels $ = [0, 1, 2, \ldots, L] $  
+		\ENSURE Accuracy, Standard Deviation  
+		\STATE $Y \ \xrightarrow{VR \ \text{complex filtering}} D = B_0 \cup B_1 \cup \cdots \cup B_N$  
+		\FOR{each level $ l $ in Levels:}  
+		\STATE Place a grid with resolution $ l $ on $ D $ to grid it yields a set of PD subgraphs containing $ 4^l $ partitioned PD subgraphs   
+		\begin{align*}  
+		D_l = \bigcup_{n=0}^{N}(B_{n_1}, B_{n_2}, \ldots, B_{n_{4^l}})   
+		\end{align*}  
+		\STATE Transform each subgrid $ \bigcup_{n=0}^{N}B_{n_m} $ into a vector set of dimension $ d $ using the PBoW algorithm.  
+		\begin{align*}  
+		V_l = \bigcup_{n=0}^{N} (v_{n_1}, v_{n_2}, \ldots, v_{n_{4^l}})   
+		\end{align*}  
+		\STATE Transform the vectors from the same PD diagram by connecting their ends to create a new vector with dimension $ d \times 4^l $.  
+		\begin{align*}  
+		u_{l_n} = (v_{n_1}, v_{n_2}, \ldots, v_{n_{4^l}})   
+		\end{align*}  
+		The vector group is defined as  
+		\begin{align*}  
+		U_l = u_{l_0} \cup u_{l_1} \cup \cdots \cup u_{l_N} = \bigcup_{n=0}^{N}(v_{n_1}, v_{n_2}, \ldots, v_{n_{4^l}})   
+		\end{align*}  
+		\ENDFOR 
+		\STATE For each $ U_l $, utilize spatial pyramid matching to weight it and connect it end-to-end, resulting in the processed PD image set becoming  
+		\begin{align*}  
+		X = \left( \frac{1}{2^L} U_0,\frac{1}{2^L} U_1,\ldots, \frac{1}{2^{L-l+1}} U_{l-1}, \ldots, \frac{1}{2} U_L \right)  
+		\end{align*}  
+		\STATE Input the Linear SVM with $ X $, perform 5-fold cross-validation, and obtain the average accuracy and standard deviation of the algorithm.  
+	\end{algorithmic}  
+\end{algorithm}
+
+\subsection{Algorithm \shl{p}erformance \shl{a}nalysis}\label{sec3.3}
+
+{
+Persistent homology can extract the topological features of data at different scales. This multi-scale analysis enables the algorithm to capture structural information at various levels within the data, thereby improving the model's ability to understand complex data. It also exhibits a certain degree of robustness to noise. By analyzing the data's topological features, the algorithm can ignore minor noise perturbations and focus on the primary structure of the data. This characteristic is suitable for processing real-world data that contains noise and irregularities.}
+{
+The spatial pyramid kernel efficiently computes similarity between sets of features, which is crucial for comparing persistence diagrams. Persistence diagrams typically contain a large number of points representing topological features at different scales. The linear computational complexity of the spatial pyramid kernel allows rapid acquisition of similarity measures when handling large-scale persistence diagrams, thereby improving the efficiency of segmentation algorithms. Points in persistence diagrams represent topological features at various scales (such as connected components, holes, etc.). By capturing joint statistical properties among features, the spatial pyramid kernel can better characterize relationships between different topological features in persistence diagrams. This capability enables more accurate identification and differentiation of distinct topological structures during segmentation of persistence diagrams. The spatial pyramid kernel is suitable for unordered and variable-length feature sets, which allows it to flexibly handle different types of persistence diagrams. Since the point sets of persistence diagrams may vary in size and distribution, the spatial pyramid kernel can effectively adapt to these variations, thus providing better performance during segmentation.}
+	
+{	
+Assume there are $N$ persistence diagrams (PDs), and each PD contains $M$ points.
+The gridding step has time complexity of $O(MN)$.
+When $\textit{Levels} = [0,1,2,\ldots,L]$, the $N$ PDs are partitioned into
+$
+N\big(A^0 + A^1 + \cdots + A^L\big) \;=\; \tfrac{1}{3}N\big(A^{L+1}-1\big)
+$
+sub-diagrams. For each sub-diagram, we extract a $d$-dimensional vector, with time complexity
+$
+O\!\big(\tfrac{1}{3}L\,(A^{L+1}-1)d\big).
+$
+For each level, the vectors are concatenated with spatial pyramid weighting, costing $O(Ld)$.
+Therefore, the overall time complexity is
+$
+O\!\big(MN+\tfrac{1}{3}L\,N(A^{L+1}-1)d+Ld\big).
+$
+Since $L$, $N$, and $d$ are relatively small or fixed, the algorithm's time complexity is approximately $O(A^L)$.
+}
+
+\subsection{Improved PH-SPBoW \shl{a}lgorithm}\label{sec3.4}
+
+Edelsbrunner et~al. \cite{edelsbrunner2010computational} have pointed out that points with low persistence are more likely to originate from noise than points with high persistence. To address this, a weighted sampling of the dataset is performed based on the PH-SPBoW algorithm before each k-means clustering in PBoW, using the following weighting function:  
+\begin{align*}  
+w_{a,b}(t) =  
+\begin{cases}   
+	0 & \text{if}\,t < a \\
+	\frac{(t-a)}{(b-a)} & \text{if}\,a \leq t < b \\
+	1 & \text{if}\,t \geq b.
+\end{cases}  
+\end{align*}  
+
+After weighted sampling, the PH-SPwBoW algorithm is obtained. In the experiments of this paper, $ a $ and $ b $ are set to the persistence values corresponding to the 0.05 and 0.95 percentiles of the points in the PD diagram.  
+
+In the PH-SPBoW algorithm, the PBoW component employs a hard clustering method, meaning that each data point can belong to only one cluster. The Gaussian Mixture Model (GMM) is a clustering method based on probability distributions, which assumes that the data is composed of a finite number of Gaussian distributions. By modeling the data with a Gaussian mixture, it is possible to determine the mean, weight, and covariance matrix of each Gaussian distribution, thereby assessing how well each Gaussian distribution fits the data and achieving clustering. The GMM clustering model has significant advantages over k-means clustering when dealing with complex data. We combine the PH-SPBoW algorithm with the GMM clustering algorithm, resulting in the PH-SPsBoW algorithm.
+
+The Vector of Locally Aggregated Descriptors (VLAD) is an extension of the bag-of-words model concept, which combines it with Persistent Homology (PH) to propose the Persistence VLAD (PVLAD) algorithm. In PVLAD, a codebook is first obtained from the training set using k-means clustering, and then each point in the new persistence diagram is associated with its nearest codeword. Next, for each codeword, the total difference with all points is calculated to generate a vector. Compared to traditional bag-of-words models, PVLAD has better expressive power and can more effectively capture data features. The algorithm encodes more detailed information about the points assigned to the codewords, thereby providing a more accurate representation of the information. In this paper, the PBoW component of the PH-SPBoW algorithm is replaced with PVLAD, resulting in the PH-SPVLAD algorithm.
+
+\section{Stability theorems of PH-SPBoW and its improved algorithms}\label{sec4}
+
+In topological data analysis, the stability of an algorithm is a crucial indicator of its reliability and robustness. This chapter will focus on PH-SPBoW and its improved algorithms, including PH-SPwBoW, PH-SPVLAD, and PH-SPsBoW, concerning their stability under the 1-Wasserstein distance. The following is the definition of the q-Wasserstein distance.
+
+The $ q $-Wasserstein distance, which measures the distance between two probability distributions represented by persistence diagrams $ X $ and $ Y $, is defined as:  
+\begin{definition}[q-Wasserstein distance]\label{definition5}
+	\begin{align*}  
+	W_q(X, Y) = {\left[\inf_{\eta: X \to Y} \sum_{x \in X} \| x - \eta(x) \|_\infty^q \right]}^{\frac{1}{q}}.  
+	\end{align*}  
+	  
+	$ X $ and $ Y $ represent two persistence diagrams.  
+	$ \eta(x) $ denotes the optimal mapping from $ X $ to $ Y $.  
+	$ \| x - \eta(x) \|_\infty $ represents the norm that measures the distance between points in the diagrams.  
+\end{definition}
+
+
+\subsection{Stability of PH-SPBoW based on 1-\shl{w}asserstein distance}\label{sec4.1}
+
+\begin{theorem}[PH-SPBoW Stability Theorem]\label{thm1}  
+	\textit{Let} $ B $ \textit{and} $ B' $ \textit{be persistence diagrams (PDs) with a finite number of off-diagonal points. Let} $ U $ \textit{and} $ U' $ \textit{be vectors obtained through the Persistent Homology Spatial Bag-of-Words (PH-SPBoW) transformation, with dimensions defined as}   
+	
+	$  
+	\text{dim} = d(4^0 + 4^1 + \cdots + 4^L) = \frac{d(4^{L+1} - 1)}{3}.  
+	$  
+	\textit{As the level of subdivision} $ L $ \textit{approaches infinity, PH-SPBoW remains stable with respect to the 1-Wasserstein distance, i.e.,}   
+	\begin{align*}  
+	\| U - U' \|_\infty \leq C \cdot W_1(B, B')  
+	\end{align*}  
+	\textit{where} $ C $ \textit{is a constant.}    
+\end{theorem}  
+
+\textit{\textbf{Proof:}} Let $ B $ and $ B' $ be divided $ L $ times to obtain $ L + 1 $ partitioned PD diagrams $ B_0, B_1, \ldots, B_L $ and $ B_0', B_1', \ldots, B_L' $, respectively. Using the function $ f_{PHBoW}: PD \to \mathbb{R}^d $, map each partitioned PD diagram to a $ d $-dimensional vector $ u_0, u_1, \ldots, u_L $ and $ u_0', u_1', \ldots, u_L' $. Weight them using the spatial pyramid kernel and concatenate them end-to-end to obtain:  
+\begin{align*}  
+&U = F_{PH-SPBoW}(B) = \left( \frac{1}{2^L} u_0, \frac{1}{2^L} u_1, \ldots, \frac{1}{2^{L-l+1}} u_l,\ldots,\frac{1}{2} u_L \right),  \\
+&U' = F_{PH-SPBoW}(B') = \left( \frac{1}{2^L} u_0', \frac{1}{2^L} u_1', \ldots, \frac{1}{2^{L-l+1}} u_l',\ldots,\frac{1}{2} u_L' \right).  
+\end{align*}  
+So we have:  
+\begin{align*}  
+	\begin{aligned}  
+		\| U - U' \|_\infty & \leq \max \left(   
+		\frac{1}{2^L} \| u_0 - u_0' \|_\infty,   
+		\frac{1}{2^L} \| u_1 - u_1' \|_\infty, \ldots,   
+		\frac{1}{2^{L-l+1}} \| u_l - u_l' \|_\infty,\right.\\
+		&\quad{}\left.\ldots, \frac{1}{2} \| u_L - u_L' \|_\infty   
+		\right) \\
+		& = \frac{1}{2^L} \| u_0 - u_0' \|_\infty   
+		\quad \text{or} \quad   
+		\frac{1}{2^{L - i + 1}} \| u_i - u'_i \|_\infty. 
+	\end{aligned}  
+\end{align*} 
+Also, since $ \| u_0 - u_0' \|_\infty \geq 0 $ and $ \| u_i - u_i' \|_\infty \geq 0 $, then as $ L \to \infty $, $ \| U - U' \|_\infty \to 0 $. Furthermore, since $ W_1(B, B') \geq 0 $, there must exist an $ L $ such that  
+\begin{align*}  
+\| U - U' \|_\infty \leq W_1(B, B').  
+\end{align*}  
+
+Based on the aforementioned \hyperref[thm1]{Theorem~\ref{thm1}}, we theoretically prove that the PH-SPBoW algorithm is stable under the 1-Wasserstein distance; that is, when a persistence diagram (PD) undergoes a small perturbation, the vector produced by the algorithm changes only slightly. This establishes that the algorithm is robust to small variations in the input data distribution, capable of maintaining the stability of its output distribution under input perturbations, thereby improving the algorithm's reliability and generalization.
+
+In effect, proving the stability of the PH-SPBoW algorithm in the 1-Wasserstein distance amounts to verifying that when the Persistence Diagram (PD) undergoes slight variations, the magnitude of change in the feature vector generated by the PH-SPBoW algorithm remains relatively small. This characteristic is crucial for ensuring the robustness of the algorithm when processing real-world data. In contrast, the traditional PBoW algorithm demonstrates insufficient stability in the 1-Wasserstein distance. Specifically, when a PD experiences minor alterations, the feature vector $f_{PBoW} (B)$ generated using the PBoW algorithm may exhibit significant fluctuations. This instability can lead to excessively large differences in feature representations between similar data, thereby affecting subsequent analysis and applications. The reason for this difference lies in the fact that the spatial pyramid segmentation and spatial pyramid kernel weighting enable the PH-SPBoW algorithm to focus more on the details of each part of the PD, and can offset the overall instability. Therefore, ensuring the stability of the feature vector of the PH-SPBoW algorithm in the face of small disturbances is a major advantage compared to the traditional PBoW algorithm.
+
+\subsection{Stability of PH-SPwBoW and PH-SPVLAD based on 1-\shl{w}asserstein distance}\label{sec4.2}
+
+In topological data analysis, persistence (i.e., the difference between death time and birth time) is often used to measure the importance of features. Generally, points with higher persistence are considered more representative than those with lower persistence. Edelsbrunner et~al. \cite{edelsbrunner2010computational} pointed out that points with low persistence are more likely to originate from noise. However, in the previous PH-SPBoW algorithm, the sampling clustering step in the codebook generation process ignored this important feature. To address this problem, we propose the PH-SPwBoW algorithm, which weights PD diagram groups and sub-PD diagrams to make high-persistence points easier to sample. Specifically, we use formula (3--17) as the weight function. In this study, we consider using a linear weight function, where the sampling probability of a point is proportional to its persistence. It should be noted that this linear relationship may not be applicable in all cases. For data with different noise levels, different weight functions, such as polynomial or exponential functions, can be chosen to better sample high-persistence points. Through weighted clustering, the PH-SPwBoW algorithm achieves stronger adaptability and more uniform sampling of the space. Similar to the PH-SPBoW algorithm, the PH-SPwBoW algorithm is stable in the 1-Wasserstein distance. As shown in \hyperref[thm1]{Theorem~\ref{thm1}}, the PH-SPwBoW algorithm is stable in the 1-Wasserstein distance when L approaches infinity.
+
+VLAD (Vector of Locally Aggregated Descriptors) is an efficient and compact image representation method. Extending it to PD diagrams and combining it with spatial pyramid segmentation yields the PH-SPVLAD algorithm. The core idea of VLAD is to quantize the local features of data points into a set of predefined codebooks, and then aggregate the local features corresponding to each codebook to form the final data representation vector. Specifically, it is first necessary to extract local features (i.e., the birth time and death time of topological features) from the PD diagram groups or sub-PD diagram groups. Then, a visual codebook is trained on a large number of local feature descriptors using the k-means clustering algorithm. This codebook consists of $ K $ cluster centers (i.e., visual words), represented as $ C = c_1, c_2, \ldots, c_K $. For a given PD diagram or PD sub-diagram, its local feature descriptor set $ X = \{x_1, x_2, \ldots, x_n\} $ is extracted, where $ x_i \in \mathbb{R}^2 $ is a 2-dimensional local feature descriptor (i.e., a point in the PD diagram). The VLAD algorithm assigns each local feature descriptor $ x_i $ to its nearest visual word $ c_{nn(i)} $, where $ nn(i) = \arg\min_k \|x_i - c_k\| $. Then, for each visual word $ c_k $, the VLAD algorithm calculates the residual vectors of all local feature descriptors assigned to that visual word with respect to the center vector of the visual word, and accumulates these residual vectors. The $ k $-th component $ v_k $ of the VLAD vector is expressed as:  
+\begin{align*}  
+v_k = \sum_{i:nn(i)=k} (x_i - c_k)  
+\end{align*}  
+
+Connecting the accumulated residual vectors corresponding to all visual words and performing L2 normalization yields the final VLAD representation vector $ V $ of the PD diagram: $ V = \text{normalize}([v_1, v_2, \ldots, v_K]) $ Essentially, applying VLAD to PD diagrams is a non-probabilistic local encoding method that captures the structural information of PD diagrams by calculating the residuals between the local feature descriptors of the PD diagrams and the visual words. Similar to the PH-SPBoW algorithm and the PH-SPwBoW algorithm, the PH-SPVLAD algorithm is stable in the 1-Wasserstein distance when $ L $ approaches infinity.
+
+\subsection{Stability of PH-SPsBoW based on 1-\shl{w}asserstein distance}\label{sec4.3}
+
+While the PH-SPBoW, PH-SPwBoW, and PH-SPVLAD algorithms exhibit some stability with respect to the 1-Wasserstein distance, this stability is only achieved when the segmentation level L approaches positive infinity. To address this limitation, we propose replacing the k-means hard assignment in PH-SPBoW with Gaussian Mixture Model (GMM) soft assignment, resulting in a more stable feature representation method, namely stable PH-SPsBoW. This improvement not only enhances the robustness of the model but also improves its adaptability when dealing with complex data.
+The PH-SPBoW algorithm can be summarized in the following steps:
+\begin{enumerate}\leftskip6pt  
+	\item[Step 1:~] First, superimpose all Persistence Diagrams (PDs) to obtain a set of PDs, and then apply spatial pyramid partitioning to this set of PDs to obtain a set of partitioned PDs.  
+	
+	\item[Step 2:~] For each set of partitioned PDs, PH-SPBoW samples and performs k-means clustering to obtain a codebook. Finally, based on this codebook, each PD is decoded to obtain a vector of dimension $ d $.  
+	
+	\item[Step 3:~] Each set of partitioned PDs obtained at each level $ l = 0, 1, 2, \ldots, L $ is processed according to step 2. Then, one PD can obtain $  1 + 4 + 4^2 +\cdots+ 4^L = \frac{4^{L+1} - 1}{3} $vectors of dimension $ d $.  
+	
+	\item[Step 4:~] After weighting the vectors using the spatial pyramid kernel and concatenating them end-to-end, one PD is transformed into a vector of dimension $\frac{4^{L+1} - 1}{3} d.$  
+\end{enumerate}  
+
+Since we use k-means clustering to generate the codebook in step 2, the subsequent decoding process performs hard assignment based on the distance between the point and the cluster center, which can cause some instability. We replace the k-means clustering in this step with the more flexible GMM algorithm for soft assignment, resulting in a more stable PH-SPsBoW.
+
+The Gaussian Mixture Model (GMM) was first proposed by Van Gemert et~al. in 2008 \cite{van2008kernel}. It is a probabilistic model used to represent a mixture of multiple Gaussian distributions. It assumes that data points are generated by multiple Gaussian distributions, each Gaussian distribution corresponding to a ``cluster''. The mathematical expression of GMM is:
+\begin{align*}  
+q(x) = \sum_{k=1}^{K} w_k \cdot \mathcal{N}(x | \mu_k, \Sigma_k), 
+\end{align*}  
+where $ q(x) $ is the probability density of data point $ x $, $ K $ is the number of Gaussian components, $ w_k $ is the weight of the $ k $-th Gaussian component satisfying $ \sum_{k=1}^{K} w_k = 1 $, and $ \mathcal{N}(x | \mu_k, \Sigma_k) $ is a Gaussian distribution with mean $ \mu_k $ and covariance $ \Sigma_k $, the formula for which is:  
+\begin{align*}  
+\mathcal{N}(x | \mu_k, \Sigma_k) = \frac{\exp\left(-\frac{1}{2} {(x - \mu_k)}^T \Sigma_k^{-1} (x - \mu_k)\right)}{{(2\pi)}^{d/2} |\Sigma_k|^{1/2}}, 
+\end{align*}  
+
+\noindent where $ d $ is the dimension of the data, and $ |\Sigma_k| $ is the determinant of the covariance matrix.  
+
+Given a PD diagram $ B $, we have $ f_{PsBoW}(B) : PD \rightarrow \mathbb{R}^d $ as  
+\begin{align*}  
+f_{PsBoW}(B) = {\left( v^{sPBoW}_i = w_i \sum_{x_t \in B} p(x_t | \lambda) \right)}_{i=1,2,\ldots,d},
+\end{align*}  
+where $ w_i > 0 $, $ \sum_{i=1}^{d} w_i = 1 $, and $ p_i(x_t | \lambda) $ is the likelihood of observation $ x_t $ being generated by the Gaussian distribution:  
+\begin{align*}  
+p_i(x_t | \lambda) = \frac{\exp\left(-\frac{1}{2} {(x_t - \mu_i)}^T \Sigma_i^{-1} (x_t - \mu_i)\right)}{{(2\pi)}^{d/2} |\Sigma_i|^{1/2}}.  
+\end{align*}  
+
+
+
+\begin{theorem}[PH-SPsBoW Stability Theorem]\label{thm2}  
+	\textit{Let} $ B $ \textit{and} $ B' $ \textit{be persistence diagrams (PDs) with a finite number of off-diagonal points. Let} $ U $ \textit{and} $ U' $ \textit{are} $\left( dim = d(4^0 + 4^1 + \cdots + 4^L) = \frac{d(4^{L+1} - 1)}{3}\right)$\textit{--dimensional vectors obtained from PH-SPBoW transformations. When the segmentation level} $L$ \textit{is fixed, PH-SPsBoW is stable with respect to the 1-Wasserstein distance, i.e.,}  
+	\begin{align*}  
+	\| U - U' \|_\infty \leq C \cdot W_1(B, B')  
+	\end{align*}  
+	\textit{where} $ C $ \textit{is a constant.}    
+\end{theorem}  
+
+
+\textit{\textbf{Proof:}} Let $ \eta: B \rightarrow B' $ be the optimal matching defined on the 1-Wasserstein distance. Fix the segmentation level $ L $, and the number of Gaussian components in the GMM to $ K $. Let $ B $ and $ B' $ be divided into $ L+1 $ segmented PD diagrams $ B_0, B_1, \ldots, B_L $ and $ B_0', B_1', \ldots, B_L' $, after $ L $ segmentations, respectively. Use the function $ f_{PsBoW}: PD \rightarrow \mathbb{R}^d $ to map each segmented PD diagram to a $ K $-dimensional vector $ u_0, u_1, \ldots, u_L $ and $ u_0', u_1', \ldots, u_L' $. Using spatial pyramid kernel weighting and concatenating them end-to-end, we obtain:  
+\begin{align*}  
+&U = F_{PH-SPsBoW}(B) = \left( \frac{1}{2^L} u_0, \frac{1}{2^L} u_1, \ldots, \frac{1}{2^{L-l+1}} u_l,\ldots,\frac{1}{2} u_L \right),\\
+&U' = F_{PH-SPsBoW}(B') = \left( \frac{1}{2^L} u_0', \frac{1}{2^L} u_1', \ldots, \frac{1}{2^{L-l+1}} u_l',\ldots,\frac{1}{2} u_L' \right).
+\end{align*}  
+So we have:  
+\begin{align*}  
+	\begin{aligned}  
+		\| U - U' \|_\infty & \leq \max \left(   
+		\frac{1}{2^L} \| u_0 - u_0' \|_\infty,   
+		\frac{1}{2^L} \| u_1 - u_1' \|_\infty, \ldots,   
+		\frac{1}{2^{L-l+1}} \| u_l - u_l' \|_\infty,\right.\\
+		&\quad{}\left.\ldots,   
+		\frac{1}{2} \| u_L - u_L' \|_\infty   
+		\right) \\
+		& = \frac{1}{2^L} \| u_0 - u_0' \|_\infty   
+		\quad \text{or} \quad   
+		\frac{1}{2^{L - i + 1}} \| u_i - u'_i \|_\infty.
+	\end{aligned}  
+\end{align*} 
+When $ \| U - U' \|_\infty = \frac{1}{2^L} \| u_0 - u_0' \|_\infty $,  
+\begin{align*}  
+	\begin{aligned}  
+		\| u_0 - u_0' \|_\infty & = \| f_{PH-SPsBoW}(B_0) - f_{PH-SPsBoW}(B_0') \|_\infty \\
+		& = \left\| w_i\sum_{x_t \in B_0}  (p_i(x_t | \lambda) - p_i(\eta(x_t) | \lambda)) \right\|_\infty \\
+		& \leq |w_i|\sum_{x_t \in E_{B_0}}  \| (p_i(x_t | \lambda) - p_i(\eta(x_t) | \lambda)) \|_\infty,
+	\end{aligned}  
+\end{align*} 
+since $ p_i: \mathbb{R}^2 \rightarrow \mathbb{R} $ is Lipschitz continuous, there exists a Lipschitz constant $ C_i $, such that  
+\begin{align*}  
+	\begin{aligned}  
+		w_i \sum_{x_t \in {B_0}} \| (p_i(x_t | \lambda) - p_i(\eta(x_t) | \lambda)) \|_\infty &\leq |w_i| \sum_{x_t \in {B_0}} C_i \| x_t - \eta(x_t) \|_\infty \\
+		& = |w_i |\sum_{x_t \in {B_0}} \| C_i(x_t - \eta(x_t) )\|_\infty \\
+		& = |w_i C_i |\sum_{x_t \in {B_0}} \| x_t - \eta(x_t) \|_\infty \\
+		& = |w_i C_i |W_1(B_0,B_0'),
+	\end{aligned}  
+\end{align*} 
+
+
+\begin{figure}[!b]
+\processfigure{\includegraphics{gr4.pdf}}{Experimental flowchart.\label{fig4}}{}
+\end{figure}
+
+\begin{table}[!b]%t1
+\processtable{Datasets details.\label{tab1}}
+{\begin{tabular*}{245pt}{@{\extracolsep\fill}@{\hskip6pt}llll@{\hskip6pt}}
+\toprule
+Dataset name & Data type & Number of categories & Dataset size\\
+\colrule
+ToyData & Synthetic Data & 6 & 300\\
+Dynamical3D & Power Systems & 9 & 450\\
+Dynamical2D & Power Systems & 5 & 250\\
+Porous & Porous Materials & 9 & {2205}\\
+BirdChicken & Time Series & 2 & 40\\
+Earthquakes & Time Series & 2 & 461\\
+ECG200 & Time Series & 2 & 200\\
+FreezerRegular & Time Series & 2 & 3000\\
+\bottomrule
+\end{tabular*}}
+{}
+\end{table}
+
+
+\begin{figure}[!b]
+\hsize\textwidth
+\processfigure{\includegraphics{gr5.pdf}}{Accuracy heatmap of PH-SPBoW algorithm on different datasets with varying parameters N and L.\label{fig5}}{}
+\end{figure}
+
+\noindent so,  
+\begin{align*}  
+\frac{1}{2^L} \| u_0 - u_0' \|_\infty \leq \frac{1}{2^L} | w_i C_i | W_1(B_0, B_0') = \frac{1}{2^{L - i + 1}} | w_i C_i | W_1(B, B').     
+\end{align*}  
+When $ \| U - U' \|_\infty = \frac{1}{2^{L - i + 1}} \| u_i - u'_i \|_\infty, \quad \| u_i - u'_i \|_\infty = \| u_{i_j} - u'_{i_j} \|_\infty, \quad u_{i_j}, u'_{i_j} \in B_{i_j}, B'_{i_j} $, $ B_{i_j}, B'_{i_j} $are sub-PD diagrams of $ B_i, B'_i $ after spatial pyramid segmentation, respectively. Therefore, the proof is the same as above, and we have:  
+\begin{align*}  
+\frac{1}{2^{L - i + 1}} \| u_i - u'_i \|_\infty \leq \frac{1}{2^{L - i + 1}} |w_i C_i| W_1(B_{i_j}, B_{i_j}') \leq \frac{1}{2^{L - i + 1}} |w_i C_i| W_1(B, B').  
+\end{align*}
+
+\section{Experiment and result analysis}\label{sec5}
+
+The experimental environment described in this article is based on an Intel(R) Xeon(R) Platinum 8260M CPU @ 2.30GHz, with a RAM of 16GB. The code is based on Python 3.8 and utilizes the GUDHI package. A detailed schematic of the experimental procedure is presented in \hyperref[fig4]{Fig.~\ref{fig4}}\tagfiglabel{fig4}.
+
+
+
+\subsection{Datasets}\label{sec5.1}
+
+In this experiment, we selected eight datasets of four different types for testing. These eight datasets vary in type and scale, allowing for a broad validation of the model's effectiveness. \hyperref[tab1]{Table~\ref{tab1}}\tagtablabel{tab1} presents the basic information about these eight datasets.\enlargethispage*{-337pt}
+
+
+\subsection{Parameter \shl{s}ettings for the PH-SPBoW \shl{a}lgorithm}\label{sec5.2}
+
+{For the PH-SPBoW algorithm, the choices of parameters N and L affect the experimental accuracy. Parameter N denotes the number of clusters for each grid, and parameter L denotes the number of levels for PD map partitioning; together they determine the dimensionality of the output vector. To determine the optimal values of N and L, we conducted accuracy experiments on eight datasets of four different types, testing various values of N and L (N ranging from 2 to 10, L ranging from 0 to 9). We ran 5-fold cross-validation to obtain average accuracies and plotted accuracy heat maps as shown in \hyperref[fig5]{Fig.~\ref{fig5}}\tagfiglabel{fig5}. For each dataset, a total of 80 experiments were conducted, resulting in 80 pairs of N and L values with their corresponding accuracy rates. In the figure, the color gradient from blue to red represents the accuracy rates from low to high, with the highest accuracy value in each dataset outlined by a blue box.}
+
+
+
+{As observed in \hyperref[fig5]{Fig.~\ref{fig5}}\tagfiglabel{fig5}, the accuracy heatmaps of the four datasets---Porous, FreezerRegular, Dynamical2D, and Dynamical3D---exhibit a clear and consistent pattern: regions of high accuracy, represented by red areas, are concentrated in the upper-right corner, while regions of low accuracy, represented by blue areas, are clustered in the lower-left corner. This indicates that the classification accuracy in these datasets shows a systematic increasing trend as the values of parameters N and L increase. Furthermore, the difference between the maximum and minimum accuracy values in these datasets exceeds 0.2. In contrast, the heatmaps of the ToyData, BirdChicken, Earthquakes, and ECG200 datasets display no significant patterns, and their accuracy ranges all fall within 0.2. This suggests that the irregular patterns observed may be attributed to the limited variation in accuracy. It is particularly noteworthy that when L=0---meaning no spatial pyramid segmentation is applied, and the PBoW algorithm is directly used for vectorization combined with Linear SVM classification---the classification accuracy across all datasets is significantly \shl{lower than} when L>0. Importantly, all blue boxes, which indicate the highest accuracy values, appear under conditions where L>0. This observation provides strong evidence for the effectiveness of the spatial pyramid segmentation method.}\enlargethispage*{-6pt}
+
+\subsection{Parameter \shl{s}ettings of the \shl{i}mproved PH-SPBoW \shl{a}lgorithm}\label{sec5.3}
+
+Similarly, as in the experimental setup of the standard PH-SPBoW algorithm, we conduct the same experiments for the PH-SPsBoW algorithm, PH-SPwBoW algorithm, and PH-SPVLAD algorithm, generating the heatmaps shown in \hyperref[fig6]{Figs.~\ref{fig6}}--\ref{fig8}\tagfiglabel{fig8}.
+
+\begin{figure*}[!b]
+\vspace*{-8pt}
+\processfigure{\includegraphics{gr6.pdf}}{Accuracy heatmap of PH-SPsBoW algorithm on different datasets with varying parameters N and L.\label{fig6}}{}\vspace*{8pt}
+\end{figure*}
+
+\begin{figure*}[!p]
+\processfigure{\includegraphics{gr7.pdf}}{Accuracy heatmap of PH-SPwBoW algorithm on different datasets with varying parameters N and L.\label{fig7}}{}
+\end{figure*}
+
+\begin{figure*}[!p]
+\processfigure{\includegraphics{gr8.pdf}}{Accuracy heatmap of PH-SPVLAD algorithm on different datasets with varying parameters N and L.\label{fig8}}{}
+\end{figure*}
+
+{The experimental results above demonstrate the following patterns:
+In the PH-SPsBoW algorithm, the heatmaps corresponding to the ToyData, Dynamical3D, and Porous datasets exhibit relatively regular patterns, with classification accuracy showing a systematic increase followed by stabilization or an increase-then-decrease trend as the values of parameters N and L increase. The other five datasets show smaller differences between their highest and lowest accuracy values, resulting in less pronounced patterns in their heatmaps. In the PH-SPwBoW algorithm, the heatmaps of the ToyData, Porous, FreezerRegular, Dynamical2D, and Dynamical3D datasets display \nobreak{}noticeable regularity, with \nobreak{}classification accuracy systematically increasing and then \nobreak{}stabilizing or \nobreak{}increasing followed by decreasing as the parameters grow. The \nobreak{}remaining datasets, with narrower accuracy ranges, do not show clear patterns in their heatmaps. In the PH-SPVLAD algorithm, the heatmaps for the ToyData, Porous, FreezerRegular, and Dynamical3D datasets also demonstrate observable trends, where accuracy systematically rises and then plateaus or rises and falls with increasing parameter values. The other five datasets, having limited accuracy variation, exhibit no distinct patterns in their heatmaps.}\enlargethispage*{-6pt}
+
+\subsection{Comparison of \shl{e}xperimental \shl{r}esults}\label{sec5.4}
+
+To validate the high accuracy and efficiency of the algorithm presented in this paper, we compared it with vectorization methods (PI, PL, and PBoW) and kernel methods (PWGK, PSSK, and SWK). We selected eight datasets across four categories and extracted one-dimensional PD plots from all datasets for experimentation, utilizing the sklearn\_tda package in Python. {Because the algorithms require different parameters, we selected parameters with reference to the literature \cite{zielinski2021persistence,dong2024persistence}.} For the PI algorithm, a resolution of $(10,20,30,\ldots,60)$ and a Gaussian kernel parameter of $\sigma = (0.1, 0.5, 1, 2, 3)$ were chosen; for the PL algorithm, the number of landscapes was set to $(1, 2, 3,\ldots,10)$, with each landscape having $(50, 100, 150, 200, 250, 300)$ sample points; for the PBoW algorithm, the number of clusters generated for the codebook was $(10, 20, 30,\ldots,120)$; for the PWGK algorithm, the Gaussian kernel parameter was $\sigma = (0.1, 0.5, 1)$; for the PSSK algorithm, the Gaussian kernel parameter was $\sigma = (0.1, 0.5, 1, 10)$; for the SWK algorithm, the Gaussian kernel parameter was $\sigma = (0.1, 0.5, 1, 10)$, and the number of directions, which specifies the number of random directions to project the data onto, was set to $(50, 100, 150, 200, 250)$. For the two larger datasets, Porous and FreezerRegular, we only conducted comparisons of the vectorization methods. We performed five-fold cross-validation for all algorithms, obtaining the average accuracy, the standard \nobreak{}deviation of the accuracy from the five-fold cross-validation, and the runtime, as shown in \hyperref[tab2]{Table~\ref{tab2}}\tagtablabel{tab2} (since the runtime for the PWGK algorithm on the Dynamical3D dataset exceeded 24~h, we used the accuracy from reference \cite{dong2024persistence}).\enlargethispage*{-6pt}
+
+
+\begin{table*}[!tb]%t2
+\processtable{Average accuracy, standard deviation, and time of 10 algorithms on 8 datasets using 5-fold cross-validation.\label{tab2}}
+{\begin{tabular*}{465pt}{@{\extracolsep\fill}@{\hskip6pt}lllllllll@{\hskip6pt}}
+\toprule
+\multirow[t]{2}{*}{Algorithm} & \multicolumn{2}{l}{BirdChicken} & \multicolumn{2}{l}{Earthquakes} & \multicolumn{2}{l}{ECG200} & \multicolumn{2}{l}{ToyData}\\
+\cmidrule(l{6pt}r{6pt}){2-3} \cmidrule(l{6pt}r{6pt}){4-5} \cmidrule(l{6pt}r{6pt}){6-7} \cmidrule(l{6pt}){8-9}  & Score & Time (s) & Score & Time (s) & Score & Time (s) & Score & Time (s)\\
+\colrule
+\textbf{PH-SPBoW} & 0.9500 $\pm$ 0.0612 & 9.75 & 0.8004 $\pm$ 0.0048 & 21.83 & \textbf{0.8050 $\pm$ 0.0748} & 16.16 & 0.9533 $\pm$ 0.0194 & 112.09\\
+\textbf{PH-SPsBoW} & \textbf{1.0000 $\pm$ 0.0000} & 1.05 & 0.7983 $\pm$ 0.0050 & \textbf{4.34} & 0.7800 $\pm$ 0.0292 & 0.91 & 0.9700 $\pm$ 0.0371 & 48.33\\
+\textbf{PH-SPwBoW} & \textbf{1.0000 $\pm$ 0.0000} & 2.22 & \textbf{0.8047 $\pm$ 0.0075} & 86.68 & \textbf{0.8150 $\pm$ 0.0436} & 1.11 & 0.9633 $\pm$ 0.0067 & \textbf{39.64}\\
+\textbf{PH-SPVLAD} & 0.9750 $\pm$ 0.0500 & 15.15  &0.8004 $\pm$ 0.0084 & 14.54 & 0.7650 $\pm$ 0.0490 & \textbf{0.46} & 0.8733 $\pm$ 0.0226 & 287.88\\
+PBoW & 0.9250 $\pm$ 0.0612 & 14.36 & 0.7983 $\pm$ 0.0050 & 23.99 & 0.7550 $\pm$ 0.0430 & 0.64 & 0.9267 $\pm$ 0.0343 & 145.13\\
+PI & 0.9500 $\pm$ 0.0612 &\textbf{0.05} & 0.7983 $\pm$ 0.0050 & 25.87 & 0.7600 $\pm$ 0.0339 & 0.75 & \textbf{0.9767 $\pm$ 0.0226} & 369.54\\
+PL & 0.8000 $\pm$ 0.1696 & \textbf{0.12} & \textbf{0.8026 $\pm$ 0.0088} & \textbf{2.84} & 0.7550 $\pm$ 0.0510 &\textbf{0.19} & 0.5199 $\pm$ 0.0194 & \textbf{6.55}\\
+SWK & 0.9500 $\pm$ 0.0612 & 0.70 & 0.7983 $\pm$ 0.0050 & 157.72 & \textbf{0.8050 $\pm$ 0.0400} & 2.92 & \textbf{0.9766 $\pm$ 0.0082} & 431.84\\
+PSSK & 0.9500 $\pm$ 0.0612 & 3.74 & 0.7982 $\pm$ 0.0050 & 2740.68 & 0.7900 $\pm$ 0.0561 & 7.51 & 0.9433 $\pm$ 0.0343 & 6655.93\\
+PWGK & 0.9000 $\pm$ 0.0935 & 30.48 & 0.7982 $\pm$ 0.0050 & 2547.70 & 0.7500 $\pm$ 0.0474 & 227.25 & 0.9033 $\pm$ 0.0163 & 4616.51\\
+\midrule
+Algorithm & \multicolumn{2}{l}{Dynamical3D} & \multicolumn{2}{l}{Dynamical2D} & \multicolumn{2}{l}{Porous} & \multicolumn{2}{l}{FreezerRegular} \\
+\cmidrule(l{6pt}r{6pt}){2-3} \cmidrule(l{6pt}r{6pt}){4-5} \cmidrule(l{6pt}r{6pt}){6-7} \cmidrule(l{6pt}){8-9}  & Score & Time (s) & Score & Time (s) & Score & Time (s) & Score & Time (s)\\
+\colrule
+\textbf{PH-SPBoW} & \textbf{0.9022 $\pm$ 0.0191} & 13.37 & 0.9080  $\pm$ 0.0299 & 13.54 & \textbf{0.9619 $\pm$ 0.0078} & 244.05 & 0.9937 $\pm$ 0.0032 & 428.21\\
+\textbf{PH-SPsBoW} & 0.8089 $\pm$ 0.0473 & \textbf{4.60} & 0.5720 $\pm$ 0.0601 & 15.70 & 0.9420 $\pm$ 0.0092 & 520.43 & \textbf{0.9983 $\pm$ 0.001} & \textbf{105.42}\\
+\textbf{PH-SPwBoW} & \textbf{0.9044 $\pm$ 0.0295} & 11.40 & \textbf{0.9480 $\pm$ 0.0240} & \textbf{8.63} & 0.9610 $\pm$ 0.0087 & \textbf{236.42} & 0.9960 $\pm$ 0.0025 & 173.56\\
+\textbf{PH-SPVLAD} & 0.7844 $\pm$ 0.0295 & 72.30 & 0.6560 $\pm$ 0.1084 & 11.52 & 0.7995 $\pm$ 0.0142 & 292.42 & \textbf{0.9983 $\pm$ 0.0011} & 335.09\\
+PBoW & 0.8667 $\pm$ 0.0233 & 49.81 & 0.5640 $\pm$ 0.0686 & 9.18 & \textbf{0.9727 $\pm$ 0.0108} & 900.58 & 0.9940 $\pm$ 0.0013 & 557.43\\
+PI & 0.8444 $\pm$ 0.0243 & 88.07  &\textbf{0.9480 $\pm$ 0.0240} & 169.11 & 0.9097 $\pm$ 0.1464 & 3239.01 & 0.9907 $\pm$ 0.0023 & \textbf{56.66}\\
+PL & 0.6889 $\pm$ 0.0337 & \textbf{2.20} & 0.7720 $\pm$ 0.0392 & \textbf{1.34} & 0.8376 $\pm$ 0.1664 & \textbf{86.44} & 0.9457 $\pm$ 0.0104 & 141.01\\
+SWK & 0.8489 $\pm$ 0.0349 & 56.00 & 0.8240 $\pm$ 0.0585 & 55.71 & & & &\\
+PSSK & 0.7756 $\pm$ 0.0381 & 20,618.10 & 0.7480 $\pm$ 0.0160 & 3998.23 & & & &\\
+PWGK & 0.8090 $\pm$ 0.0150 & & 0.7920 $\pm$ 0.0560 & 4165.12 & & & &\\
+\bottomrule
+\end{tabular*}}  
+{}	
+\end{table*}
+
+
+In \hyperref[tab2]{Table~\ref{tab2}}\tagtablabel{tab2}, we highlight the algorithms proposed in this paper in bold. The top two algorithms with the highest average accuracy for each dataset are also bolded, as well as the top two algorithms with the shortest execution time. {In the BirdChicken dataset, the two algorithms PH-SPwBoW and PH-SPVLAD achieved the highest accuracy, both reaching 100\%, with an accuracy improvement of 2.5\% to 20\% compared to other algorithms. In the Earthquakes dataset, the PH-SPwBoW and PL algorithms achieved the highest and second-highest average accuracy, respectively, with a mere 0.11\% difference between them. The PH-SPwBoW algorithm shows an average accuracy improvement of 0.11\% to 0.65\% over other traditional methods. In the ECG200 dataset, the PH-SPwBoW method achieved the highest accuracy by a notable margin, while PH-SPBoW and SWK followed closely behind with a mere\% difference, ranking jointly in second place. Compared to conventional algorithms, PH-SPwBoW attained an average accuracy improvement ranging from 1\% to 6.5\%. In the ToyData dataset, PI and SWK algorithms achieved the highest average accuracy. It is noteworthy that the PH-SPBoW algorithm proposed in this paper demonstrates a mere 0.67\% gap from this optimal performance, while requiring substantially less computational time than conventional PI and SWK algorithms. In the Dynamical3D dataset, both PH-SPBoW and PH-SPwBoW achieved the highest mean accuracy. Notably, PH-SPwBoW demonstrated a performance improvement of 3.77\% to 21.55\% compared to conventional methods. For the Dynamical2D dataset, while PH-SPwBoW and PI attained comparable top accuracy, the execution time of PI was approximately 20 times longer than that of PH-SPwBoW. Furthermore, PH-SPwBoW achieved a maximum accuracy gain of up to 38.40\% over other traditional algorithms. In the Porous dataset, PH-SPBoW outperformed PBoW by a narrow margin of 1.18\% in accuracy rankings, while requiring \shl{less than} one-third of the computational time of PBoW. Compared to other vectorization approaches, PH-SPBoW achieved a maximum accuracy improvement of 12.43\%. Within the FreezerRegular dataset, PH-SPwBoW and PH-SPVLAD yielded the highest mean accuracy of 99.83\%, surpassing other vectorization methods by 0.43\% to 5.26\%.}
+
+{We plotted the ten algorithms' mean accuracy across eight datasets in \hyperref[fig9]{Fig.~\ref{fig9}}\tagfiglabel{fig9}. The experimental results indicate that the four algorithms proposed in this paper perform exceptionally well on the BirdChicken, Earthquakes, ECG200, Dynamical3D, Dynamical2D, Porous and FreezerRegular dataset, achieving the highest or second-highest accuracy. The ToyData datasets's accuracy is comparable to other methods, with the difference from the optimal average accuracy algorithms being \shl{less than} 1\%.}\enlargethispage*{-6pt}
+
+\begin{figure*}[!tb]
+\processfigure{\includegraphics{gr9.pdf}}{Line chart of the average accuracy of 10 algorithms on 8 datasets with 5-fold cross-validation.\label{fig9}}{}\vspace*{-6pt}
+\end{figure*}
+
+The experimental results indicate that the algorithm proposed in this paper significantly improves the average accuracy compared to traditional classification algorithms across various types and sizes of datasets. This demonstrates that the spatial pyramid matching algorithm, combined with the bag-of-words model, can effectively extract topological features from the dataset, further validating the algorithm's effectiveness and efficiency. 
+
+\begin{figure*}[!tb]
+\processfigure{\includegraphics{gr10.pdf}}{Line chart of the standard deviation of 10 algorithms on 8 datasets with 5-fold cross-validation.\label{fig10}}{}\vspace*{-6pt}
+\end{figure*}
+
+\hyperref[fig10]{Fig.~\ref{fig10}}\tagfiglabel{fig10} shows the line plot of the standard deviation of mean accuracy from five-fold cross-validation. It is evident that the PH-SPwBoW algorithm exhibits a standard deviation close to zero on most datasets, demonstrating exceptionally outstanding stability; the PH-SPsBoW algorithm, except on the Dynamical2D dataset, maintains low standard deviation across all other datasets, indicating overall good stability. In contrast, algorithms such as PI and PBoW show substantial increases in standard deviation on datasets like BirdChicken and Porous, indicating significant fluctuations in stability. Notably, the overall stability of the PH-series algorithms (PH-SPBoW, PH-SPsBoW, PH-SPwBoW, PH-SPVLAD) is clearly superior to that of traditional algorithms (PBoW, PI, PL, etc.), which fully demonstrates the effectiveness of the algorithmic improvements in enhancing stability.
+
+\enlargethispage*{-8pt}
+\subsection{Algorithm \shl{t}ime \shl{c}omparison}\label{sec5.5}
+
+{The bar chart in \hyperref[fig11]{Fig.~\ref{fig11}}\tagfiglabel{fig11}, based on the 5-fold cross-validation experimental results across eight datasets, demonstrates the significant efficiency advantages of our proposed algorithms. Specifically, the PH-SPsBoW algorithm maintains optimal time performance on most datasets, with execution times comparable to the most efficient traditional algorithms PL and PI---requiring only 4.34~s and 4.60~s on the Earthquakes and Dynamical3D datasets, respectively. Meanwhile, the PH-SPwBoW algorithm achieves runtimes of just 8.63~s and 236.42~s on the Dynamical2D and Porous datasets, significantly outperforming other compared algorithms while maintaining competitive accuracy. In \nobreak{}contrast, traditional algorithms PSSK and PWGK incur substantially higher computational costs, with runtimes reaching 2740.68~s and 2547.70~s on the Earthquakes dataset, and PSSK requiring as much as 20,618.10~s on the Dynamical3D dataset---exceeding the runtime of our proposed algorithms by three orders of magnitude. It is also noteworthy that PH-SPBoW requires only 27\% of the execution time of PBoW on the Porous dataset, highlighting its superior computational efficiency. Overall, the proposed PH-series algorithms achieve a better balance between runtime efficiency and classification performance, offering a more practical solution for time series classification\break{} tasks.}
+
+\begin{figure*}[!tb]
+\processfigure{\includegraphics{gr11.pdf}}{Scatter plot of the runtime of 10 algorithms on 8 datasets with 5-fold cross-validation.\label{fig11}}{}
+\end{figure*}
+
+\subsection{Stability \shl{a}nalysis of PH-SPBoW, PH-SPsBoW, PH-SPwBoW, PH-SPVLAD \shl{a}lgorithms \shl{r}elative to \shl{L}}\label{sec5.6}
+
+{In \hyperref[sec4]{Section~\ref{sec4}}, we demonstrated that three algorithms---PH-SPBoW, PH-SPwBoW, and PH-SPVLAD---are stable as $L$ approaches infinity, while PH-SPsBoW exhibits even stronger stability, requiring only a fixed $L$ for stability. To validate this conclusion, we selected the largest sample dataset, FreezerRegular, for experimentation. We created \hyperref[fig12]{Fig.~\ref{fig12}}\tagfiglabel{fig12} to illustrate the trend of average standard deviation for the four algorithms (PH-SPBoW, PH-SPwBoW, PH-SPVLAD, and PH-SPsBoW) at different values of $L$.}\enlargethispage*{-12pt}
+
+
+\begin{figure*}[!tb]
+\processfigure{\includegraphics{gr12.pdf}}{Trend line graph of average standard deviation.\label{fig12}}{}
+\end{figure*}
+
+{The graph indicates that as the value of $L$ increases, the average standard deviations of the three algorithms---PH-SPBoW, PH-SPwBoW, and PH-SPVLAD---gradually decrease, demonstrating an enhancement in their stability. This suggests that a larger $L$ contributes to improved performance. In contrast, PH-SPsBoW exhibits relatively stronger stability, as its average standard deviation shows little variation across different $L$ values, indicating that its stability is less affected by changes in $L$. Specifically, PH-SPBoW has a slope of {\textminus}0.0009, highlighting a significant improvement in stability with increasing $L$, while PH-SPsBoW has a slope of only {\textminus}0.0004, further indicating that its stability is less dependent on $L$. This finding also experimentally supports our conclusion from \hyperref[sec4]{Section~\ref{sec4}}, that PH-SPBoW, PH-SPwBoW, and PH-SPVLAD are stable as $L$ approaches infinity, while PH-SPsBoW only requires a fixed value of $L$ for stability. This makes PH-SPsBoW more advantageous in certain application scenarios.}
+
+\section{Summary and outlook}\label{sec6}
+
+
+
+\subsection{Summary}\label{sec6.1}
+
+This paper proposes the PH-SPBoW algorithm based on persistent homology and, building upon it, designs three new algorithms: PH-SPwBoW, PH-SPsBoW, and PH-SPVLAD. To verify the performance of these algorithms, we conducted extensive experiments on eight datasets of different types and sizes, and performed comparative analysis with six traditional algorithms. The experimental results fully demonstrate the effectiveness and efficiency of the proposed algorithms.
+
+Starting from the algorithm principles, this paper first introduces two commonly used metrics for measuring the distance between persistence diagrams (PDs): the bottleneck distance and the Wasserstein distance. Subsequently, the stability of the four algorithms is theoretically analyzed. Specifically, the stability theorems of the PH-SPBoW, PH-SPwBoW, and PH-SPVLAD algorithms are relatively weak, requiring the level L of spatial pyramid partitioning to approach positive infinity to hold true. In contrast, the stability of PH-SPsBoW is stronger, allowing us to prove its stability in 1-Wasserstein distance under a fixed L.
+
+To enhance the stability of the PH-SPBoW, PH-SPwBoW, and PH-SPVLAD algorithms, future research could consider improving these three algorithms to maintain good performance across a wider range of application scenarios. This will help improve the reliability and effectiveness of the algorithms in practical data analysis.
+
+\subsection{Future \shl{p}otential \shl{r}esearch \shl{d}irections}\label{sec6.2}
+
+{
+This paper, based on persistent homology theory and combined with spatial pyramid matching and the bag-of-words model, proposes a new algorithm to achieve an effective integration of topological data analysis and machine learning. In view of the characteristics of this algorithm, we have made related improvements and proposed three improved algorithms; however, there remain aspects that require further optimization.
+}
+
+{
+TTo enhance the practical reliability of the PH-SPBoW series algorithms, future work will focus on investigating their stability under finite partitioning levels. Specifically, we will explore adaptive spatial pyramid partitioning strategies (e.g., dynamically adjusting grids based on the density distribution of the persistence diagram itself) or optimizing feature weighting functions to demonstrate and enhance the algorithm's stability concerning the bottleneck distance. The objective is to eliminate its theoretical reliance on the level L approaching infinity, ensuring robust performance across a broader range of parameter settings.
+}
+
+{
+While the current study validates the effectiveness of one-dimensional topological features, a key future direction involves extending the framework to high-dimensional persistence diagrams. We will design more effective schemes to integrate information from one-dimensional, two-dimensional, and higher-dimensional topological features, and redesign the algorithm based on the spatial pyramid bag-of-words model. This expansion is expected to capture richer topological structures from the data, thereby significantly improving the model's classification capability and expressive power.
+}
+
+{
+To optimize the process of topological feature extraction and enhance the general applicability of the algorithm, future work will systematically evaluate the performance of different complexes (such as \v{C}ech complexes and Alpha complexes) across various data types. The ultimate goal is to establish data-driven guidelines for complex selection and explore strategies for multi-complex feature fusion. This will enable the adaptive extraction of the most discriminative topological features, consequently improving the overall performance and adaptability of the method in diverse application scenarios.
+}
+
+{In exploring future work, a promising direction lies in integrating topological data analysis with optimization frameworks for complex systems under uncertainty. The persistent homology-based analytical approach proposed in this study can identify and quantify robust topological features within data, such as loops or cavities with high persistence. These topological features can serve as novel indicators for describing the overall health or robustness of a system. Just as reliability engineering employs intelligent optimization algorithms like the Jaya algorithm \cite{abed2021application} or fuzzy logic modules \cite{abed2023reliability} to address parameter uncertainties and optimize system configurations, future research could investigate how topological persistence features can be \nobreak{}incorporated as optimization objectives or constraints. For instance, new optimization models could be developed whose goals extend beyond traditional cost or reliability metrics to include the maximization of ``topological robustness''---ensuring that critical topological features of a system are preserved under perturbations. In this way, the geometric and topological insights provided by persistent homology could intersect productively with the well-established techniques for uncertainty management and optimization in reliability engineering, offering a new dimension for complex system design based on shape-related properties.
+}
+
+
+
+
+\backmatter
+
+\begin{aucontrib}[CRediT authorship contribution statement]
+\textbf{Lisha Yi:} Conceptualization. 
+\textbf{Ningning Peng:} Supervision. 
+\end{aucontrib}
+
+\begin{COI}[Declaration of \shl{c}ompeting \shl{i}nterest]
+The authors declare that they have no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper.
+\end{COI}
+
+\begin{dataavail}[Data \shl{a}vailability]
+Data will be made available on request.
+\end{dataavail}
+
+\begin{thebibliography}{10}
+
+
+
+
+
+
+
+
+\bibitem{mehrish2023review}
+\journal{\au{\fnm{A.} \snm{Mehrish}}, \au{\fnm{N.} \snm{Majumder}}, \au{\fnm{R.} \snm{Bharadwaj}}, \au{\fnm{R.} \snm{Mihalcea}}, \au{\fnm{S.} \snm{Poria}}, \atl{A review of deep learning techniques for speech processing}, \jtl{Inf. Fusion} \vol{99} (\yr{2023}) \ano{101869}.}
+\sourceref{A. Mehrish, N. Majumder, R. Bharadwaj, R. Mihalcea, S. Poria, A review of deep learning techniques for speech processing, Information Fusion 99 (2023) 101869.}
+
+\bibitem{orken2022study}
+\journal{\au{\fnm{M.} \snm{Orken}}, \au{\fnm{O.} \snm{Dina}}, \au{\fnm{A.} \snm{Keylan}}, \au{\fnm{T.} \snm{Tolganay}}, \au{\fnm{O.} \snm{Mohamed}}, \atl{A study of transformer-based end-to-end speech recognition system for \highlight{K}azakh language}, \jtl{Sci. Rep.} \vol{12} (\iss{1}) (\yr{2022}) \pg{8337}.}
+\sourceref{M. Orken, O. Dina, A. Keylan, T. Tolganay, O. Mohamed, A study of transformer-based end-to-end speech recognition system for kazakh language, Scientific reports 12 (1) (2022) 8337.}
+
+\bibitem{han2022survey}
+\journal{\au{\fnm{K.} \snm{Han}}, \au{\fnm{Y.} \snm{Wang}}, \au{\fnm{H.} \snm{Chen}}, \au{\fnm{X.} \snm{Chen}}, \au{\fnm{J.} \snm{Guo}}, \au{\fnm{Z.} \snm{Liu}}, \au{\fnm{Y.} \snm{Tang}}, \au{\fnm{A.} \snm{Xiao}}, \au{\fnm{C.} \snm{Xu}}, \au{\fnm{Y.} \snm{Xu}}, \etal{et~al.}, \atl{A survey on vision transformer}, \jtl{IEEE Trans. Pattern Anal. Mach. Intell.} \vol{45} (\iss{1}) (\yr{2022}) \pg{87--110}.}
+\sourceref{K. Han, Y. Wang, H. Chen, X. Chen, J. Guo, Z. Liu, Y. Tang, A. Xiao, C. Xu, Y. Xu, et~al., A survey on vision transformer, IEEE transactions on pattern analysis and machine intelligence 45 (1) (2022) 87--110.}
+
+\bibitem{ren2025machine}
+\journal{\au{\fnm{Y.} \snm{Ren}}, \au{\fnm{H.F.} \snm{Isleem}}, \au{\fnm{W.J.K.} \snm{Almoghaye}}, \au{\fnm{A.K.} \snm{Hamed}}, \au{\fnm{P.} \snm{Jangir}}, \au{\fnm{A.} \snm{Arpita}}, \au{\fnm{G.G.} \snm{Tejani}}, \au{\fnm{A.E.} \snm{Ezugwu}}, \au{\fnm{A.A.} \snm{Soliman}}, \atl{Machine learning-based prediction of elliptical double steel columns under compression loading}, \jtl{J. Big Data} \vol{12} (\iss{1}) (\yr{2025}) \pg{50}.}
+\sourceref{Y. Ren, H. F. Isleem, W. J. Almoghaye, A. K. Hamed, P. Jangir, Arpita, G. G. Tejani, A. E. Ezugwu, A. A. Soliman, Machine learning-based prediction of elliptical double steel columns under compression loading, Journal of Big Data 12 (1) (2025) 50.}
+
+\bibitem{ghannadi2023review}
+\journal{\au{\fnm{P.} \snm{Ghannadi}}, \au{\fnm{S.S.} \snm{Kourehli}}, \au{\fnm{S.} \snm{Mirjalili}}, \atl{A review of the application of the simulated annealing algorithm in structural health monitoring (1995--2021)}, \jtl{Fract. Struct. Integr.} \vol{17} (\iss{64}) (\yr{2023}) \pg{51--76}.}
+\sourceref{P. Ghannadi, S. S. Kourehli, S. Mirjalili, A review of the application of the simulated annealing algorithm in structural health monitoring (1995-2021), Fracture and Structural Integrity 17 (64) (2023) 51--76.}
+
+\bibitem{zhang2023survey}
+\journal{\au{\fnm{H.} \snm{Zhang}}, \au{\fnm{H.} \snm{Song}}, \au{\fnm{S.} \snm{Li}}, \au{\fnm{M.} \snm{Zhou}}, \au{\fnm{D.} \snm{Song}}, \atl{A survey of controllable text generation using transformer-based pre-trained language models}, \jtl{ACM Comput. Surv.} \vol{56} (\iss{3}) (\yr{2023}) \pg{1--37}.}
+\sourceref{H. Zhang, H. Song, S. Li, M. Zhou, D. Song, A survey of controllable text generation using transformer-based pre-trained language models, ACM Computing Surveys 56 (3) (2023) 1--37.}
+
+\bibitem{lawson2019persistent}
+\journal{\au{\fnm{P.} \snm{Lawson}}, \au{\fnm{A.B.} \snm{Sholl}}, \au{\fnm{J.Q.} \snm{Brown}}, \au{\fnm{B.T.} \snm{Fasy}}, \au{\fnm{C.} \snm{Wenk}}, \atl{Persistent homology for the quantitative evaluation of architectural features in prostate cancer histology}, \jtl{Sci. Rep.} \vol{9} (\iss{1}) (\yr{2019}) \pg{1139}.}
+\sourceref{P. Lawson, A. B. Sholl, J. Q. Brown, B. T. Fasy, C. Wenk, Persistent homology for the quantitative evaluation of architectural features in prostate cancer histology, Scientific reports 9 (1) (2019) 1139.}
+
+\bibitem{kramar2013persistence}
+\journal{\au{\fnm{M.} \snm{Kram\'{a}r}}, \au{\fnm{A.} \snm{Goullet}}, \au{\fnm{L.} \snm{Kondic}}, \au{\fnm{K.} \snm{Mischaikow}}, \atl{Persistence of force networks in compressed granular media}, \jtl{Phys. Rev. E} \vol{87} (\iss{4}) (\yr{2013}) \ano{042207}.}
+\sourceref{M. Kram\'{a}r, A. Goullet, L. Kondic, K. Mischaikow, Persistence of force networks in compressed granular media, Physical Review E---Statistical, Nonlinear, and Soft Matter Physics 87 (4) (2013) 042207.}
+
+\bibitem{nguyen2020bot}
+\journal{\au{\fnm{M.} \snm{Nguyen}}, \au{\fnm{M.} \snm{Aktas}}, \au{\fnm{E.} \snm{Akbas}}, \atl{Bot detection on social networks using persistent homology}, \jtl{Math. Comput. Appl.} \vol{25} (\iss{3}) (\yr{2020}) \pg{58}.}
+\sourceref{M. Nguyen, M. Aktas, E. Akbas, Bot detection on social networks using persistent homology, Mathematical and Computational Applications 25 (3) (2020) 58.}
+
+\bibitem{aktas2019persistence}
+\journal{\au{\fnm{M.E.} \snm{Aktas}}, \au{\fnm{E.} \snm{Akbas}}, \au{\fnm{A.E.} \snm{Fatmaoui}}, \atl{Persistence homology of networks: methods and applications}, \jtl{Appl. Netw. Sci.} \vol{4} (\iss{1}) (\yr{2019}) \pg{1--28}.}
+\sourceref{M. E. Aktas, E. Akbas, A. E. Fatmaoui, Persistence homology of networks: methods and applications, Applied Network Science 4 (1) (2019) 1--28.}
+
+\bibitem{clough2020topological}
+\journal{\au{\fnm{J.R.} \snm{Clough}}, \au{\fnm{N.} \snm{Byrne}}, \au{\fnm{I.} \snm{Oksuz}}, \au{\fnm{V.A.} \snm{Zimmer}}, \au{\fnm{J.A.} \snm{Schnabel}}, \au{\fnm{A.P.} \snm{King}}, \atl{A topological loss function for deep-learning based image segmentation using persistent homology}, \jtl{IEEE Trans. Pattern Anal. Mach. Intell.} \vol{44} (\iss{12}) (\yr{2020}) \pg{8766--8778}.}
+\sourceref{J. R. Clough, N. Byrne, I. Oksuz, V. A. Zimmer, J. A. Schnabel, A. P. King, A topological loss function for deep-learning based image segmentation using persistent homology, IEEE transactions on pattern analysis and machine intelligence 44 (12) (2020) 8766--8778.}
+
+\bibitem{zomorodian2004computing}
+\conference{\au{\fnm{A.} \snm{Zomorodian}}, \au{\fnm{G.} \snm{Carlsson}}, \atl{Computing persistent homology}, in: \cfname{Proceedings of the \highlight{T}wentieth \highlight{A}nnual \highlight{S}ymposium on Computational \highlight{G}eometry}, \yr{2004}, pp. \pg{347--356}.}
+\sourceref{A. Zomorodian, G. Carlsson, Computing persistent homology, in: Proceedings of the twentieth annual symposium on Computational geometry, 2004, pp. 347--356.}
+
+\bibitem{carlsson2009topology}
+\journal{\au{\fnm{G.} \snm{Carlsson}}, \atl{Topology and data}, \jtl{Bull. Am. Math. Soc.} \vol{46} (\iss{2}) (\yr{2009}) \pg{255--308}.}
+\sourceref{G. Carlsson, Topology and data, Bulletin of the American Mathematical Society 46 (2) (2009) 255--308.}
+
+\bibitem{pun2022persistent}
+\journal{\au{\fnm{C.S.} \snm{Pun}}, \au{\fnm{S.X.} \snm{Lee}}, \au{\fnm{K.} \snm{Xia}}, \atl{Persistent-homology-based machine learning: a survey and a comparative study}, \jtl{Artif. Intell. Rev.} \vol{55} (\iss{7}) (\yr{2022}) \pg{5169--5213}.}
+\sourceref{C. S. Pun, S. X. Lee, K. Xia, Persistent-homology-based machine learning: a survey and a comparative study, Artificial Intelligence Review 55 (7) (2022) 5169--5213.}
+
+\bibitem{reininghaus2015stable}
+\conference{\au{\fnm{J.} \snm{Reininghaus}}, \au{\fnm{S.} \snm{Huber}}, \au{\fnm{U.} \snm{Bauer}}, \au{\fnm{R.} \snm{Kwitt}}, \atl{A stable multi-scale kernel for topological machine learning}, in: \cfname{Proceedings of the IEEE \highlight{C}onference on \highlight{C}omputer \highlight{V}ision and \highlight{P}attern \highlight{R}ecognition}, \yr{2015}, pp. \pg{4741--4748}.}
+\sourceref{J. Reininghaus, S. Huber, U. Bauer, R. Kwitt, A stable multi-scale kernel for topological machine learning, in: Proceedings of the IEEE conference on computer vision and pattern recognition, 2015, pp. 4741--4748.}
+
+\bibitem{kusano2016persistence}
+\conference{\au{\fnm{G.} \snm{Kusano}}, \au{\fnm{Y.} \snm{Hiraoka}}, \au{\fnm{K.} \snm{Fukumizu}}, \atl{Persistence weighted \highlight{G}aussian kernel for topological data analysis}, in: \cfname{International \highlight{C}onference on \highlight{M}achine \highlight{L}earning}, \pub{PMLR}, \yr{2016}, pp. \pg{2004--2013}.}
+\sourceref{G. Kusano, Y. Hiraoka, K. Fukumizu, Persistence weighted gaussian kernel for topological data analysis, in: International conference on machine learning, PMLR, 2016, pp. 2004--2013.}
+
+\bibitem{carriere2017sliced}
+\conference{\au{\fnm{M.} \snm{Carriere}}, \au{\fnm{M.} \snm{Cuturi}}, \au{\fnm{S.} \snm{Oudot}}, \atl{Sliced wasserstein kernel for persistence diagrams}, in: \cfname{International \highlight{C}onference on \highlight{M}achine \highlight{L}earning}, \pub{PMLR}, \yr{2017}, pp. \pg{664--673}.}
+\sourceref{M. Carriere, M. Cuturi, S. Oudot, Sliced wasserstein kernel for persistence diagrams, in: International conference on machine learning, PMLR, 2017, pp. 664--673.}
+
+\bibitem{adams2017persistence}
+\journal{\au{\fnm{H.} \snm{Adams}}, \au{\fnm{T.} \snm{Emerson}}, \au{\fnm{M.} \snm{Kirby}}, \au{\fnm{R.} \snm{Neville}}, \au{\fnm{C.} \snm{Peterson}}, \au{\fnm{P.} \snm{Shipman}}, \au{\fnm{S.} \snm{Chepushtanova}}, \au{\fnm{E.} \snm{Hanson}}, \au{\fnm{F.} \snm{Motta}}, \au{\fnm{L.} \snm{Ziegelmeier}}, \atl{Persistence images: \highlight{a} stable vector representation of persistent homology}, \jtl{J. Mach. Learn. Res.} \vol{18} (\iss{8}) (\yr{2017}) \pg{1--35}.}
+\sourceref{H. Adams, T. Emerson, M. Kirby, R. Neville, C. Peterson, P. Shipman, S. Chepushtanova, E. Hanson, F. Motta, L. Ziegelmeier, Persistence images: A stable vector representation of persistent homology, Journal of Machine Learning Research 18 (8) (2017) 1--35.}
+
+\bibitem{bubenik2015statistical}
+\journal{\au{\fnm{P.} \snm{Bubenik}}, \etal{et~al.}, \atl{Statistical topological data analysis using persistence landscapes}, \jtl{J. Mach. Learn. Res.} \vol{16} (\iss{1}) (\yr{2015}) \pg{77--102}.}
+\sourceref{P. Bubenik, et~al., Statistical topological data analysis using persistence landscapes., J. Mach. Learn. Res. 16 (1) (2015) 77--102.}
+
+\bibitem{zielinski2021persistence}
+\journal{\au{\fnm{B.} \snm{Zieli\'{n}ski}}, \au{\fnm{M.} \snm{Lipi\'{n}ski}}, \au{\fnm{M.} \snm{Juda}}, \au{\fnm{M.} \snm{Zeppelzauer}}, \au{\fnm{P.} \snm{D{\l}otko}}, \atl{Persistence codebooks for topological data analysis}, \jtl{Artif. Intell. Rev.} \vol{54} (\yr{2021}) \pg{1969--2009}.}
+\sourceref{B. Zieli\'{n}ski, M. Lipi\'{n}ski, M. Juda, M. Zeppelzauer, P. D{\l}otko, Persistence codebooks for topological data analysis, Artificial Intelligence Review 54 (2021) 1969--2009.}
+
+\bibitem{hacohen2020influence}
+\journal{\au{\fnm{Y.} \snm{HaCohen-Kerner}}, \au{\fnm{D.} \snm{Miller}}, \au{\fnm{Y.} \snm{Yigal}}, \atl{The influence of preprocessing on text classification using a bag-of-words representation}, \jtl{PLoS One} \vol{15} (\iss{5}) (\yr{2020}) \ano{e0232525}.}
+\sourceref{Y. HaCohen-Kerner, D. Miller, Y. Yigal, The influence of preprocessing on text classification using a bag-of-words representation, PloS one 15 (5) (2020) e0232525.}
+
+\bibitem{qiu2020fuzzy}
+\journal{\au{\fnm{D.} \snm{Qiu}}, \au{\fnm{H.} \snm{Jiang}}, \au{\fnm{S.} \snm{Chen}}, \atl{Fuzzy information retrieval based on continuous bag-of-words model}, \jtl{Symmetry} \vol{12} (\iss{2}) (\yr{2020}) \pg{225}.}
+\sourceref{D. Qiu, H. Jiang, S. Chen, Fuzzy information retrieval based on continuous bag-of-words model, Symmetry 12 (2) (2020) 225.}
+
+\bibitem{abubakar2022sentiment}
+\journal{\au{\fnm{H.D.} \snm{Abubakar}}, \au{\fnm{M.} \snm{Umar}}, \au{\fnm{M.A.} \snm{Bakale}}, \atl{Sentiment classification: \highlight{r}eview of text vectorization methods: \highlight{b}ag of words, tf-idf, word2vec and doc2vec}, \jtl{S.L.U. J. Sci. Technol.} \vol{4} (\iss{1}) (\yr{2022}) \pg{27--33}.}
+\sourceref{H. D. Abubakar, M. Umar, M. A. Bakale, Sentiment classification: Review of text vectorization methods: Bag of words, tf-idf, word2vec and doc2vec, SLU Journal of Science and Technology 4 (1) (2022) 27--33.}
+
+\bibitem{grauman2005pyramid}
+\conference{\au{\fnm{K.} \snm{Grauman}}, \au{\fnm{T.} \snm{Darrell}}, \atl{The pyramid match kernel: \highlight{d}iscriminative classification with sets of image features}, in: \cfname{Tenth IEEE International Conference on Computer Vision (ICCV'05) Volume 1}, vol. \vol{2}, \pub{IEEE}, \yr{2005}, pp. \pg{1458--1465}.}
+\sourceref{K. Grauman, T. Darrell, The pyramid match kernel: Discriminative classification with sets of image features, in: Tenth IEEE International Conference on Computer Vision (ICCV'05) Volume 1, Vol.~2, IEEE, 2005, pp. 1458--1465.}
+
+\bibitem{edelsbrunner2010computational}
+\book{\au{\fnm{H.} \snm{Edelsbrunner}}, \au{\fnm{J.} \snm{Harer}}, \btl{Computational \highlight{T}opology: an \highlight{I}ntroduction}, \pub{American Mathematical Soc.}, \yr{2010}.}
+\sourceref{H. Edelsbrunner, J. Harer, Computational topology: an introduction, American Mathematical Soc., 2010.}
+
+\bibitem{van2008kernel}
+\conference{\au{\fnm{J.C.} \snm{Van Gemert}}, \au{\fnm{J.-M.} \snm{Geusebroek}}, \au{\fnm{C.J.} \snm{Veenman}}, \au{\fnm{A.W.M.} \snm{Smeulders}}, \atl{Kernel codebooks for scene categorization}, in: \cfname{Computer Vision--ECCV 2008: 10th European Conference on Computer Vision, Marseille, France, October 12-18, 2008, Proceedings, Part III 10}, \pub{Springer}, \yr{2008}, pp. \pg{696--709}.}
+\sourceref{J. C. Van Gemert, J.-M. Geusebroek, C. J. Veenman, A. W. Smeulders, Kernel codebooks for scene categorization, in: Computer Vision--ECCV 2008: 10th European Conference on Computer Vision, Marseille, France, October 12-18, 2008, Proceedings, Part III 10, Springer, 2008, pp. 696--709.}
+
+\bibitem{dong2024persistence}
+\journal{\au{\fnm{Z.} \snm{Dong}}, \au{\fnm{H.} \snm{Lin}}, \au{\fnm{C.} \snm{Zhou}}, \au{\fnm{B.} \snm{Zhang}}, \au{\fnm{G.} \snm{Li}}, \atl{Persistence b-spline grids: stable vector representation of persistence diagrams based on data fitting}, \jtl{Mach. Learn.} \vol{113} (\iss{3}) (\yr{2024}) \pg{1373--1420}.}
+\sourceref{Z. Dong, H. Lin, C. Zhou, B. Zhang, G. Li, Persistence b-spline grids: stable vector representation of persistence diagrams based on data fitting, Machine Learning 113 (3) (2024) 1373--1420.}
+
+\bibitem{abed2021application}
+\journal{\au{\fnm{S.A.} \snm{Abed}}, \au{\fnm{M.} \snm{Aljanabi}}, \au{\fnm{N.H.A.} \snm{Ameer}}, \au{\fnm{M.A.} \snm{Ismail}}, \au{\fnm{S.} \snm{Kasim}}, \au{\fnm{R.} \snm{Hassan}}, \au{\fnm{T.} \snm{Sutikno}}, \atl{Application of the jaya algorithm to solve the optimal reliability allocation for reduction oxygen supply system of a spacecraft}, \jtl{Indon. J. Electr. Eng. Comput. Sci.} \vol{24} (\iss{2}) (\yr{2021}) \pg{1202--1211}.}
+\sourceref{S. A. Abed, M. Aljanabi, N. H. A. Ameer, M. A. Ismail, S. Kasim, R. Hassan, T. Sutikno, Application of the jaya algorithm to solve the optimal reliability allocation for reduction oxygen supply system of a spacecraft, Indonesian Journal of Electrical Engineering and Computer Science 24 (2) (2021) 1202--1211.}
+
+\bibitem{abed2023reliability}
+\journal{\au{\fnm{S.A.} \snm{Abed}}, \au{\fnm{Z.H.} \snm{Khalil}}, \atl{Reliability allocation in complex systems using fuzzy logic modules}, \jtl{Babyl. J. Math.} \vol{2023} (\yr{2023}) \pg{78--83}.}
+\sourceref{S. A. Abed, Z. H. Khalil, Reliability allocation in complex systems using fuzzy logic modules, Babylonian Journal of Mathematics 2023 (2023) 78--83.}
+
+\end{thebibliography}
+
+
+
+
+
+
+
+\end{articlestyle}
+\end{document}
+
+
