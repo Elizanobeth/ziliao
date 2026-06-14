@@ -1,0 +1,132 @@
+<mxfile host="app.diagrams.net" modified="2026-06-14T00:00:00.000Z" agent="Codex" version="24.7.17" type="device">
+  <diagram id="supply-chain-ai-roadmap-compatible" name="供应链AI发展路径兼容版">
+    <mxGraphModel dx="1920" dy="1080" grid="1" gridSize="10" guides="1" tooltips="1" connect="0" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1080" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="bg" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F6F8FB;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="0" y="0" width="1920" height="1080" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="eyebrow" value="MANUFACTURING SUPPLY CHAIN AI ROADMAP" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=16;fontStyle=1;fontColor=#A65A00;fontFamily=Arial;" vertex="1" parent="1">
+          <mxGeometry x="90" y="55" width="520" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="title" value="制造业供应链 AI 赋能发展路径" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=38;fontStyle=1;fontColor=#172B4D;fontFamily=Arial;" vertex="1" parent="1">
+          <mxGeometry x="90" y="95" width="820" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="rule" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#2E94B9;strokeWidth=3;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="90" y="165" as="sourcePoint"/>
+            <mxPoint x="1780" y="165" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="subtitle" value="以业务场景牵引 AI 建设：边做场景、边补数据、边嵌流程，逐步从“看见问题”走向“推荐方案”和“闭环运营”。" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=20;fontColor=#344563;fontFamily=Arial;" vertex="1" parent="1">
+          <mxGeometry x="90" y="185" width="1420" height="38" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="main-card" value="" style="rounded=1;whiteSpace=wrap;html=1;arcSize=3;fillColor=#FFFFFF;strokeColor=#E1E7EF;" vertex="1" parent="1">
+          <mxGeometry x="90" y="250" width="1740" height="690" as="geometry"/>
+        </mxCell>
+
+        <!-- Phase cards -->
+        <mxCell id="card1" value="&lt;b&gt;1. 场景牵引启动&lt;/b&gt;&lt;br&gt;&lt;br&gt;不等待全量数据治理完成，先选择需求预测、库存预警、交付风险等高价值场景。&lt;br&gt;&lt;br&gt;产出：试点范围、价值口径、业务负责人。" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#B8C7D9;fontSize=16;fontColor=#344563;fontFamily=Arial;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=16;" vertex="1" parent="1">
+          <mxGeometry x="160" y="355" width="295" height="180" as="geometry"/>
+        </mxCell>
+        <mxCell id="card2" value="&lt;b&gt;2. 定向数据治理&lt;/b&gt;&lt;br&gt;&lt;br&gt;围绕试点场景补齐必要数据，打通 ERP / MES / WMS / APS 等关键系统。&lt;br&gt;&lt;br&gt;产出：最小可用数据集、指标口径、权限边界。" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#B8C7D9;fontSize=16;fontColor=#344563;fontFamily=Arial;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=16;" vertex="1" parent="1">
+          <mxGeometry x="505" y="315" width="315" height="195" as="geometry"/>
+        </mxCell>
+        <mxCell id="card3" value="&lt;b&gt;3. 模型预测与推荐&lt;/b&gt;&lt;br&gt;&lt;br&gt;从“发现风险”升级为“给出建议”，支持供需匹配、WIP 周期预测、产能瓶颈、MRO 备件优化。&lt;br&gt;&lt;br&gt;产出：风险排序、推荐方案、影响评估。" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#B8C7D9;fontSize=16;fontColor=#344563;fontFamily=Arial;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=16;" vertex="1" parent="1">
+          <mxGeometry x="875" y="285" width="335" height="210" as="geometry"/>
+        </mxCell>
+        <mxCell id="card4" value="&lt;b&gt;4. 流程嵌入与协同&lt;/b&gt;&lt;br&gt;&lt;br&gt;AI 建议进入真实业务动作，包括计划评审、采购催交、库存调拨、异常处理和跨部门协同。&lt;br&gt;&lt;br&gt;产出：人审执行、流程留痕、系统回写。" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#B8C7D9;fontSize=16;fontColor=#344563;fontFamily=Arial;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=16;" vertex="1" parent="1">
+          <mxGeometry x="1270" y="300" width="335" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="card5" value="&lt;b&gt;5. 控制塔闭环&lt;/b&gt;&lt;br&gt;&lt;br&gt;统一监控订单、库存、产能、供应商和交付风险。AI 推荐，人类审批，系统执行。&lt;br&gt;&lt;br&gt;产出：结果回流、模型迭代、持续优化。" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#B8C7D9;fontSize=16;fontColor=#344563;fontFamily=Arial;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=16;" vertex="1" parent="1">
+          <mxGeometry x="1570" y="415" width="230" height="210" as="geometry"/>
+        </mxCell>
+
+        <!-- Rising path shadow segments: basic straight lines only -->
+        <mxCell id="path-shadow-1" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#F4C27A;strokeWidth=18;opacity=70;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="305" y="760" as="sourcePoint"/><mxPoint x="650" y="665" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="path-shadow-2" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#F4C27A;strokeWidth=18;opacity=70;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="650" y="665" as="sourcePoint"/><mxPoint x="1035" y="540" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="path-shadow-3" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#F4C27A;strokeWidth=18;opacity=70;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1035" y="540" as="sourcePoint"/><mxPoint x="1435" y="405" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="path-shadow-4" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#F4C27A;strokeWidth=18;opacity=70;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1435" y="405" as="sourcePoint"/><mxPoint x="1690" y="285" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="path-main-1" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#C96D1D;strokeWidth=4;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="305" y="760" as="sourcePoint"/><mxPoint x="650" y="665" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="path-main-2" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#C96D1D;strokeWidth=4;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="650" y="665" as="sourcePoint"/><mxPoint x="1035" y="540" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="path-main-3" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#C96D1D;strokeWidth=4;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1035" y="540" as="sourcePoint"/><mxPoint x="1435" y="405" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="path-main-4" value="" style="endArrow=block;html=1;rounded=0;strokeColor=#C96D1D;strokeWidth=4;endFill=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1435" y="405" as="sourcePoint"/><mxPoint x="1690" y="285" as="targetPoint"/></mxGeometry>
+        </mxCell>
+
+        <!-- Dashed guides -->
+        <mxCell id="guide1" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#B8C7D9;dashed=1;dashPattern=5 5;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="305" y="535" as="sourcePoint"/><mxPoint x="305" y="760" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="guide2" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#B8C7D9;dashed=1;dashPattern=5 5;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="650" y="510" as="sourcePoint"/><mxPoint x="650" y="665" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="guide3" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#B8C7D9;dashed=1;dashPattern=5 5;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1035" y="495" as="sourcePoint"/><mxPoint x="1035" y="540" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="guide4" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#B8C7D9;dashed=1;dashPattern=5 5;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1435" y="500" as="sourcePoint"/><mxPoint x="1435" y="405" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="guide5" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#B8C7D9;dashed=1;dashPattern=5 5;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1690" y="415" as="sourcePoint"/><mxPoint x="1690" y="285" as="targetPoint"/></mxGeometry>
+        </mxCell>
+
+        <!-- Nodes -->
+        <mxCell id="dot1" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#253858;strokeColor=#FFFFFF;strokeWidth=4;" vertex="1" parent="1"><mxGeometry x="289" y="744" width="32" height="32" as="geometry"/></mxCell>
+        <mxCell id="dot2" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#84BD00;strokeColor=#FFFFFF;strokeWidth=4;" vertex="1" parent="1"><mxGeometry x="634" y="649" width="32" height="32" as="geometry"/></mxCell>
+        <mxCell id="dot3" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F5A623;strokeColor=#FFFFFF;strokeWidth=4;" vertex="1" parent="1"><mxGeometry x="1019" y="524" width="32" height="32" as="geometry"/></mxCell>
+        <mxCell id="dot4" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F97316;strokeColor=#FFFFFF;strokeWidth=4;" vertex="1" parent="1"><mxGeometry x="1419" y="389" width="32" height="32" as="geometry"/></mxCell>
+        <mxCell id="dot5" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F97316;strokeColor=#FFFFFF;strokeWidth=4;" vertex="1" parent="1"><mxGeometry x="1674" y="269" width="32" height="32" as="geometry"/></mxCell>
+
+        <mxCell id="label1" value="场景启动" style="rounded=1;whiteSpace=wrap;html=1;arcSize=50;fillColor=#FFFFFF;strokeColor=#D8DEE8;fontSize=19;fontStyle=1;fontColor=#172B4D;fontFamily=Arial;" vertex="1" parent="1">
+          <mxGeometry x="230" y="795" width="150" height="42" as="geometry"/>
+        </mxCell>
+        <mxCell id="label2" value="定向治理" style="rounded=1;whiteSpace=wrap;html=1;arcSize=50;fillColor=#FFFFFF;strokeColor=#D8DEE8;fontSize=19;fontStyle=1;fontColor=#172B4D;fontFamily=Arial;" vertex="1" parent="1">
+          <mxGeometry x="575" y="700" width="150" height="42" as="geometry"/>
+        </mxCell>
+        <mxCell id="label3" value="预测与推荐" style="rounded=1;whiteSpace=wrap;html=1;arcSize=50;fillColor=#FFFFFF;strokeColor=#D8DEE8;fontSize=19;fontStyle=1;fontColor=#172B4D;fontFamily=Arial;" vertex="1" parent="1">
+          <mxGeometry x="950" y="575" width="170" height="42" as="geometry"/>
+        </mxCell>
+        <mxCell id="label4" value="流程嵌入" style="rounded=1;whiteSpace=wrap;html=1;arcSize=50;fillColor=#FFFFFF;strokeColor=#D8DEE8;fontSize=19;fontStyle=1;fontColor=#172B4D;fontFamily=Arial;" vertex="1" parent="1">
+          <mxGeometry x="1360" y="435" width="150" height="42" as="geometry"/>
+        </mxCell>
+        <mxCell id="label5" value="控制塔闭环" style="rounded=1;whiteSpace=wrap;html=1;arcSize=50;fillColor=#FFFFFF;strokeColor=#D8DEE8;fontSize=19;fontStyle=1;fontColor=#172B4D;fontFamily=Arial;" vertex="1" parent="1">
+          <mxGeometry x="1610" y="315" width="160" height="42" as="geometry"/>
+        </mxCell>
+
+        <!-- Bottom phase bar -->
+        <mxCell id="phase1" value="&lt;b&gt;阶段一&lt;/b&gt;&amp;nbsp;&amp;nbsp;0-12个月&lt;br&gt;场景试点 + 定向数据治理" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#253858;strokeColor=none;fontSize=17;fontColor=#FFFFFF;fontFamily=Arial;align=left;verticalAlign=middle;spacingLeft=40;" vertex="1" parent="1">
+          <mxGeometry x="190" y="850" width="430" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="phase2" value="&lt;b&gt;阶段二&lt;/b&gt;&amp;nbsp;&amp;nbsp;12-24个月&lt;br&gt;模型推荐 + 流程嵌入" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#84BD00;strokeColor=none;fontSize=17;fontColor=#FFFFFF;fontFamily=Arial;align=left;verticalAlign=middle;spacingLeft=40;" vertex="1" parent="1">
+          <mxGeometry x="620" y="850" width="520" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="phase3" value="&lt;b&gt;阶段三&lt;/b&gt;&amp;nbsp;&amp;nbsp;24-36个月&lt;br&gt;Agent 协同 + AI 控制塔闭环" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F97316;strokeColor=none;fontSize=17;fontColor=#FFFFFF;fontFamily=Arial;align=left;verticalAlign=middle;spacingLeft=40;" vertex="1" parent="1">
+          <mxGeometry x="1140" y="850" width="610" height="70" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="footer" value="共同机制：业务场景提出数据需求 → 定向治理 → 模型验证 → 流程嵌入 → 结果回流形成数据资产" style="rounded=1;whiteSpace=wrap;html=1;arcSize=50;fillColor=#172B4D;strokeColor=none;fontSize=20;fontStyle=1;fontColor=#FFFFFF;fontFamily=Arial;" vertex="1" parent="1">
+          <mxGeometry x="250" y="970" width="1420" height="50" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
