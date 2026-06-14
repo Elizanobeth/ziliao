@@ -1,0 +1,117 @@
+<mxfile host="app.diagrams.net" modified="2026-06-14T00:00:00.000Z" agent="Codex" version="24.7.17" type="device">
+  <diagram id="fillable-supply-chain-ai-roadmap" name="供应链AI赋能可填写框架路线图">
+    <mxGraphModel dx="2200" dy="1400" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2200" pageHeight="1400" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="bg" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F6F8FB;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="0" y="0" width="2200" height="1400" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="title" value="制造业供应链 AI 赋能可填写框架路线图" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=40;fontStyle=1;fontColor=#172B4D;" vertex="1" parent="1">
+          <mxGeometry x="80" y="45" width="850" height="58" as="geometry"/>
+        </mxCell>
+        <mxCell id="subtitle" value="用于和老板/业务/IT共同补齐：系统现状、业务痛点、关键数据、AI动作、阶段计划和负责人" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=20;fontColor=#52616B;" vertex="1" parent="1">
+          <mxGeometry x="80" y="98" width="1100" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="rule" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#2E94B9;strokeWidth=3;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="80" y="145" as="sourcePoint"/><mxPoint x="2120" y="145" as="targetPoint"/></mxGeometry>
+        </mxCell>
+
+        <!-- Top principle -->
+        <mxCell id="principle" value="推进原则：不等待全量数据治理完成，而是以业务场景牵引数据治理。每个试点都要明确：用哪个系统数据、解决哪个业务痛点、AI给出什么动作、谁审批执行、结果如何回流。" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fillColor=#172B4D;strokeColor=none;fontSize=20;fontStyle=1;fontColor=#FFFFFF;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="120" y="175" width="1960" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- Main columns -->
+        <mxCell id="col1-title" value="① 系统盘点层&lt;br&gt;&lt;font style=&quot;font-size:14px&quot;&gt;先确认有哪些系统、谁负责、能取哪些数据&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#DBEAFE;strokeColor=#93C5FD;fontSize=22;fontStyle=1;fontColor=#1E3A8A;" vertex="1" parent="1">
+          <mxGeometry x="120" y="285" width="520" height="78" as="geometry"/>
+        </mxCell>
+        <mxCell id="col2-title" value="② 业务场景层&lt;br&gt;&lt;font style=&quot;font-size:14px&quot;&gt;再确认哪些业务最痛、最值得先做AI&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FEF3C7;strokeColor=#F5C16C;fontSize=22;fontStyle=1;fontColor=#92400E;" vertex="1" parent="1">
+          <mxGeometry x="690" y="285" width="620" height="78" as="geometry"/>
+        </mxCell>
+        <mxCell id="col3-title" value="③ 三阶段路线层&lt;br&gt;&lt;font style=&quot;font-size:14px&quot;&gt;最后把系统和业务映射到三年落地节奏&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#CCFBF1;strokeColor=#6EE7B7;fontSize=22;fontStyle=1;fontColor=#115E59;" vertex="1" parent="1">
+          <mxGeometry x="1360" y="285" width="720" height="78" as="geometry"/>
+        </mxCell>
+
+        <!-- Column backgrounds -->
+        <mxCell id="col1-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;arcSize=4;fillColor=#FFFFFF;strokeColor=#D9E2EC;" vertex="1" parent="1">
+          <mxGeometry x="120" y="385" width="520" height="770" as="geometry"/>
+        </mxCell>
+        <mxCell id="col2-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;arcSize=4;fillColor=#FFFFFF;strokeColor=#D9E2EC;" vertex="1" parent="1">
+          <mxGeometry x="690" y="385" width="620" height="770" as="geometry"/>
+        </mxCell>
+        <mxCell id="col3-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;arcSize=4;fillColor=#FFFFFF;strokeColor=#D9E2EC;" vertex="1" parent="1">
+          <mxGeometry x="1360" y="385" width="720" height="770" as="geometry"/>
+        </mxCell>
+
+        <!-- System cards -->
+        <mxCell id="sys-erp" value="&lt;b&gt;ERP｜订单 / 采购 / 库存 / 主数据&lt;/b&gt;&lt;br&gt;系统名称：待补充&lt;br&gt;关键数据：SO / PO / 库存 / 物料 / 供应商&lt;br&gt;AI方向：订单风险、库存分析、采购建议&lt;br&gt;负责人：待补充" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#EFF6FF;strokeColor=#BFDBFE;fontSize=15;fontColor=#334E68;align=left;spacingLeft=14;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="145" y="415" width="470" height="105" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-mes" value="&lt;b&gt;MES｜生产执行 / WIP / 工序 / 设备状态&lt;/b&gt;&lt;br&gt;系统名称：待补充&lt;br&gt;关键数据：工单 / Lot / WIP / 工序 / 设备&lt;br&gt;AI方向：WIP周期预测、瓶颈预警、交付风险&lt;br&gt;负责人：待补充" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#EFF6FF;strokeColor=#BFDBFE;fontSize=15;fontColor=#334E68;align=left;spacingLeft=14;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="145" y="535" width="470" height="105" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-aps" value="&lt;b&gt;APS｜计划排产 / 产能平衡 / 约束&lt;/b&gt;&lt;br&gt;系统名称：待补充&lt;br&gt;关键数据：计划 / 产能 / 约束 / 排产结果&lt;br&gt;AI方向：排产建议、供需匹配、What-if仿真&lt;br&gt;负责人：待补充" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#EFF6FF;strokeColor=#BFDBFE;fontSize=15;fontColor=#334E68;align=left;spacingLeft=14;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="145" y="655" width="470" height="105" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-wms" value="&lt;b&gt;WMS｜仓储 / 库存 / 出入库 / 库龄&lt;/b&gt;&lt;br&gt;系统名称：待补充&lt;br&gt;关键数据：库存 / 批次 / 库位 / 库龄 / 出入库&lt;br&gt;AI方向：呆滞预警、补货建议、调拨建议&lt;br&gt;负责人：待补充" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#EFF6FF;strokeColor=#BFDBFE;fontSize=15;fontColor=#334E68;align=left;spacingLeft=14;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="145" y="775" width="470" height="105" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-srm-qms" value="&lt;b&gt;SRM / QMS｜供应商 / 质量 / 异常&lt;/b&gt;&lt;br&gt;系统名称：待补充&lt;br&gt;关键数据：交期 / 质量 / 报价 / 不良 / 8D / 客诉&lt;br&gt;AI方向：供应商风险、质量归因、催交Agent&lt;br&gt;负责人：待补充" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#EFF6FF;strokeColor=#BFDBFE;fontSize=15;fontColor=#334E68;align=left;spacingLeft=14;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="145" y="895" width="470" height="115" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-tms-bi" value="&lt;b&gt;TMS / BI / 数据平台｜物流 / 报表 / 数据集成&lt;/b&gt;&lt;br&gt;系统名称：待补充&lt;br&gt;关键数据：运单 / ETA / 异常 / 指标 / 报表&lt;br&gt;AI方向：ETA预测、AI问数、自动分析报告&lt;br&gt;负责人：待补充" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#EFF6FF;strokeColor=#BFDBFE;fontSize=15;fontColor=#334E68;align=left;spacingLeft=14;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="145" y="1025" width="470" height="105" as="geometry"/>
+        </mxCell>
+
+        <!-- Business cards -->
+        <mxCell id="biz-demand" value="&lt;b&gt;需求预测 / Forecast管理&lt;/b&gt;&lt;br&gt;痛点：预测不准、客户变更频繁、计划反应慢&lt;br&gt;涉及系统：ERP / CRM / APS / BI｜待确认&lt;br&gt;AI动作：需求预测、偏差识别、风险解释&lt;br&gt;指标：预测准确率、缺货率、库存周转" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFBEB;strokeColor=#F5C16C;fontSize=15;fontColor=#334E68;align=left;spacingLeft=14;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="720" y="415" width="560" height="95" as="geometry"/>
+        </mxCell>
+        <mxCell id="biz-supply-demand" value="&lt;b&gt;供需匹配 / Allocation / 订单承诺&lt;/b&gt;&lt;br&gt;痛点：订单、库存、产能难统一判断&lt;br&gt;涉及系统：ERP / MES / APS / WMS｜待确认&lt;br&gt;AI动作：订单可履约判断、客户优先级建议&lt;br&gt;指标：订单满足率、准时交付率、计划调整次数" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFBEB;strokeColor=#F5C16C;fontSize=15;fontColor=#334E68;align=left;spacingLeft=14;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="720" y="525" width="560" height="95" as="geometry"/>
+        </mxCell>
+        <mxCell id="biz-plan-wip" value="&lt;b&gt;生产计划 / WIP / 产能瓶颈&lt;/b&gt;&lt;br&gt;痛点：排产靠经验、WIP堵点发现晚、周期不可控&lt;br&gt;涉及系统：APS / MES / 设备系统｜待确认&lt;br&gt;AI动作：WIP周期预测、瓶颈预警、排产建议&lt;br&gt;指标：计划达成率、Cycle Time、产能利用率" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFBEB;strokeColor=#F5C16C;fontSize=15;fontColor=#334E68;align=left;spacingLeft=14;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="720" y="635" width="560" height="95" as="geometry"/>
+        </mxCell>
+        <mxCell id="biz-inventory" value="&lt;b&gt;库存 / 仓储 / 呆滞 / 补货&lt;/b&gt;&lt;br&gt;痛点：库存高、呆滞多、缺料与过量并存&lt;br&gt;涉及系统：ERP / WMS / APS｜待确认&lt;br&gt;AI动作：安全库存建议、呆滞预警、调拨建议&lt;br&gt;指标：库存周转、呆滞金额、缺料次数" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFBEB;strokeColor=#F5C16C;fontSize=15;fontColor=#334E68;align=left;spacingLeft=14;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="720" y="745" width="560" height="95" as="geometry"/>
+        </mxCell>
+        <mxCell id="biz-procure-supplier" value="&lt;b&gt;采购执行 / 供应商管理 / MRO备件&lt;/b&gt;&lt;br&gt;痛点：催交靠人工、供应风险分散、备件缺口影响生产&lt;br&gt;涉及系统：ERP / SRM / QMS / 邮件｜待确认&lt;br&gt;AI动作：催交Agent、供应商评分、备件预测&lt;br&gt;指标：准交率、缺件停机、采购响应时长" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFBEB;strokeColor=#F5C16C;fontSize=15;fontColor=#334E68;align=left;spacingLeft=14;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="720" y="855" width="560" height="105" as="geometry"/>
+        </mxCell>
+        <mxCell id="biz-quality-logistics" value="&lt;b&gt;质量异常 / 物流交付 / 经营分析&lt;/b&gt;&lt;br&gt;痛点：异常归因慢、ETA不准、报表多解释少&lt;br&gt;涉及系统：QMS / TMS / BI / ERP｜待确认&lt;br&gt;AI动作：质量归因、ETA预测、AI问数和报告生成&lt;br&gt;指标：异常关闭周期、准时交付率、分析耗时" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFBEB;strokeColor=#F5C16C;fontSize=15;fontColor=#334E68;align=left;spacingLeft=14;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="720" y="975" width="560" height="105" as="geometry"/>
+        </mxCell>
+
+        <!-- Stage roadmap in col3 -->
+        <mxCell id="stage1" value="&lt;b&gt;阶段一：0-12个月｜场景试点 + 定向数据治理&lt;/b&gt;&lt;br&gt;&lt;br&gt;系统怎么做：确认ERP/MES/WMS/APS/SRM/QMS可取数据、接口、更新频率、负责人。&lt;br&gt;业务怎么做：先选2-3个场景，例如需求预测、库存预警、交付风险预警。&lt;br&gt;AI怎么做：预测模型、异常识别、AI问数助手、试点看板。&lt;br&gt;产出：最小可用数据集、指标口径、试点ROI、使用反馈闭环。" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fillColor=#EAF3FF;strokeColor=#9CC9FF;fontSize=17;fontColor=#334E68;align=left;spacingLeft=22;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1395" y="425" width="650" height="195" as="geometry"/>
+        </mxCell>
+        <mxCell id="stage2" value="&lt;b&gt;阶段二：12-24个月｜模型推荐 + 流程嵌入&lt;/b&gt;&lt;br&gt;&lt;br&gt;系统怎么做：打通订单-库存-产能-WIP-采购关键链路，建立联动数据模型。&lt;br&gt;业务怎么做：扩展到供需匹配、WIP周期、产能瓶颈、MRO备件优化。&lt;br&gt;AI怎么做：从预警升级为推荐，输出补货、调拨、排产、催交建议。&lt;br&gt;产出：AI建议进入计划会、采购催交、库存调拨、异常处理流程。" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fillColor=#FFF7E6;strokeColor=#F5C16C;fontSize=17;fontColor=#334E68;align=left;spacingLeft=22;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1395" y="650" width="650" height="205" as="geometry"/>
+        </mxCell>
+        <mxCell id="stage3" value="&lt;b&gt;阶段三：24-36个月｜Agent协同 + 控制塔闭环&lt;/b&gt;&lt;br&gt;&lt;br&gt;系统怎么做：建设供应链AI控制塔，集成订单、库存、产能、WIP、供应商、物流。&lt;br&gt;业务怎么做：支持插单、断供、设备异常、需求波动等What-if仿真。&lt;br&gt;AI怎么做：建设计划Agent、采购Agent、库存Agent、物流Agent。&lt;br&gt;产出：AI推荐、人类审批、系统执行、结果回流的运营闭环。" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fillColor=#E6FFFA;strokeColor=#6EE7D8;fontSize=17;fontColor=#334E68;align=left;spacingLeft=22;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1395" y="885" width="650" height="215" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrows between columns -->
+        <mxCell id="arrow1" value="系统数据支撑" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#64748B;strokeWidth=3;fontSize=16;fontColor=#334155;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="640" y="760" as="sourcePoint"/><mxPoint x="690" y="760" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="arrow2" value="业务场景牵引" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#64748B;strokeWidth=3;fontSize=16;fontColor=#334155;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1310" y="760" as="sourcePoint"/><mxPoint x="1360" y="760" as="targetPoint"/></mxGeometry>
+        </mxCell>
+
+        <!-- Bottom fill checklist -->
+        <mxCell id="checklist-title" value="明天会议需要补齐的关键信息" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#111827;strokeColor=none;fontSize=22;fontStyle=1;fontColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="120" y="1200" width="1960" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="checklist" value="1. 系统清单：系统名称、负责人、接口方式、数据更新频率&#xa;2. 业务痛点：预测不准、库存高、交付延期、缺料、排产慢、供应风险，哪个最优先&#xa;3. 数据可用性：哪些能拿到、哪些质量差、哪些暂时没有打通&#xa;4. 决策流程：AI结果给谁看、谁审批、在哪个系统执行、如何回流&#xa;5. 指标目标：预测准确率、库存周转、准时交付率、计划达成率、异常响应时长" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#FFFFFF;strokeColor=#D9E2EC;fontSize=18;fontColor=#334E68;align=left;spacingLeft=28;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="120" y="1260" width="1960" height="105" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

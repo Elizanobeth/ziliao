@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2200" height="1400" viewBox="0 0 2200 1400">
+  <rect width="2200" height="1400" fill="#F6F8FB"/>
+  <text x="80" y="85" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="40" font-weight="700" fill="#172B4D">制造业供应链 AI 赋能可填写框架路线图</text>
+  <text x="80" y="125" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="20" fill="#52616B">用于和老板/业务/IT共同补齐：系统现状、业务痛点、关键数据、AI动作、阶段计划和负责人</text>
+  <line x1="80" y1="145" x2="2120" y2="145" stroke="#2E94B9" stroke-width="3"/>
+
+  <rect x="120" y="175" width="1960" height="70" rx="10" fill="#172B4D"/>
+  <text x="1100" y="218" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="20" font-weight="700" fill="#FFFFFF" text-anchor="middle">
+    推进原则：不等待全量数据治理完成，而是以业务场景牵引数据治理。每个试点都要明确系统数据、业务痛点、AI动作、审批执行和结果回流。
+  </text>
+
+  <!-- titles -->
+  <g font-family="Arial, 'Microsoft YaHei', sans-serif">
+    <rect x="120" y="285" width="520" height="78" rx="8" fill="#DBEAFE" stroke="#93C5FD"/>
+    <text x="380" y="318" font-size="22" font-weight="700" fill="#1E3A8A" text-anchor="middle">① 系统盘点层</text>
+    <text x="380" y="345" font-size="15" fill="#1E3A8A" text-anchor="middle">确认有哪些系统、谁负责、能取哪些数据</text>
+
+    <rect x="690" y="285" width="620" height="78" rx="8" fill="#FEF3C7" stroke="#F5C16C"/>
+    <text x="1000" y="318" font-size="22" font-weight="700" fill="#92400E" text-anchor="middle">② 业务场景层</text>
+    <text x="1000" y="345" font-size="15" fill="#92400E" text-anchor="middle">确认哪些业务最痛、最值得先做 AI</text>
+
+    <rect x="1360" y="285" width="720" height="78" rx="8" fill="#CCFBF1" stroke="#6EE7B7"/>
+    <text x="1720" y="318" font-size="22" font-weight="700" fill="#115E59" text-anchor="middle">③ 三阶段路线层</text>
+    <text x="1720" y="345" font-size="15" fill="#115E59" text-anchor="middle">把系统和业务映射到三年落地节奏</text>
+  </g>
+
+  <rect x="120" y="385" width="520" height="770" rx="12" fill="#FFFFFF" stroke="#D9E2EC"/>
+  <rect x="690" y="385" width="620" height="770" rx="12" fill="#FFFFFF" stroke="#D9E2EC"/>
+  <rect x="1360" y="385" width="720" height="770" rx="12" fill="#FFFFFF" stroke="#D9E2EC"/>
+
+  <!-- cards utility via explicit text -->
+  <g font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="15" fill="#334E68">
+    <rect x="145" y="415" width="470" height="105" rx="8" fill="#EFF6FF" stroke="#BFDBFE"/>
+    <text x="165" y="443" font-weight="700" fill="#172B4D">ERP｜订单 / 采购 / 库存 / 主数据</text>
+    <text x="165" y="468">系统名称：待补充｜关键数据：SO / PO / 库存 / 物料</text>
+    <text x="165" y="493">AI方向：订单风险、库存分析、采购建议｜负责人：待补充</text>
+
+    <rect x="145" y="535" width="470" height="105" rx="8" fill="#EFF6FF" stroke="#BFDBFE"/>
+    <text x="165" y="563" font-weight="700" fill="#172B4D">MES｜生产执行 / WIP / 工序 / 设备状态</text>
+    <text x="165" y="588">关键数据：工单 / Lot / WIP / 工序 / 设备</text>
+    <text x="165" y="613">AI方向：WIP周期预测、瓶颈预警、交付风险</text>
+
+    <rect x="145" y="655" width="470" height="105" rx="8" fill="#EFF6FF" stroke="#BFDBFE"/>
+    <text x="165" y="683" font-weight="700" fill="#172B4D">APS｜计划排产 / 产能平衡 / 约束</text>
+    <text x="165" y="708">关键数据：计划 / 产能 / 约束 / 排产结果</text>
+    <text x="165" y="733">AI方向：排产建议、供需匹配、What-if仿真</text>
+
+    <rect x="145" y="775" width="470" height="105" rx="8" fill="#EFF6FF" stroke="#BFDBFE"/>
+    <text x="165" y="803" font-weight="700" fill="#172B4D">WMS｜仓储 / 库存 / 出入库 / 库龄</text>
+    <text x="165" y="828">关键数据：库存 / 批次 / 库位 / 库龄 / 出入库</text>
+    <text x="165" y="853">AI方向：呆滞预警、补货建议、调拨建议</text>
+
+    <rect x="145" y="895" width="470" height="115" rx="8" fill="#EFF6FF" stroke="#BFDBFE"/>
+    <text x="165" y="923" font-weight="700" fill="#172B4D">SRM / QMS｜供应商 / 质量 / 异常</text>
+    <text x="165" y="948">关键数据：交期 / 质量 / 报价 / 不良 / 8D / 客诉</text>
+    <text x="165" y="973">AI方向：供应商风险、质量归因、催交Agent</text>
+
+    <rect x="145" y="1025" width="470" height="105" rx="8" fill="#EFF6FF" stroke="#BFDBFE"/>
+    <text x="165" y="1053" font-weight="700" fill="#172B4D">TMS / BI / 数据平台｜物流 / 报表 / 数据集成</text>
+    <text x="165" y="1078">关键数据：运单 / ETA / 异常 / 指标 / 报表</text>
+    <text x="165" y="1103">AI方向：ETA预测、AI问数、自动分析报告</text>
+  </g>
+
+  <!-- middle business cards -->
+  <g font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="15" fill="#334E68">
+    <rect x="720" y="415" width="560" height="95" rx="8" fill="#FFFBEB" stroke="#F5C16C"/>
+    <text x="740" y="443" font-weight="700" fill="#172B4D">需求预测 / Forecast管理</text>
+    <text x="740" y="468">痛点：预测不准、客户变更频繁｜AI：需求预测、偏差识别、风险解释</text>
+    <text x="740" y="493">指标：预测准确率、缺货率、库存周转</text>
+
+    <rect x="720" y="525" width="560" height="95" rx="8" fill="#FFFBEB" stroke="#F5C16C"/>
+    <text x="740" y="553" font-weight="700" fill="#172B4D">供需匹配 / Allocation / 订单承诺</text>
+    <text x="740" y="578">痛点：订单、库存、产能难统一判断｜AI：订单可履约判断</text>
+    <text x="740" y="603">指标：订单满足率、准时交付率、计划调整次数</text>
+
+    <rect x="720" y="635" width="560" height="95" rx="8" fill="#FFFBEB" stroke="#F5C16C"/>
+    <text x="740" y="663" font-weight="700" fill="#172B4D">生产计划 / WIP / 产能瓶颈</text>
+    <text x="740" y="688">痛点：排产靠经验、WIP堵点发现晚｜AI：WIP预测、瓶颈预警</text>
+    <text x="740" y="713">指标：计划达成率、Cycle Time、产能利用率</text>
+
+    <rect x="720" y="745" width="560" height="95" rx="8" fill="#FFFBEB" stroke="#F5C16C"/>
+    <text x="740" y="773" font-weight="700" fill="#172B4D">库存 / 仓储 / 呆滞 / 补货</text>
+    <text x="740" y="798">痛点：库存高、呆滞多、缺料与过量并存｜AI：安全库存建议</text>
+    <text x="740" y="823">指标：库存周转、呆滞金额、缺料次数</text>
+
+    <rect x="720" y="855" width="560" height="105" rx="8" fill="#FFFBEB" stroke="#F5C16C"/>
+    <text x="740" y="883" font-weight="700" fill="#172B4D">采购执行 / 供应商管理 / MRO备件</text>
+    <text x="740" y="908">痛点：催交靠人工、供应风险分散、备件缺口影响生产</text>
+    <text x="740" y="933">AI：催交Agent、供应商评分、备件预测</text>
+
+    <rect x="720" y="975" width="560" height="105" rx="8" fill="#FFFBEB" stroke="#F5C16C"/>
+    <text x="740" y="1003" font-weight="700" fill="#172B4D">质量异常 / 物流交付 / 经营分析</text>
+    <text x="740" y="1028">痛点：异常归因慢、ETA不准、报表多解释少</text>
+    <text x="740" y="1053">AI：质量归因、ETA预测、AI问数和报告生成</text>
+  </g>
+
+  <!-- right stages -->
+  <g font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="17" fill="#334E68">
+    <rect x="1395" y="425" width="650" height="195" rx="10" fill="#EAF3FF" stroke="#9CC9FF"/>
+    <text x="1420" y="460" font-size="20" font-weight="700" fill="#172B4D">阶段一：0-12个月｜场景试点 + 定向数据治理</text>
+    <text x="1420" y="500">系统：确认可取数据、接口、更新频率、负责人。</text>
+    <text x="1420" y="530">业务：先选需求预测、库存预警、交付风险预警。</text>
+    <text x="1420" y="560">AI：预测模型、异常识别、AI问数助手、试点看板。</text>
+    <text x="1420" y="590">产出：最小数据集、指标口径、试点ROI、反馈闭环。</text>
+
+    <rect x="1395" y="650" width="650" height="205" rx="10" fill="#FFF7E6" stroke="#F5C16C"/>
+    <text x="1420" y="685" font-size="20" font-weight="700" fill="#172B4D">阶段二：12-24个月｜模型推荐 + 流程嵌入</text>
+    <text x="1420" y="725">系统：打通订单-库存-产能-WIP-采购关键链路。</text>
+    <text x="1420" y="755">业务：扩展到供需匹配、WIP周期、产能瓶颈、MRO。</text>
+    <text x="1420" y="785">AI：输出补货、调拨、排产、催交建议。</text>
+    <text x="1420" y="815">产出：AI建议进入计划会、采购、库存、异常处理流程。</text>
+
+    <rect x="1395" y="885" width="650" height="215" rx="10" fill="#E6FFFA" stroke="#6EE7D8"/>
+    <text x="1420" y="920" font-size="20" font-weight="700" fill="#172B4D">阶段三：24-36个月｜Agent协同 + 控制塔闭环</text>
+    <text x="1420" y="960">系统：建设供应链AI控制塔，集成核心系统数据。</text>
+    <text x="1420" y="990">业务：支持插单、断供、设备异常、需求波动仿真。</text>
+    <text x="1420" y="1020">AI：计划Agent、采购Agent、库存Agent、物流Agent。</text>
+    <text x="1420" y="1050">产出：AI推荐、人审、系统执行、结果回流闭环。</text>
+  </g>
+
+  <!-- arrows -->
+  <line x1="640" y1="760" x2="690" y2="760" stroke="#64748B" stroke-width="3"/>
+  <polygon points="690,760 676,752 676,768" fill="#64748B"/>
+  <text x="665" y="745" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="16" fill="#334155" text-anchor="middle">系统数据支撑</text>
+  <line x1="1310" y1="760" x2="1360" y2="760" stroke="#64748B" stroke-width="3"/>
+  <polygon points="1360,760 1346,752 1346,768" fill="#64748B"/>
+  <text x="1335" y="745" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="16" fill="#334155" text-anchor="middle">业务场景牵引</text>
+
+  <!-- checklist -->
+  <rect x="120" y="1200" width="1960" height="50" rx="8" fill="#111827"/>
+  <text x="1100" y="1232" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="22" font-weight="700" fill="#FFFFFF" text-anchor="middle">明天会议需要补齐的关键信息</text>
+  <rect x="120" y="1260" width="1960" height="105" rx="8" fill="#FFFFFF" stroke="#D9E2EC"/>
+  <text x="150" y="1292" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="18" fill="#334E68">1. 系统清单：系统名称、负责人、接口方式、数据更新频率</text>
+  <text x="150" y="1320" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="18" fill="#334E68">2. 业务痛点：预测不准、库存高、交付延期、缺料、排产慢、供应风险，哪个最优先</text>
+  <text x="150" y="1348" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="18" fill="#334E68">3. 决策流程：AI结果给谁看、谁审批、在哪个系统执行、如何回流；4. 指标目标：预测准确率、库存周转、准时交付率等</text>
+</svg>
