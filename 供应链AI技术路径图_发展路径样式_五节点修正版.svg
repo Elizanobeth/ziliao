@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2200" height="1200" viewBox="0 0 2200 1200">
+  <rect width="2200" height="1200" fill="#F6F8FB"/>
+
+  <text x="120" y="85" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="18" font-weight="700" fill="#A65A00">MANUFACTURING SUPPLY CHAIN AI ROADMAP</text>
+  <text x="120" y="140" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="42" font-weight="700" fill="#172B4D">制造业供应链 AI 赋能发展路径</text>
+  <line x1="120" y1="168" x2="2040" y2="168" stroke="#2E94B9" stroke-width="3"/>
+  <text x="120" y="215" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="22" fill="#344563">以业务场景牵引 AI 建设：边做场景、边补数据、边嵌流程，逐步从“看见问题”走向“推荐方案”和“闭环运营”。</text>
+
+  <rect x="140" y="270" width="1920" height="750" rx="34" fill="#FFFFFF" stroke="#E1E7EF"/>
+
+  <!-- rising band, kept below the text cards -->
+  <path d="M240,820
+           C430,750 600,690 785,620
+           C985,545 1180,485 1380,410
+           C1620,320 1810,255 1990,195
+           L2030,185
+           L2030,890
+           L240,890 Z"
+        fill="#F4C27A" opacity="0.78"/>
+  <path d="M240,820
+           C430,750 600,690 785,620
+           C985,545 1180,485 1380,410
+           C1620,320 1810,255 1990,195
+           L2030,185"
+        fill="none" stroke="#C96D1D" stroke-width="5"/>
+
+  <!-- callout cards above the path -->
+  <g font-family="Arial, 'Microsoft YaHei', sans-serif">
+    <rect x="230" y="360" width="330" height="190" rx="12" fill="#FFFFFF" stroke="#B8C7D9"/>
+    <text x="255" y="397" font-size="21" font-weight="700" fill="#172B4D">1. 场景牵引启动</text>
+    <text x="255" y="438" font-size="17" fill="#344563">不等待全量数据治理完成。</text>
+    <text x="255" y="468" font-size="17" fill="#344563">先选择需求预测、库存预警、</text>
+    <text x="255" y="498" font-size="17" fill="#344563">交付风险等高价值场景。</text>
+    <text x="255" y="528" font-size="17" fill="#344563">产出：试点范围与价值口径。</text>
+
+    <rect x="620" y="315" width="345" height="200" rx="12" fill="#FFFFFF" stroke="#B8C7D9"/>
+    <text x="645" y="352" font-size="21" font-weight="700" fill="#172B4D">2. 定向数据治理</text>
+    <text x="645" y="393" font-size="17" fill="#344563">围绕试点场景补齐必要数据，</text>
+    <text x="645" y="423" font-size="17" fill="#344563">打通 ERP / MES / WMS / APS。</text>
+    <text x="645" y="453" font-size="17" fill="#344563">统一主数据、指标口径、权限。</text>
+    <text x="645" y="483" font-size="17" fill="#344563">产出：最小可用数据集。</text>
+
+    <rect x="1010" y="270" width="355" height="205" rx="12" fill="#FFFFFF" stroke="#B8C7D9"/>
+    <text x="1035" y="307" font-size="21" font-weight="700" fill="#172B4D">3. 模型预测与推荐</text>
+    <text x="1035" y="348" font-size="17" fill="#344563">从“发现风险”升级为“给建议”。</text>
+    <text x="1035" y="378" font-size="17" fill="#344563">供需匹配、WIP 周期预测、</text>
+    <text x="1035" y="408" font-size="17" fill="#344563">产能瓶颈、MRO 备件优化。</text>
+    <text x="1035" y="438" font-size="17" fill="#344563">产出：风险排序与推荐方案。</text>
+
+    <rect x="1410" y="235" width="355" height="205" rx="12" fill="#FFFFFF" stroke="#B8C7D9"/>
+    <text x="1435" y="272" font-size="21" font-weight="700" fill="#172B4D">4. 流程嵌入与协同</text>
+    <text x="1435" y="313" font-size="17" fill="#344563">AI 建议进入真实业务动作：</text>
+    <text x="1435" y="343" font-size="17" fill="#344563">计划评审、采购催交、库存调拨、</text>
+    <text x="1435" y="373" font-size="17" fill="#344563">异常处理和跨部门协同。</text>
+    <text x="1435" y="403" font-size="17" fill="#344563">产出：人审执行与流程留痕。</text>
+
+    <rect x="1760" y="370" width="260" height="205" rx="12" fill="#FFFFFF" stroke="#B8C7D9"/>
+    <text x="1785" y="407" font-size="21" font-weight="700" fill="#172B4D">5. 控制塔闭环</text>
+    <text x="1785" y="448" font-size="17" fill="#344563">统一监控订单、库存、产能、</text>
+    <text x="1785" y="478" font-size="17" fill="#344563">供应商和交付风险。</text>
+    <text x="1785" y="508" font-size="17" fill="#344563">AI 推荐，人类审批，系统执行。</text>
+    <text x="1785" y="538" font-size="17" fill="#344563">产出：结果回流、持续优化。</text>
+  </g>
+
+  <!-- connector lines from cards to nodes -->
+  <g stroke="#B8C7D9" stroke-width="2" stroke-dasharray="5 5">
+    <line x1="395" y1="550" x2="395" y2="785"/>
+    <line x1="792" y1="515" x2="792" y2="640"/>
+    <line x1="1188" y1="475" x2="1188" y2="500"/>
+    <line x1="1588" y1="440" x2="1588" y2="330"/>
+    <line x1="1890" y1="575" x2="1890" y2="230"/>
+  </g>
+
+  <!-- visible nodes and labels, no card overlap -->
+  <g font-family="Arial, 'Microsoft YaHei', sans-serif">
+    <circle cx="395" cy="785" r="16" fill="#253858" stroke="#FFFFFF" stroke-width="4"/>
+    <circle cx="792" cy="640" r="16" fill="#84BD00" stroke="#FFFFFF" stroke-width="4"/>
+    <circle cx="1188" cy="500" r="16" fill="#F5A623" stroke="#FFFFFF" stroke-width="4"/>
+    <circle cx="1588" cy="330" r="16" fill="#F97316" stroke="#FFFFFF" stroke-width="4"/>
+    <circle cx="1890" cy="230" r="16" fill="#F97316" stroke="#FFFFFF" stroke-width="4"/>
+
+    <rect x="320" y="810" width="150" height="42" rx="21" fill="#FFFFFF" stroke="#D8DEE8"/>
+    <text x="395" y="838" font-size="20" font-weight="700" fill="#172B4D" text-anchor="middle">场景启动</text>
+
+    <rect x="705" y="665" width="174" height="42" rx="21" fill="#FFFFFF" stroke="#D8DEE8"/>
+    <text x="792" y="693" font-size="20" font-weight="700" fill="#172B4D" text-anchor="middle">定向治理</text>
+
+    <rect x="1090" y="525" width="196" height="42" rx="21" fill="#FFFFFF" stroke="#D8DEE8"/>
+    <text x="1188" y="553" font-size="20" font-weight="700" fill="#172B4D" text-anchor="middle">预测与推荐</text>
+
+    <rect x="1490" y="355" width="196" height="42" rx="21" fill="#FFFFFF" stroke="#D8DEE8"/>
+    <text x="1588" y="383" font-size="20" font-weight="700" fill="#172B4D" text-anchor="middle">流程嵌入</text>
+
+    <rect x="1790" y="255" width="200" height="42" rx="21" fill="#FFFFFF" stroke="#D8DEE8"/>
+    <text x="1890" y="283" font-size="20" font-weight="700" fill="#172B4D" text-anchor="middle">控制塔闭环</text>
+  </g>
+
+  <!-- bottom phase bar -->
+  <g font-family="Arial, 'Microsoft YaHei', sans-serif">
+    <rect x="240" y="915" width="500" height="82" fill="#253858"/>
+    <text x="285" y="963" font-size="23" font-weight="700" fill="#FFFFFF">阶段一</text>
+    <text x="385" y="963" font-size="20" fill="#FFFFFF">0-12个月</text>
+    <text x="285" y="988" font-size="17" fill="#FFFFFF">场景试点 + 定向数据治理</text>
+
+    <rect x="740" y="915" width="570" height="82" fill="#84BD00"/>
+    <text x="785" y="963" font-size="23" font-weight="700" fill="#FFFFFF">阶段二</text>
+    <text x="885" y="963" font-size="20" fill="#FFFFFF">12-24个月</text>
+    <text x="785" y="988" font-size="17" fill="#FFFFFF">模型推荐 + 流程嵌入</text>
+
+    <rect x="1310" y="915" width="720" height="82" fill="#F97316"/>
+    <text x="1355" y="963" font-size="23" font-weight="700" fill="#FFFFFF">阶段三</text>
+    <text x="1455" y="963" font-size="20" fill="#FFFFFF">24-36个月</text>
+    <text x="1355" y="988" font-size="17" fill="#FFFFFF">Agent 协同 + AI 控制塔闭环</text>
+  </g>
+
+  <rect x="300" y="1080" width="1600" height="52" rx="26" fill="#172B4D"/>
+  <text x="1100" y="1114" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="20" font-weight="700" fill="#FFFFFF" text-anchor="middle">
+    共同机制：业务场景提出数据需求 → 定向治理 → 模型验证 → 流程嵌入 → 结果回流形成数据资产
+  </text>
+</svg>
