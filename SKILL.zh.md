@@ -1,9 +1,9 @@
 ---
-name: die-lot-planner
-description: 用于根据 Excel 或 CSV 中的 Die Bin 数据规划母批。适用于用户需要按 PACKAGE、供应商、Fab LotID、Bin Grade、Bin Quanity、T7 Code，以及“配 Die 规则表”中的层数配比生成母批 Lot 清单；支持每个母批浪费上限、Fab LotID 是否允许复用、不满足时输出最佳替代方案、优化建议和中文 summary。
+name: die-lot-planner-fast
+description: 用于根据 Excel 或 CSV 中的 Die Bin 数据快速规划母批。适用于用户需要按 PACKAGE、供应商、Fab LotID、Bin Grade、Bin Quanity、T7 Code，以及“配 Die 规则表”中的层数配比生成母批 Lot 清单；支持每个母批浪费上限、Fab LotID 是否允许复用、不满足时输出最佳替代方案、优化建议和中文 summary。
 ---
 
-# Die Lot Planner
+# Die Lot Planner Fast
 
 ## 概述
 
@@ -20,7 +20,7 @@ description: 用于根据 Excel 或 CSV 中的 Die Bin 数据规划母批。适�
 | 输入文件路径 | 是 | Excel/CSV/TSV 文件路径；Excel 推荐。 |
 | 原始数据 sheet 名称 | 是 | 例如 `原始数据`。不要默认猜测，除非用户明确允许自动识别。 |
 | 规则表 sheet 名称 | 是 | 通常是 `配 Die 规则表`，但仍需用户确认。 |
-| 每个母批目标 Unit | 是 | 对应 `--target-units`，必须是正整数。 |
+| 总 Unit 需求 | 是 | 对应 `--total-units`，表示本次配批累计需要满足的 Unit 总数，必须是正整数。 |
 | 每个母批最大浪费 Die 数 | 是 | 对应 `--max-waste`，例如 `30`。不要擅自套默认值。 |
 | Fab LotID 是否允许复用 | 是 | 必须让用户明确选择“允许”或“不允许”。 |
 | Bin Grade 使用范围 | 是 | 例如“全部等级”或“只用 Bin Grade <= 1/2”。 |
@@ -34,12 +34,12 @@ description: 用于根据 Excel 或 CSV 中的 Die Bin 数据规划母批。适�
 推荐向用户发送这种简洁输入模板：
 
 ```text
-请补齐/确认以下信息后我再运行 die-lot-planner：
+请补齐/确认以下信息后我再运行 die-lot-planner-fast：
 
 1. 输入文件路径：
 2. 原始数据 sheet 名称：
 3. 配 Die 规则表 sheet 名称：
-4. 每个母批目标 Unit：
+4. 总 Unit 需求：
 5. 每个母批最大浪费 Die 数：
 6. Fab LotID 是否允许复用：允许 / 不允许
 7. Bin Grade 使用范围：全部 / 只用 <= ?
@@ -61,8 +61,9 @@ description: 用于根据 Excel 或 CSV 中的 Die Bin 数据规划母批。适�
 - 原始数据不需要、也不应该要求 A/B 工艺字段。A/B 只是两类不同工艺的示例概念。
 - 算法会把每一行 `T7 Code + Bin Grade + Bin Quanity` 作为一个整体，分配到配比左侧或配比右侧。
 - 一个原始数据行不能被拆分到多个母批，也不能被拆分到配比两侧。
-- 每个母批必须满足 `Unit <= target_units`。
-- 对每个 `PACKAGE + 供应商` 分组，满足目标 Unit 的必要条件是：`target_units * (配比左侧比例 + 配比右侧比例) <= sum(Bin Quanity)`。如果不满足，目标 Unit 在总量上不可能达成。
+- 用户输入的是本次配批的总 Unit 需求 `total_units`，不是每个母批的 Unit。
+- 脚本会按剩余未满足 Unit 逐个生成母批；每生成一个母批后，从 `total_units` 中扣减该母批的 `Unit`，累计达到总需求后停止继续配批。
+- 对每个 `PACKAGE + 供应商` 分组，满足总 Unit 需求的必要条件是：`total_units * (配比左侧比例 + 配比右侧比例) <= sum(Bin Quanity)`。如果不满足，目标 Unit 在总量上不可能达成。
 - 每个母批最多浪费 `max_waste` 颗 Die，默认 `30`。
 - 优先级固定为：先尽量满足 Unit 数，再最小化浪费。
 - 如果正式匹配找不到，不要只输出失败；必须给出最佳替代方案。
@@ -92,18 +93,19 @@ description: 用于根据 Excel 或 CSV 中的 Die Bin 数据规划母批。适�
 python scripts/plan_die_lots.py \
   --input input.xlsx \
   --output planned_mother_lots.xlsx \
-  --target-units 1000
+  --total-units 1000
 ```
 
 常用参数：
 
 - `--data-sheet SHEET`：原始数据 sheet 名称。不传时，默认使用第一个不是 `配 Die 规则表` 的 sheet。
 - `--rules-sheet SHEET`：规则 sheet 名称，默认 `配 Die 规则表`。
-- `--target-units N`：每个母批的目标 Unit 上限。母批结果必须满足 `Unit <= N`。
+- `--total-units N`：本次配批累计需要满足的总 Unit 数。
+- `--target-units N`：旧参数名，仍可兼容使用；新任务优先使用 `--total-units`。
 - `--max-waste N`：每个母批最大浪费 Die 数，默认 `30`。
 - `--allow-lot-reuse`：允许同一个 `Fab LotID` 出现在不同母批。
 - `--max-bin-grade N`：只使用 `Bin Grade <= N` 的数据。例如只允许 Grade 1 时传 `--max-bin-grade 1`。
-- `--beam-width N`：搜索宽度。数据复杂、组合难找时可以调大。
+- `--beam-width N`：深度搜索宽度。脚本会先走快速搜索；只有快速搜索找不到时才进入较重的 beam 搜索。数据复杂、组合难找时可以调大。
 
 字段名不标准时可用这些参数指定：
 
@@ -126,10 +128,10 @@ python scripts/plan_die_lots.py \
 
 ```text
 AvailableDie = sum(Bin Quanity)
-TargetRequiredDie = target_units * (配比左侧比例 + 配比右侧比例)
+TargetRequiredDie = total_units * (配比左侧比例 + 配比右侧比例)
 ```
 
-如果 `AvailableDie < TargetRequiredDie`，说明该分组在总数量上不足以满足目标 Unit，必须在 `optimization_suggestions` 中建议降低 `target_units` 或补充库存。
+如果 `AvailableDie < TargetRequiredDie`，说明该分组在总数量上不足以满足总 Unit 需求，必须在 `optimization_suggestions` 中建议降低 `total_units` 或补充库存。
 
 5. 每一行按照 `T7 Code + Bin Grade + Bin Quanity` 整体参与组合。
 6. 算法尝试把每一行分配到配比左侧或配比右侧。
@@ -150,15 +152,18 @@ WasteDie = SelectedDie - RequiredDie
 
 ```text
 Unit > 0
-Unit <= target_units
+Unit <= 当前剩余未满足 Unit
 WasteDie <= max_waste
 ```
 
-9. 在所有候选中，先选 `Unit` 最大的组合。
-10. 如果 `Unit` 相同，选 `WasteDie` 最小的组合。
-11. 生成一个母批后，从可用库存中移除已使用的数据行。
-12. 如果不允许 Lot 复用，同时移除同 `Fab LotID` 的其他剩余行。
-13. 重复以上步骤，直到无法继续形成有效母批。
+9. 搜索分为两层：
+   - 快速搜索：按当前剩余未满足 Unit、90%、80%……10% 分档探测，用子集和方法分别寻找配比左侧和右侧，优先找到 `WasteDie <= max_waste` 的高 Unit 组合。
+   - 深度搜索：只有快速搜索找不到时，才启动 beam 搜索作为兜底。
+10. 在所有候选中，先选 `Unit` 最大的组合。
+11. 如果 `Unit` 相同，选 `WasteDie` 最小的组合。
+12. 生成一个母批后，从可用库存中移除已使用的数据行。
+13. 如果不允许 Lot 复用，同时移除同 `Fab LotID` 的其他剩余行。
+14. 重复以上步骤，直到累计 Unit 达到 `total_units`，或无法继续形成有效母批。
 
 ## 输出结果
 
@@ -232,9 +237,9 @@ Excel 中包含以下 sheet：
 常见建议包括：
 
 - 如果 `PACKAGE + 供应商` 找不到规则：建议补充 `配 Die 规则表`。
-- 如果 `sum(Bin Quanity) < target_units * (配比左侧比例 + 配比右侧比例)`：建议降低 `target_units` 或补充该分组库存。
-- 如果存在替代方案：建议把 `target_units` 暂时调整为替代方案的 `Unit`，或者补充库存继续冲击原目标。
-- 如果 Unit 达不到目标：建议降低 `target_units`，或补充该 `PACKAGE + 供应商` 的库存。
+- 如果 `sum(Bin Quanity) < total_units * (配比左侧比例 + 配比右侧比例)`：建议降低 `total_units` 或补充该分组库存。
+- 如果存在替代方案：建议把总 Unit 需求暂时调整为替代方案的 `Unit`，或者补充库存继续冲击原目标。
+- 如果 Unit 达不到目标：建议降低总 Unit 需求，或补充该 `PACKAGE + 供应商` 的库存。
 - 如果浪费超过上限：建议在业务允许时提高 `max_waste`。
 - 如果 Lot 不允许复用导致大量数据被排除：建议尝试 `--allow-lot-reuse`。
 - 如果只使用高等级 Bin 导致库存不足：建议放宽 `--max-bin-grade`，例如从只用 Grade 1 改成允许 Grade 1-2。
@@ -260,7 +265,7 @@ Excel 中包含以下 sheet：
 目标：
 
 ```text
-target_units = 10
+total_units = 10
 max_waste = 30
 Fab LotID 不允许复用
 ```

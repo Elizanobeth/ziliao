@@ -216,6 +216,121 @@ def state_rank(state: SearchState, ratio: tuple[int, int], target_units: int, ma
     )
 
 
+def probe_unit_targets(target_units: int) -> list[int]:
+    probes = [target_units]
+    for pct in range(90, 0, -10):
+        probe = max(1, target_units * pct // 100)
+        if probe not in probes:
+            probes.append(probe)
+    return probes
+
+
+def item_order(items: list[Item]) -> list[tuple[int, Item]]:
+    return sorted(
+        enumerate(items),
+        key=lambda p: (p[1].bin_grade, -p[1].bin_quantity, p[1].lot_id, p[1].t7_code, p[1].row_id),
+    )
+
+
+def build_subset_index(
+    items: list[Item],
+    max_sum: int,
+    excluded_indexes: set[int] | None = None,
+) -> tuple[bytearray, list[int], list[int]]:
+    excluded_indexes = excluded_indexes or set()
+    reachable = bytearray(max_sum + 1)
+    prev_sum = [-1] * (max_sum + 1)
+    prev_item = [-1] * (max_sum + 1)
+    reachable[0] = 1
+    for item_index, item in item_order(items):
+        if item_index in excluded_indexes:
+            continue
+        qty = item.bin_quantity
+        if qty > max_sum:
+            continue
+        for total in range(max_sum - qty, -1, -1):
+            next_total = total + qty
+            if reachable[total] and not reachable[next_total]:
+                reachable[next_total] = 1
+                prev_sum[next_total] = total
+                prev_item[next_total] = item_index
+    return reachable, prev_sum, prev_item
+
+
+def reconstruct_subset(prev_sum: list[int], prev_item: list[int], total: int) -> tuple[int, ...]:
+    picks: list[int] = []
+    current = total
+    while current > 0:
+        item_index = prev_item[current]
+        if item_index < 0:
+            return tuple()
+        picks.append(item_index)
+        current = prev_sum[current]
+    return tuple(reversed(picks))
+
+
+def find_subset_for_sum_range(
+    items: list[Item],
+    min_sum: int,
+    max_sum: int,
+    excluded_indexes: set[int] | None = None,
+) -> tuple[int, tuple[int, ...]] | None:
+    if min_sum > max_sum:
+        return None
+    max_possible = sum(item.bin_quantity for idx, item in enumerate(items) if not excluded_indexes or idx not in excluded_indexes)
+    if max_possible < min_sum:
+        return None
+    capped_max = min(max_sum, max_possible)
+    reachable, prev_sum, prev_item = build_subset_index(items, capped_max, excluded_indexes)
+    for total in range(min_sum, capped_max + 1):
+        if reachable[total]:
+            picks = reconstruct_subset(prev_sum, prev_item, total)
+            if picks:
+                return total, picks
+    return None
+
+
+def find_fast_target_mother_lot(
+    items: list[Item],
+    ratio: tuple[int, int],
+    target_units: int,
+    max_waste: int,
+) -> SearchState | None:
+    r1, r2 = ratio
+    required1 = target_units * r1
+    required2 = target_units * r2
+    if sum(item.bin_quantity for item in items) < required1 + required2:
+        return None
+
+    max_bucket1 = required1 + max_waste
+    reachable1, prev_sum1, prev_item1 = build_subset_index(items, max_bucket1)
+    for bucket1 in range(required1, max_bucket1 + 1):
+        if not reachable1[bucket1]:
+            continue
+        bucket1_picks = reconstruct_subset(prev_sum1, prev_item1, bucket1)
+        if not bucket1_picks:
+            continue
+        remaining_waste = max_waste - (bucket1 - required1)
+        bucket2_result = find_subset_for_sum_range(
+            items,
+            required2,
+            required2 + remaining_waste,
+            set(bucket1_picks),
+        )
+        if bucket2_result is None:
+            continue
+        bucket2, bucket2_picks = bucket2_result
+        state = SearchState(
+            bucket1=bucket1,
+            bucket2=bucket2,
+            picks=tuple((idx, 1) for idx in bucket1_picks) + tuple((idx, 2) for idx in bucket2_picks),
+        )
+        units, _, waste = state_metrics(state.bucket1, state.bucket2, ratio)
+        if 0 < units <= target_units and waste <= max_waste:
+            return state
+    return None
+
+
 def find_best_mother_lot(
     items: list[Item],
     ratio: tuple[int, int],
@@ -224,11 +339,14 @@ def find_best_mother_lot(
     beam_width: int,
     enforce_waste: bool = True,
 ) -> SearchState | None:
+    if enforce_waste:
+        for probe_target in probe_unit_targets(target_units):
+            fast = find_fast_target_mother_lot(items, ratio, probe_target, max_waste)
+            if fast is not None:
+                return fast
+
     cap = target_units * sum(ratio) + max_waste if enforce_waste else sum(item.bin_quantity for item in items)
-    sorted_pairs = sorted(
-        enumerate(items),
-        key=lambda p: (p[1].bin_grade, -p[1].bin_quantity, p[1].lot_id, p[1].t7_code, p[1].row_id),
-    )
+    sorted_pairs = item_order(items)
     states: dict[tuple[int, int], SearchState] = {(0, 0): SearchState(0, 0, tuple())}
 
     for item_index, item in sorted_pairs:
@@ -275,15 +393,9 @@ def find_best_effort_mother_lot(
     beam_width: int,
 ) -> SearchState | None:
     """Find the largest under-target Unit candidate that still obeys max_waste."""
-    probe_targets = []
-    for pct in range(90, 0, -10):
-        probe = max(1, target_units * pct // 100)
-        if probe < target_units and probe not in probe_targets:
-            probe_targets.append(probe)
-
     best: SearchState | None = None
-    for probe_target in probe_targets:
-        candidate = find_best_mother_lot(items, ratio, probe_target, max_waste, beam_width)
+    for probe_target in probe_unit_targets(target_units)[1:]:
+        candidate = find_fast_target_mother_lot(items, ratio, probe_target, max_waste)
         if candidate is None:
             continue
         if best is None:
@@ -294,6 +406,8 @@ def find_best_effort_mother_lot(
         if (candidate_units, -candidate_waste, -len(candidate.picks)) > (best_units, -best_waste, -len(best.picks)):
             best = candidate
 
+    if best is None:
+        best = find_best_mother_lot(items, ratio, target_units, max_waste, beam_width)
     return best
 
 
@@ -382,7 +496,7 @@ def make_group_suggestions(
                 "PACKAGE": package,
                 "供应商": supplier,
                 "Issue": "未找到目标 Unit 的正式母批，已给出替代方案",
-                "Suggestion": f"在 max_waste <= {max_waste} 的限制内，当前替代方案最高可做到 {effort_units} Unit，WasteDie={effort_waste}；如业务接受，可把 target_units 调整为 {effort_units} 后重跑，或补充库存继续冲击目标 {target_units}。",
+                "Suggestion": f"在 max_waste <= {max_waste} 的限制内，当前替代方案最高可做到 {effort_units} Unit，WasteDie={effort_waste}；如业务接受，可把剩余 Unit 需求调整为 {effort_units} 后重跑，或补充库存继续冲击剩余目标 {target_units}。",
                 "Detail": f"替代 Bucket1Die={best_effort.bucket1}, Bucket2Die={best_effort.bucket2}, Lot行数={len(best_effort.picks)}",
             }
         )
@@ -395,7 +509,7 @@ def make_group_suggestions(
                     "PACKAGE": package,
                     "供应商": supplier,
                     "Issue": "总 Bin Quanity 不足",
-                    "Suggestion": f"目标 {target_units} Unit 至少需要 {target_required_die} 颗，但当前可用 sum(Bin Quanity) 只有 {total_die}；请降低 target_units 或补充该 PACKAGE+供应商 的库存。",
+                    "Suggestion": f"剩余目标 {target_units} Unit 至少需要 {target_required_die} 颗，但当前可用 sum(Bin Quanity) 只有 {total_die}；请降低总 Unit 需求或补充该 PACKAGE+供应商 的库存。",
                     "Detail": f"ratio={r1}:{r2}, 理论上限约={theoretical_units} Unit",
                 }
             )
@@ -404,7 +518,7 @@ def make_group_suggestions(
                 "PACKAGE": package,
                 "供应商": supplier,
                 "Issue": "未达到目标 Unit",
-                "Suggestion": f"当前可行最高 Unit 为 {best_units}，低于目标 {target_units}；可降低 target_units，或补充同 PACKAGE+供应商 的 Bin 库存。",
+                "Suggestion": f"当前可行最高 Unit 为 {best_units}，低于剩余目标 {target_units}；可降低总 Unit 需求，或补充同 PACKAGE+供应商 的 Bin 库存。",
                 "Detail": f"剩余可用 Bin Quanity={total_die}, 理论上限约={theoretical_units} Unit",
             }
         )
@@ -458,16 +572,18 @@ def build_summary_rows(
     rows: list[dict[str, Any]] = [
         {
             "Section": "运行条件",
-            "Summary": f"target_units={args.target_units}; max_waste={args.max_waste}; Fab LotID 允许复用={args.allow_lot_reuse}; max_bin_grade={args.max_bin_grade if args.max_bin_grade is not None else '全部'}。",
+            "Summary": f"total_units={args.total_units}; max_waste={args.max_waste}; Fab LotID 允许复用={args.allow_lot_reuse}; max_bin_grade={args.max_bin_grade if args.max_bin_grade is not None else '全部'}。",
         }
     ]
+    requested_units = int(args.total_units)
     if mother_lots:
         total_units = sum(int(row["Unit"]) for row in mother_lots)
         total_waste = sum(int(row["WasteDie"]) for row in mother_lots)
+        status = "已满足" if total_units >= requested_units else "未完全满足"
         rows.append(
             {
                 "Section": "正式匹配结果",
-                "Summary": f"找到 {len(mother_lots)} 个正式母批，总 Unit={total_units}，总 WasteDie={total_waste}；每个母批均满足 Unit <= {args.target_units} 且 WasteDie <= {args.max_waste}。Lot 清单见 lot_assignments。",
+                "Summary": f"总需求 Unit={requested_units}，{status}；找到 {len(mother_lots)} 个正式母批，累计 Unit={total_units}，总 WasteDie={total_waste}；每个母批均满足 WasteDie <= {args.max_waste}。Lot 清单见 lot_assignments。",
             }
         )
         for row in mother_lots:
@@ -481,7 +597,7 @@ def build_summary_rows(
         rows.append(
             {
                 "Section": "正式匹配结果",
-                "Summary": f"没有找到满足正式约束的母批。正式约束为 Unit > 0、Unit <= {args.target_units}、WasteDie <= {args.max_waste}，且每行 T7 Code 不拆分。未使用库存见 unused_inventory。",
+                "Summary": f"没有找到满足正式约束的母批。总需求 Unit={requested_units}；正式约束为 Unit > 0、WasteDie <= {args.max_waste}，且每行 T7 Code 不拆分。未使用库存见 unused_inventory。",
             }
         )
 
@@ -529,6 +645,7 @@ def plan(items: list[Item], rules: dict[tuple[str, str], tuple[int, int, str]], 
     diagnostics: list[str] = []
     suggestions: list[dict[str, Any]] = []
     missing_rule_keys: set[tuple[str, str]] = set()
+    remaining_total_units = args.total_units
 
     groups: dict[tuple[str, str], list[Item]] = {}
     for item in items:
@@ -555,21 +672,26 @@ def plan(items: list[Item], rules: dict[tuple[str, str], tuple[int, int, str]], 
         package, supplier = key
         ratio1, ratio2, ratio_text = rules[key]
         available = sorted(groups[key], key=lambda x: (x.bin_grade, -x.bin_quantity, x.lot_id, x.t7_code, x.row_id))
+        if remaining_total_units <= 0:
+            for item in available:
+                unused_notes.setdefault(item.row_id, "not needed after total Unit demand was met")
+            continue
         group_total_die = sum(item.bin_quantity for item in available)
-        target_required_die = args.target_units * (ratio1 + ratio2)
+        target_required_die = remaining_total_units * (ratio1 + ratio2)
         diagnostics.append(
             f"group={package}|{supplier}; sum_bin_quantity={group_total_die}; target_required_die={target_required_die}; theoretical_unit_upper_bound={group_total_die // (ratio1 + ratio2)}"
         )
         blocked_by_reuse_count = 0
         best_units_seen = 0
         best_valid_seen: SearchState | None = None
-        while available:
-            best = find_best_mother_lot(available, (ratio1, ratio2), args.target_units, args.max_waste, args.beam_width)
+        while available and remaining_total_units > 0:
+            current_target_units = remaining_total_units
+            best = find_best_mother_lot(available, (ratio1, ratio2), current_target_units, args.max_waste, args.beam_width)
             if best is None:
                 best_effort = find_best_effort_mother_lot(
                     available,
                     (ratio1, ratio2),
-                    args.target_units,
+                    current_target_units,
                     args.max_waste,
                     args.beam_width,
                 )
@@ -595,7 +717,7 @@ def plan(items: list[Item], rules: dict[tuple[str, str], tuple[int, int, str]], 
                         supplier,
                         available,
                         (ratio1, ratio2),
-                        args.target_units,
+                        current_target_units,
                         args.max_waste,
                         args.beam_width,
                         blocked_by_reuse_count,
@@ -614,6 +736,8 @@ def plan(items: list[Item], rules: dict[tuple[str, str], tuple[int, int, str]], 
             if units > best_units_seen:
                 best_units_seen = units
                 best_valid_seen = best
+            before_remaining_units = remaining_total_units
+            after_remaining_units = max(0, remaining_total_units - units)
             mother_lot_id = f"ML{sequence:04d}"
             lots = sorted({item.lot_id for item in picked_items})
 
@@ -631,6 +755,9 @@ def plan(items: list[Item], rules: dict[tuple[str, str], tuple[int, int, str]], 
                     "Bucket2Die": best.bucket2,
                     "LotCount": len(lots),
                     "FabLotIDList": ", ".join(lots),
+                    "TotalUnitDemand": args.total_units,
+                    "RemainingUnitBefore": before_remaining_units,
+                    "RemainingUnitAfter": after_remaining_units,
                 }
             )
             for idx, item in enumerate(available):
@@ -662,15 +789,20 @@ def plan(items: list[Item], rules: dict[tuple[str, str], tuple[int, int, str]], 
                     continue
                 next_available.append(item)
             available = next_available
+            remaining_total_units = after_remaining_units
+            if remaining_total_units <= 0:
+                for item in available:
+                    unused_notes.setdefault(item.row_id, "not needed after total Unit demand was met")
+                break
             sequence += 1
-        if best_units_seen and best_units_seen < args.target_units:
+        if remaining_total_units > 0 and best_units_seen and best_units_seen < remaining_total_units:
             suggestions.extend(
                 make_group_suggestions(
                     package,
                     supplier,
                     available or groups[key],
                     (ratio1, ratio2),
-                    args.target_units,
+                    remaining_total_units,
                     args.max_waste,
                     args.beam_width,
                     blocked_by_reuse_count,
@@ -696,11 +828,13 @@ def plan(items: list[Item], rules: dict[tuple[str, str], tuple[int, int, str]], 
             }
         )
 
-    diagnostics.append(f"target_units={args.target_units}")
+    diagnostics.append(f"total_units={args.total_units}")
+    diagnostics.append(f"remaining_total_units={remaining_total_units}")
     diagnostics.append(f"max_waste={args.max_waste}")
     diagnostics.append(f"allow_lot_reuse={args.allow_lot_reuse}")
     diagnostics.append(f"max_bin_grade={args.max_bin_grade}")
     diagnostics.append(f"beam_width={args.beam_width}")
+    diagnostics.append("search_strategy=fast_subset_sum_then_beam_fallback")
     diagnostics.append(f"mother_lot_count={len(mother_lots)}")
     diagnostics.append(f"assignment_row_count={len(assignments)}")
     diagnostics.append(f"best_effort_match_count={len(best_effort_matches)}")
@@ -783,7 +917,8 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--output", required=True, type=Path, help="Output .xlsx, .json, or .csv path.")
     parser.add_argument("--data-sheet", help="Raw data sheet name. Defaults to first non-rule sheet.")
     parser.add_argument("--rules-sheet", default="配 Die 规则表", help="Rules sheet name.")
-    parser.add_argument("--target-units", required=True, type=int, help="Maximum target Unit count per mother lot.")
+    parser.add_argument("--total-units", type=int, help="Total Unit demand for this planning run.")
+    parser.add_argument("--target-units", type=int, help="Deprecated alias for --total-units.")
     parser.add_argument("--max-waste", default=30, type=int, help="Maximum waste die per mother lot.")
     parser.add_argument("--allow-lot-reuse", action="store_true", help="Allow one Fab LotID to appear in multiple mother lots.")
     parser.add_argument("--beam-width", default=5000, type=int, help="Search breadth. Increase for harder data.")
@@ -796,8 +931,13 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--max-bin-grade", type=int, help="Use only rows with Bin Grade <= this value. By default all grades are eligible.")
     parser.add_argument("--ratio-col", help="Ratio column override for rule sheet.")
     args = parser.parse_args(argv)
-    if args.target_units <= 0:
-        raise ValueError("--target-units must be positive.")
+    if args.total_units is None:
+        args.total_units = args.target_units
+    if args.total_units is None:
+        raise ValueError("--total-units is required.")
+    if args.total_units <= 0:
+        raise ValueError("--total-units must be positive.")
+    args.target_units = args.total_units
     if args.max_waste < 0:
         raise ValueError("--max-waste must be non-negative.")
     if args.beam_width < 100:

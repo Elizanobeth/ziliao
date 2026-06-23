@@ -9,7 +9,7 @@ Before running the planner, confirm the following user inputs:
 | Input file path | Yes | Excel/CSV/TSV path. |
 | Raw data sheet name | Yes | Do not guess unless the user allows auto-detection. |
 | Rule sheet name | Yes | Usually `配 Die 规则表`, but confirm. |
-| Target Unit per mother lot | Yes | Positive integer. |
+| Total Unit demand | Yes | Positive integer. This is the cumulative Unit demand for the full run, not the target for each mother lot. |
 | Maximum waste die per mother lot | Yes | Non-negative integer. |
 | Fab LotID reuse rule | Yes | Allowed or not allowed. |
 | Bin Grade eligibility | Yes | All grades, or a maximum eligible grade. |
@@ -58,17 +58,20 @@ The script treats each raw row as one indivisible `T7 Code + Bin Grade` inventor
 For each `PACKAGE + 供应商` group:
 
 1. Read the two-number ratio from `配 Die 规则表`.
-2. Check the necessary total-quantity condition: `target_units * (ratio_1 + ratio_2) <= sum(Bin Quanity)` for the group's currently eligible rows.
+2. Check the necessary total-quantity condition: `total_units * (ratio_1 + ratio_2) <= sum(Bin Quanity)` for the group's currently eligible rows.
 3. Assign each available `T7 Code + Bin Grade` row wholly to bucket 1 or bucket 2.
 4. Completed Units equal `min(floor(bucket1_die / ratio_1), floor(bucket2_die / ratio_2))`.
 5. Required die equal `completed_units * (ratio_1 + ratio_2)`.
 6. Waste equals `selected_die - required_die`.
 7. Valid mother lots must satisfy:
-   - `completed_units <= target_units`
+   - `completed_units <= current remaining Unit demand`
    - `waste <= max_waste`
 8. Select the next mother lot by maximizing Units first, then minimizing waste.
 9. Repeat until no valid mother lot can be formed.
-10. If no formal mother lot is found for the remaining inventory, produce a best-effort alternative by maximizing Units while still requiring `waste <= max_waste`. Do not rank a zero-waste tiny Unit result above a larger Unit result that is still within the user's waste limit.
+10. Use layered search for performance:
+   - Fast path: subset-sum probes for the current remaining Unit demand, then 90%, 80%, ..., 10% of that remaining demand.
+   - Fallback path: beam search only when the fast path cannot find a valid candidate.
+11. If no formal mother lot is found for the remaining inventory, produce a best-effort alternative by maximizing Units while still requiring `waste <= max_waste`. Do not rank a zero-waste tiny Unit result above a larger Unit result that is still within the user's waste limit.
 
 When `--allow-lot-reuse` is absent, after a mother lot uses any row from a Fab LotID, all remaining rows with that Fab LotID become unavailable for later mother lots. When `--allow-lot-reuse` is present, only rows already selected are removed; other rows with the same Fab LotID may be selected later.
 
@@ -78,8 +81,8 @@ If no valid mother lot can be formed, or if a group's best result is below the r
 
 - Use `best_effort_matches` and `best_effort_assignments` to show the largest Unit alternative that stays within `max_waste`.
 - Add a `summary` sheet for every run, including successful runs. When no formal match is found, the summary should state the best-effort Unit and WasteDie if available.
-- Lower `--target-units` when available inventory cannot reach the target without exceeding the waste cap.
-- Lower `--target-units` or add inventory when `sum(Bin Quanity)` is less than `target_units * (ratio_1 + ratio_2)`.
+- Lower `--total-units` when available inventory cannot reach the target without exceeding the waste cap.
+- Lower `--total-units` or add inventory when `sum(Bin Quanity)` is less than `total_units * (ratio_1 + ratio_2)`.
 - Increase `--max-waste` when near-target combinations fail only because waste is above the cap.
 - Add inventory for the limiting bucket implied by the ratio.
 - Enable `--allow-lot-reuse` when many rows are blocked only because the same Fab LotID was already used.
