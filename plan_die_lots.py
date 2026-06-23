@@ -267,6 +267,92 @@ def find_best_mother_lot(
     )[0]
 
 
+def find_best_effort_mother_lot(
+    items: list[Item],
+    ratio: tuple[int, int],
+    target_units: int,
+    max_waste: int,
+    beam_width: int,
+) -> SearchState | None:
+    """Find the largest under-target Unit candidate that still obeys max_waste."""
+    probe_targets = []
+    for pct in range(90, 0, -10):
+        probe = max(1, target_units * pct // 100)
+        if probe < target_units and probe not in probe_targets:
+            probe_targets.append(probe)
+
+    best: SearchState | None = None
+    for probe_target in probe_targets:
+        candidate = find_best_mother_lot(items, ratio, probe_target, max_waste, beam_width)
+        if candidate is None:
+            continue
+        if best is None:
+            best = candidate
+            continue
+        candidate_units, _, candidate_waste = state_metrics(candidate.bucket1, candidate.bucket2, ratio)
+        best_units, _, best_waste = state_metrics(best.bucket1, best.bucket2, ratio)
+        if (candidate_units, -candidate_waste, -len(candidate.picks)) > (best_units, -best_waste, -len(best.picks)):
+            best = candidate
+
+    return best
+
+
+def state_to_summary_row(
+    state: SearchState,
+    available: list[Item],
+    ratio: tuple[int, int],
+    package: str,
+    supplier: str,
+    ratio_text: str,
+    match_id: str,
+) -> dict[str, Any]:
+    picked_items = [available[idx] for idx, _ in state.picks]
+    units, required_die, waste = state_metrics(state.bucket1, state.bucket2, ratio)
+    lots = sorted({item.lot_id for item in picked_items})
+    return {
+        "MatchID": match_id,
+        "PACKAGE": package,
+        "供应商": supplier,
+        "层数配比": ratio_text,
+        "Unit": units,
+        "RequiredDie": required_die,
+        "SelectedDie": state.bucket1 + state.bucket2,
+        "WasteDie": waste,
+        "Bucket1Die": state.bucket1,
+        "Bucket2Die": state.bucket2,
+        "LotCount": len(lots),
+        "FabLotIDList": ", ".join(lots),
+        "MatchType": "best_effort_under_waste_limit",
+    }
+
+
+def state_to_assignment_rows(
+    state: SearchState,
+    available: list[Item],
+    match_id: str,
+    package: str,
+    supplier: str,
+) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    picked_by_index = {idx: bucket for idx, bucket in state.picks}
+    for idx in sorted(picked_by_index):
+        item = available[idx]
+        rows.append(
+            {
+                "MatchID": match_id,
+                "PACKAGE": package,
+                "供应商": supplier,
+                "Fab LotID": item.lot_id,
+                "T7 Code": item.t7_code,
+                "Bin Grade": item.bin_grade,
+                "AssignedBucket": picked_by_index[idx],
+                "Bin Quanity": item.bin_quantity,
+                "SourceRow": item.row_id,
+            }
+        )
+    return rows
+
+
 def make_group_suggestions(
     package: str,
     supplier: str,
@@ -277,6 +363,7 @@ def make_group_suggestions(
     beam_width: int,
     blocked_by_reuse_count: int,
     best_valid: SearchState | None,
+    best_effort: SearchState | None = None,
 ) -> list[dict[str, Any]]:
     suggestions: list[dict[str, Any]] = []
     if not available:
@@ -287,6 +374,18 @@ def make_group_suggestions(
     r1, r2 = ratio
     theoretical_units = total_die // (r1 + r2)
     best_units = state_metrics(best_valid.bucket1, best_valid.bucket2, ratio)[0] if best_valid else 0
+    if best_effort is not None:
+        effort_units, _, effort_waste = state_metrics(best_effort.bucket1, best_effort.bucket2, ratio)
+        best_units = max(best_units, effort_units)
+        suggestions.append(
+            {
+                "PACKAGE": package,
+                "供应商": supplier,
+                "Issue": "未找到目标 Unit 的正式母批，已给出替代方案",
+                "Suggestion": f"在 max_waste <= {max_waste} 的限制内，当前替代方案最高可做到 {effort_units} Unit，WasteDie={effort_waste}；如业务接受，可把 target_units 调整为 {effort_units} 后重跑，或补充库存继续冲击目标 {target_units}。",
+                "Detail": f"替代 Bucket1Die={best_effort.bucket1}, Bucket2Die={best_effort.bucket2}, Lot行数={len(best_effort.picks)}",
+            }
+        )
 
     if best_units < target_units:
         target_required_die = target_units * (r1 + r2)
@@ -305,8 +404,8 @@ def make_group_suggestions(
                 "PACKAGE": package,
                 "供应商": supplier,
                 "Issue": "未达到目标 Unit",
-                    "Suggestion": f"当前可行最高 Unit 为 {best_units}，低于目标 {target_units}；可降低 target_units，或补充同 PACKAGE+供应商 的 Bin 库存。",
-                "Detail": f"剩余可用 Die={total_die}, 理论上限约={theoretical_units}",
+                "Suggestion": f"当前可行最高 Unit 为 {best_units}，低于目标 {target_units}；可降低 target_units，或补充同 PACKAGE+供应商 的 Bin 库存。",
+                "Detail": f"剩余可用 Bin Quanity={total_die}, 理论上限约={theoretical_units} Unit",
             }
         )
 
@@ -347,9 +446,85 @@ def make_group_suggestions(
     return suggestions
 
 
-def plan(items: list[Item], rules: dict[tuple[str, str], tuple[int, int, str]], args: argparse.Namespace) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]], list[str], list[dict[str, Any]]]:
+def build_summary_rows(
+    mother_lots: list[dict[str, Any]],
+    assignments: list[dict[str, Any]],
+    unused: list[dict[str, Any]],
+    diagnostics: list[str],
+    suggestions: list[dict[str, Any]],
+    best_effort_matches: list[dict[str, Any]],
+    args: argparse.Namespace,
+) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = [
+        {
+            "Section": "运行条件",
+            "Summary": f"target_units={args.target_units}; max_waste={args.max_waste}; Fab LotID 允许复用={args.allow_lot_reuse}; max_bin_grade={args.max_bin_grade if args.max_bin_grade is not None else '全部'}。",
+        }
+    ]
+    if mother_lots:
+        total_units = sum(int(row["Unit"]) for row in mother_lots)
+        total_waste = sum(int(row["WasteDie"]) for row in mother_lots)
+        rows.append(
+            {
+                "Section": "正式匹配结果",
+                "Summary": f"找到 {len(mother_lots)} 个正式母批，总 Unit={total_units}，总 WasteDie={total_waste}；每个母批均满足 Unit <= {args.target_units} 且 WasteDie <= {args.max_waste}。Lot 清单见 lot_assignments。",
+            }
+        )
+        for row in mother_lots:
+            rows.append(
+                {
+                    "Section": "正式母批明细",
+                    "Summary": f"{row['MotherLotID']}：PACKAGE={row['PACKAGE']}，供应商={row['供应商']}，Unit={row['Unit']}，WasteDie={row['WasteDie']}，Bucket1Die={row['Bucket1Die']}，Bucket2Die={row['Bucket2Die']}，LotCount={row['LotCount']}。",
+                }
+            )
+    else:
+        rows.append(
+            {
+                "Section": "正式匹配结果",
+                "Summary": f"没有找到满足正式约束的母批。正式约束为 Unit > 0、Unit <= {args.target_units}、WasteDie <= {args.max_waste}，且每行 T7 Code 不拆分。未使用库存见 unused_inventory。",
+            }
+        )
+
+    if best_effort_matches:
+        for row in best_effort_matches:
+            rows.append(
+                {
+                    "Section": "最佳替代方案",
+                    "Summary": f"{row['MatchID']}：在 WasteDie <= {args.max_waste} 内找到 Unit 最大的替代方案，Unit={row['Unit']}，WasteDie={row['WasteDie']}，Bucket1Die={row['Bucket1Die']}，Bucket2Die={row['Bucket2Die']}，LotCount={row['LotCount']}。Lot 清单见 best_effort_assignments。",
+                }
+            )
+    else:
+        rows.append(
+            {
+                "Section": "最佳替代方案",
+                "Summary": "未额外输出替代方案；如果正式母批已经找到，优先使用 mother_lots。若正式母批未找到且这里为空，说明当前搜索未找到任何 WasteDie 不超过上限的可行替代组合。",
+            }
+        )
+
+    if suggestions:
+        rows.append(
+            {
+                "Section": "调整建议",
+                "Summary": "存在未满足目标或可优化事项，具体见 optimization_suggestions。",
+            }
+        )
+    else:
+        rows.append({"Section": "调整建议", "Summary": "当前没有额外优化建议。"})
+
+    rows.append(
+        {
+            "Section": "数据覆盖",
+            "Summary": f"正式分配明细行数={len(assignments)}；未使用库存行数={len(unused)}；诊断信息行数={len(diagnostics)}。",
+        }
+    )
+    return rows
+
+
+def plan(items: list[Item], rules: dict[tuple[str, str], tuple[int, int, str]], args: argparse.Namespace) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]], list[str], list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
     mother_lots: list[dict[str, Any]] = []
     assignments: list[dict[str, Any]] = []
+    best_effort_matches: list[dict[str, Any]] = []
+    best_effort_assignments: list[dict[str, Any]] = []
     unused_notes: dict[int, str] = {}
     diagnostics: list[str] = []
     suggestions: list[dict[str, Any]] = []
@@ -391,6 +566,29 @@ def plan(items: list[Item], rules: dict[tuple[str, str], tuple[int, int, str]], 
         while available:
             best = find_best_mother_lot(available, (ratio1, ratio2), args.target_units, args.max_waste, args.beam_width)
             if best is None:
+                best_effort = find_best_effort_mother_lot(
+                    available,
+                    (ratio1, ratio2),
+                    args.target_units,
+                    args.max_waste,
+                    args.beam_width,
+                )
+                if best_effort is not None:
+                    match_id = f"BE{len(best_effort_matches) + 1:04d}"
+                    best_effort_matches.append(
+                        state_to_summary_row(
+                            best_effort,
+                            available,
+                            (ratio1, ratio2),
+                            package,
+                            supplier,
+                            ratio_text,
+                            match_id,
+                        )
+                    )
+                    best_effort_assignments.extend(
+                        state_to_assignment_rows(best_effort, available, match_id, package, supplier)
+                    )
                 suggestions.extend(
                     make_group_suggestions(
                         package,
@@ -402,6 +600,7 @@ def plan(items: list[Item], rules: dict[tuple[str, str], tuple[int, int, str]], 
                         args.beam_width,
                         blocked_by_reuse_count,
                         best_valid_seen,
+                        best_effort,
                     )
                 )
                 for item in available:
@@ -504,18 +703,33 @@ def plan(items: list[Item], rules: dict[tuple[str, str], tuple[int, int, str]], 
     diagnostics.append(f"beam_width={args.beam_width}")
     diagnostics.append(f"mother_lot_count={len(mother_lots)}")
     diagnostics.append(f"assignment_row_count={len(assignments)}")
+    diagnostics.append(f"best_effort_match_count={len(best_effort_matches)}")
+    diagnostics.append(f"best_effort_assignment_row_count={len(best_effort_assignments)}")
     diagnostics.append(f"unused_row_count={len(unused_inventory)}")
-    return mother_lots, assignments, unused_inventory, diagnostics, suggestions
+    return mother_lots, assignments, unused_inventory, diagnostics, suggestions, best_effort_matches, best_effort_assignments
 
 
-def write_outputs(output_path: Path, mother_lots: list[dict[str, Any]], assignments: list[dict[str, Any]], unused: list[dict[str, Any]], diagnostics: list[str], suggestions: list[dict[str, Any]]) -> None:
+def write_outputs(
+    output_path: Path,
+    mother_lots: list[dict[str, Any]],
+    assignments: list[dict[str, Any]],
+    unused: list[dict[str, Any]],
+    diagnostics: list[str],
+    suggestions: list[dict[str, Any]],
+    best_effort_matches: list[dict[str, Any]],
+    best_effort_assignments: list[dict[str, Any]],
+    summary_rows: list[dict[str, Any]],
+) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     suffix = output_path.suffix.lower()
     diag_rows = [{"Diagnostic": line} for line in diagnostics]
     if suffix == ".xlsx":
         with pd.ExcelWriter(output_path, engine="openpyxl") as writer:
+            pd.DataFrame(summary_rows).to_excel(writer, sheet_name="summary", index=False)
             pd.DataFrame(mother_lots).to_excel(writer, sheet_name="mother_lots", index=False)
             pd.DataFrame(assignments).to_excel(writer, sheet_name="lot_assignments", index=False)
+            pd.DataFrame(best_effort_matches).to_excel(writer, sheet_name="best_effort_matches", index=False)
+            pd.DataFrame(best_effort_assignments).to_excel(writer, sheet_name="best_effort_assignments", index=False)
             pd.DataFrame(unused).to_excel(writer, sheet_name="unused_inventory", index=False)
             pd.DataFrame(diag_rows).to_excel(writer, sheet_name="diagnostics", index=False)
             pd.DataFrame(suggestions).to_excel(writer, sheet_name="optimization_suggestions", index=False)
@@ -526,9 +740,12 @@ def write_outputs(output_path: Path, mother_lots: list[dict[str, Any]], assignme
                 {
                     "mother_lots": mother_lots,
                     "lot_assignments": assignments,
+                    "best_effort_matches": best_effort_matches,
+                    "best_effort_assignments": best_effort_assignments,
                     "unused_inventory": unused,
                     "diagnostics": diagnostics,
                     "optimization_suggestions": suggestions,
+                    "summary": summary_rows,
                 },
                 ensure_ascii=False,
                 indent=2,
@@ -539,8 +756,11 @@ def write_outputs(output_path: Path, mother_lots: list[dict[str, Any]], assignme
     if suffix == ".csv":
         stem = output_path.with_suffix("")
         for name, rows in [
+            ("summary", summary_rows),
             ("mother_lots", mother_lots),
             ("lot_assignments", assignments),
+            ("best_effort_matches", best_effort_matches),
+            ("best_effort_assignments", best_effort_assignments),
             ("unused_inventory", unused),
             ("diagnostics", diag_rows),
             ("optimization_suggestions", suggestions),
@@ -604,14 +824,34 @@ def main(argv: list[str] | None = None) -> int:
             args.bin_quantity_col,
             args.max_bin_grade,
         )
-        mother_lots, assignments, unused, diagnostics, suggestions = plan(items, rules, args)
+        mother_lots, assignments, unused, diagnostics, suggestions, best_effort_matches, best_effort_assignments = plan(items, rules, args)
         diagnostics.insert(0, f"data_sheet={selected_data_sheet}")
         diagnostics.insert(1, f"rules_sheet={args.rules_sheet}")
         diagnostics.append(f"optimization_suggestion_count={len(suggestions)}")
-        write_outputs(args.output, mother_lots, assignments, unused, diagnostics, suggestions)
+        summary_rows = build_summary_rows(
+            mother_lots,
+            assignments,
+            unused,
+            diagnostics,
+            suggestions,
+            best_effort_matches,
+            args,
+        )
+        write_outputs(
+            args.output,
+            mother_lots,
+            assignments,
+            unused,
+            diagnostics,
+            suggestions,
+            best_effort_matches,
+            best_effort_assignments,
+            summary_rows,
+        )
         print(f"Wrote {args.output}")
         print(f"Mother lots: {len(mother_lots)}")
         print(f"Assignment rows: {len(assignments)}")
+        print(f"Best-effort matches: {len(best_effort_matches)}")
         print(f"Unused rows: {len(unused)}")
         print(f"Optimization suggestions: {len(suggestions)}")
         return 0

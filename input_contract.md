@@ -1,5 +1,25 @@
 # Die Lot Planner Input Contract
 
+## User Input Checklist
+
+Before running the planner, confirm the following user inputs:
+
+| Input | Required | Notes |
+|---|---:|---|
+| Input file path | Yes | Excel/CSV/TSV path. |
+| Raw data sheet name | Yes | Do not guess unless the user allows auto-detection. |
+| Rule sheet name | Yes | Usually `配 Die 规则表`, but confirm. |
+| Target Unit per mother lot | Yes | Positive integer. |
+| Maximum waste die per mother lot | Yes | Non-negative integer. |
+| Fab LotID reuse rule | Yes | Allowed or not allowed. |
+| Bin Grade eligibility | Yes | All grades, or a maximum eligible grade. |
+| Output path and format | Yes | Prefer `.xlsx` when the user wants readable sheets. |
+| Required output details | Yes | Mother-lot Lot list, best-effort alternative, optimization suggestions, and summary. |
+| Raw field mapping | Conditional | Required if the raw columns differ from the standard names. |
+| Rule field mapping | Conditional | Required if the rule columns differ from the standard names. |
+
+Do not silently apply business defaults for target Unit, max waste, Fab LotID reuse, sheet names, or Bin Grade eligibility.
+
 ## Rule Sheet
 
 Default sheet name: `配 Die 规则表`
@@ -48,6 +68,7 @@ For each `PACKAGE + 供应商` group:
    - `waste <= max_waste`
 8. Select the next mother lot by maximizing Units first, then minimizing waste.
 9. Repeat until no valid mother lot can be formed.
+10. If no formal mother lot is found for the remaining inventory, produce a best-effort alternative by maximizing Units while still requiring `waste <= max_waste`. Do not rank a zero-waste tiny Unit result above a larger Unit result that is still within the user's waste limit.
 
 When `--allow-lot-reuse` is absent, after a mother lot uses any row from a Fab LotID, all remaining rows with that Fab LotID become unavailable for later mother lots. When `--allow-lot-reuse` is present, only rows already selected are removed; other rows with the same Fab LotID may be selected later.
 
@@ -55,6 +76,8 @@ When `--allow-lot-reuse` is absent, after a mother lot uses any row from a Fab L
 
 If no valid mother lot can be formed, or if a group's best result is below the requested Unit target, the output should include optimization suggestions. Suggestions should be operational, not generic. Common examples:
 
+- Use `best_effort_matches` and `best_effort_assignments` to show the largest Unit alternative that stays within `max_waste`.
+- Add a `summary` sheet for every run, including successful runs. When no formal match is found, the summary should state the best-effort Unit and WasteDie if available.
 - Lower `--target-units` when available inventory cannot reach the target without exceeding the waste cap.
 - Lower `--target-units` or add inventory when `sum(Bin Quanity)` is less than `target_units * (ratio_1 + ratio_2)`.
 - Increase `--max-waste` when near-target combinations fail only because waste is above the cap.
