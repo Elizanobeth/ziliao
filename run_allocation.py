@@ -24,7 +24,7 @@ def main() -> None:
     parser.add_argument("--unit-cap", required=True, help="单母批最大 Unit 数，例如 4500 或 4.5k")
     parser.add_argument("--lot-cap", required=True, help="单母批最大不同 Lot 数")
     parser.add_argument("--reuse-rule", required=True, help="allow_reuse/no_reuse 或 允许复用/不允许复用")
-    parser.add_argument("--backend", default="auto", choices=["auto", "cpsat", "heuristic"])
+    parser.add_argument("--backend", default="auto", choices=["auto", "cpsat", "heuristic", "large_batch"])
     parser.add_argument("--time-limit", type=int, default=300)
     parser.add_argument("--max-batches", type=int, default=None)
     parser.add_argument("--candidate-limit", type=int, default=20000)
@@ -32,6 +32,7 @@ def main() -> None:
     parser.add_argument("--max-combo-items", type=int, default=8)
     parser.add_argument("--max-side-items", type=int, default=18)
     parser.add_argument("--node-limit", type=int, default=200000)
+    parser.add_argument("--large-item-threshold", type=int, default=800)
     parser.add_argument("--out-dir", required=True, help="输出目录")
     args = parser.parse_args()
 
@@ -62,6 +63,7 @@ def main() -> None:
             args.max_combo_items,
             args.max_side_items,
             args.node_limit,
+            args.large_item_threshold,
         )
         save_json(solution, out_dir / "04_solution.json")
         export_report(

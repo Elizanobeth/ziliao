@@ -30,6 +30,7 @@ def _params(
     max_combo_items: int,
     max_side_items: int,
     node_limit: int,
+    large_item_threshold: int,
 ) -> dict[str, Any]:
     return {
         "loss_cap": parse_nonnegative_int(loss_cap, "单母批最大 Die 损耗"),
@@ -43,6 +44,7 @@ def _params(
         "max_combo_items": int(max_combo_items),
         "max_side_items": int(max_side_items),
         "node_limit": int(node_limit),
+        "large_item_threshold": int(large_item_threshold),
     }
 
 
@@ -231,6 +233,258 @@ def _generate_allow_reuse_candidates(
                 warnings.append("候选母批数量达到上限，已停止继续生成。")
                 return candidates, warnings
     return candidates, warnings
+
+
+def _candidate_plan(candidate: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "id": f"P_{candidate['id']}",
+        "candidates": [candidate],
+        "lots": set(candidate["lots"]),
+        "item_ids": set(candidate["item_ids"]),
+        "units": candidate["units"],
+        "loss": candidate["loss"],
+        "lot_overflow": candidate["lot_overflow"],
+        "active_count": 1,
+    }
+
+
+def _large_sort_orders(lot_items: dict[str, list[dict[str, Any]]], ratio_sum: int) -> list[list[str]]:
+    lots = list(lot_items)
+    total = {lot: sum(int(item["qty"]) for item in items) for lot, items in lot_items.items()}
+    orders = [
+        sorted(lots, key=lambda lot: (-total[lot], lot)),
+        sorted(lots, key=lambda lot: (total[lot], lot)),
+        sorted(lots, key=lambda lot: (total[lot] % ratio_sum, -total[lot], lot)),
+        sorted(lots),
+    ]
+    unique_orders: list[list[str]] = []
+    seen: set[tuple[str, ...]] = set()
+    for order in orders:
+        key = tuple(order)
+        if key not in seen:
+            unique_orders.append(order)
+            seen.add(key)
+    return unique_orders
+
+
+def _generate_large_whole_lot_candidates(
+    supply: dict[str, Any],
+    params: dict[str, Any],
+    relaxed_lot_cap: bool,
+) -> tuple[list[dict[str, Any]], list[str]]:
+    warnings: list[str] = []
+    ratio = supply["config"]["ratio"]
+    ratio_sum = int(ratio["A"]) + int(ratio["B"])
+    lot_items = _lot_item_map(supply["items"])
+    max_lots = params["max_combo_lots"]
+    if not relaxed_lot_cap:
+        max_lots = min(max_lots, params["lot_cap"])
+    else:
+        max_lots = min(max_lots, params["lot_cap"] + 2)
+    if max_lots < 1:
+        return [], ["大数据候选生成失败：max_lots 小于 1。"]
+
+    candidates: list[dict[str, Any]] = []
+    seen_groups: set[tuple[str, ...]] = set()
+    count = 0
+    for order in _large_sort_orders(lot_items, ratio_sum):
+        for start in range(len(order)):
+            lot_group: list[str] = []
+            for offset in range(max_lots):
+                pos = start + offset
+                if pos >= len(order):
+                    break
+                lot_group.append(order[pos])
+                if not relaxed_lot_cap and len(lot_group) > params["lot_cap"]:
+                    break
+                key = tuple(sorted(lot_group))
+                if key in seen_groups:
+                    continue
+                seen_groups.add(key)
+                combo_items = [item for lot in key for item in lot_items[lot]]
+                candidate = _make_candidate(
+                    f"LC{count + 1:08d}",
+                    combo_items,
+                    ratio,
+                    params["unit_cap"],
+                    params["loss_cap"],
+                    params["lot_cap"],
+                    params["max_side_items"],
+                )
+                count += 1
+                if candidate:
+                    candidates.append(candidate)
+                if len(candidates) >= params["candidate_limit"]:
+                    warnings.append("大数据候选母批数量达到上限，已停止继续生成。")
+                    return candidates, warnings
+    if not candidates:
+        warnings.append("大数据整 Lot 候选生成未找到可行母批。")
+    return candidates, warnings
+
+
+def _chunk_lot_items_for_large_plan(
+    lot: str,
+    items: list[dict[str, Any]],
+    supply: dict[str, Any],
+    params: dict[str, Any],
+) -> list[dict[str, Any]] | None:
+    ratio = supply["config"]["ratio"]
+    ratio_sum = int(ratio["A"]) + int(ratio["B"])
+    max_die = params["unit_cap"] * ratio_sum + params["loss_cap"]
+    if any(int(item["qty"]) > max_die for item in items):
+        return None
+
+    def build_chunks(ordered: list[dict[str, Any]], prefix: str) -> list[dict[str, Any]] | None:
+        chunks: list[list[dict[str, Any]]] = []
+        current: list[dict[str, Any]] = []
+        current_qty = 0
+        for item in ordered:
+            qty = int(item["qty"])
+            if current and current_qty + qty > max_die:
+                chunks.append(current)
+                current = [item]
+                current_qty = qty
+            else:
+                current.append(item)
+                current_qty += qty
+        if current:
+            chunks.append(current)
+
+        candidates: list[dict[str, Any]] = []
+        for idx, chunk in enumerate(chunks, start=1):
+            candidate = _make_candidate(
+                f"{prefix}_{idx:04d}",
+                chunk,
+                ratio,
+                params["unit_cap"],
+                params["loss_cap"],
+                params["lot_cap"],
+                params["max_side_items"],
+            )
+            if not candidate:
+                return None
+            candidates.append(candidate)
+        return candidates
+
+    orders = [
+        sorted(items, key=lambda item: (-int(item["qty"]), item["wafer"], item["grade"], item["id"])),
+        sorted(items, key=lambda item: (int(item["qty"]), item["wafer"], item["grade"], item["id"])),
+        sorted(items, key=lambda item: (item["grade"], -int(item["qty"]), item["wafer"], item["id"])),
+    ]
+    for order_idx, ordered in enumerate(orders, start=1):
+        plan = build_chunks(ordered, f"LSP_{lot}_{order_idx}")
+        if plan:
+            covered = {item_id for candidate in plan for item_id in candidate["item_ids"]}
+            expected = {item["id"] for item in items}
+            if covered == expected:
+                return plan
+    return None
+
+
+def _generate_large_allow_reuse_plans(
+    supply: dict[str, Any],
+    params: dict[str, Any],
+    relaxed_lot_cap: bool,
+) -> tuple[list[dict[str, Any]], list[str]]:
+    warnings: list[str] = []
+    candidates, candidate_warnings = _generate_large_whole_lot_candidates(supply, params, relaxed_lot_cap)
+    warnings.extend(candidate_warnings)
+    plans = [_candidate_plan(candidate) for candidate in candidates]
+
+    lot_items = _lot_item_map(supply["items"])
+    for lot, items in lot_items.items():
+        whole_lot_already_exists = any(plan["lots"] == {lot} for plan in plans)
+        if whole_lot_already_exists:
+            continue
+        split_candidates = _chunk_lot_items_for_large_plan(lot, items, supply, params)
+        if not split_candidates:
+            continue
+        plans.append(
+            {
+                "id": f"P_SPLIT_{lot}",
+                "candidates": split_candidates,
+                "lots": {lot},
+                "item_ids": {item_id for c in split_candidates for item_id in c["item_ids"]},
+                "units": sum(c["units"] for c in split_candidates),
+                "loss": sum(c["loss"] for c in split_candidates),
+                "lot_overflow": sum(c["lot_overflow"] for c in split_candidates),
+                "active_count": len(split_candidates),
+            }
+        )
+    if len(plans) > params["candidate_limit"]:
+        plans = sorted(
+            plans,
+            key=lambda p: (-p["units"], p["loss"], p["lot_overflow"], p["active_count"], p["id"]),
+        )[: params["candidate_limit"]]
+        warnings.append("大数据 Lot 计划数量达到上限，已截断。")
+    return plans, warnings
+
+
+def _generate_large_no_reuse_plans(
+    supply: dict[str, Any],
+    params: dict[str, Any],
+    relaxed_lot_cap: bool,
+) -> tuple[list[dict[str, Any]], list[str]]:
+    candidates, warnings = _generate_large_whole_lot_candidates(supply, params, relaxed_lot_cap)
+    return [_candidate_plan(candidate) for candidate in candidates], warnings
+
+
+def _large_plan_sort_key(plan: dict[str, Any]) -> tuple[float, int, int, int, str]:
+    units = max(1, int(plan["units"]))
+    return (
+        plan["loss"] / units,
+        plan["lot_overflow"],
+        -plan["units"],
+        plan["active_count"],
+        plan["id"],
+    )
+
+
+def _select_large_plans(
+    plans: list[dict[str, Any]],
+    supply: dict[str, Any],
+    params: dict[str, Any],
+    target_phase: bool,
+) -> tuple[list[dict[str, Any]] | None, dict[str, Any]]:
+    target = int(supply["config"]["target_units"])
+    selected: list[dict[str, Any]] = []
+    used_items: set[str] = set()
+    used_lots: set[str] = set()
+    considered = 0
+    for plan in sorted(plans, key=_large_plan_sort_key):
+        considered += 1
+        if plan["item_ids"] & used_items:
+            continue
+        if params["reuse_rule"] == "no_reuse" and plan["lots"] & used_lots:
+            continue
+        selected.append(plan)
+        used_items.update(plan["item_ids"])
+        used_lots.update(plan["lots"])
+        if target_phase and sum(p["units"] for p in selected) >= target:
+            break
+
+    if target_phase:
+        total_units = sum(p["units"] for p in selected)
+        if total_units < target:
+            return None, {"considered_plans": considered, "selected_plans": len(selected)}
+        changed = True
+        while changed:
+            changed = False
+            for plan in sorted(selected, key=lambda p: (-p["units"], -p["loss"], p["id"])):
+                if total_units - plan["units"] >= target:
+                    selected.remove(plan)
+                    total_units -= plan["units"]
+                    changed = True
+                    break
+    elif not selected:
+        return None, {"considered_plans": considered, "selected_plans": 0}
+
+    candidates = [candidate for plan in selected for candidate in plan["candidates"]]
+    return candidates, {
+        "considered_plans": considered,
+        "selected_plans": len(selected),
+        "selected_candidate_batches": len(candidates),
+    }
 
 
 def _selection_complete_for_lots(
@@ -520,6 +774,66 @@ def _solve_with_heuristic(supply: dict[str, Any], params: dict[str, Any]) -> dic
     }
 
 
+def _solve_with_large_batch(supply: dict[str, Any], params: dict[str, Any]) -> dict[str, Any]:
+    phases: list[tuple[str, bool, bool]] = []
+    if supply["stats"]["quantity_can_meet_target"]:
+        phases.extend(
+            [
+                ("target_strict_lot_cap_large", True, False),
+                ("target_relaxed_lot_cap_large", True, True),
+            ]
+        )
+    phases.extend(
+        [
+            ("fallback_strict_lot_cap_large", False, False),
+            ("fallback_relaxed_lot_cap_large", False, True),
+        ]
+    )
+
+    all_warnings = [
+        "large_batch 是大数据两阶段启发式：先生成高质量候选母批/计划，再选择非冲突计划；适合大表稳定产出可行解，不声明数学全局最优。"
+    ]
+    for phase_name, target_phase, relaxed in phases:
+        if params["reuse_rule"] == "allow_reuse":
+            plans, warnings = _generate_large_allow_reuse_plans(supply, params, relaxed)
+        else:
+            plans, warnings = _generate_large_no_reuse_plans(supply, params, relaxed)
+        all_warnings.extend([f"{phase_name}: {warning}" for warning in warnings])
+        selected_candidates, search_meta = _select_large_plans(plans, supply, params, target_phase)
+        search_meta["generated_plans"] = len(plans)
+        if selected_candidates:
+            return _build_solution(
+                supply,
+                params,
+                selected_candidates,
+                phase_name,
+                "large_batch",
+                all_warnings,
+                search_meta,
+                "FEASIBLE",
+            )
+
+    return {
+        "status": "INFEASIBLE",
+        "backend": "large_batch",
+        "phase": "no_solution",
+        "params": params,
+        "input_summary": supply["config"],
+        "supply_stats": supply["stats"],
+        "batches": [],
+        "totals": {
+            "total_units": 0,
+            "target_units": supply["config"]["target_units"],
+            "over_target_units": 0,
+            "total_loss": 0,
+            "active_batch_count": 0,
+            "total_lot_overflow": 0,
+        },
+        "warnings": all_warnings + ["large_batch 未找到可行解；建议提高 candidate_limit/max_combo_lots 或使用 cpsat 后端。"],
+        "checks": [],
+    }
+
+
 def _solve_with_cpsat(supply: dict[str, Any], params: dict[str, Any]) -> dict[str, Any]:
     try:
         from ortools.sat.python import cp_model  # type: ignore
@@ -768,6 +1082,7 @@ def solve_allocation(
     max_combo_items: int = 8,
     max_side_items: int = 18,
     node_limit: int = 200000,
+    large_item_threshold: int = 800,
 ) -> dict[str, Any]:
     params = _params(
         loss_cap,
@@ -781,14 +1096,24 @@ def solve_allocation(
         max_combo_items,
         max_side_items,
         node_limit,
+        large_item_threshold,
     )
     backend = backend.lower()
-    if backend not in {"auto", "cpsat", "heuristic"}:
-        raise DieAllocationError("--backend 只允许 auto/cpsat/heuristic")
+    if backend not in {"auto", "cpsat", "heuristic", "large_batch"}:
+        raise DieAllocationError("--backend 只允许 auto/cpsat/heuristic/large_batch")
     if backend == "cpsat":
         return _solve_with_cpsat(supply, params)
     if backend == "heuristic":
         return _solve_with_heuristic(supply, params)
+    if backend == "large_batch":
+        return _solve_with_large_batch(supply, params)
+
+    is_large = (
+        int(supply["stats"]["atomic_item_count"]) > params["large_item_threshold"]
+        or int(supply["stats"]["lot_count"]) > max(50, params["large_item_threshold"] // 4)
+    )
+    if is_large:
+        return _solve_with_large_batch(supply, params)
     try:
         return _solve_with_cpsat(supply, params)
     except DieAllocationError as exc:
@@ -806,7 +1131,7 @@ def main() -> None:
     parser.add_argument("--unit-cap", required=True, help="单母批最大 Unit 数，例如 4500 或 4.5k")
     parser.add_argument("--lot-cap", required=True, help="单母批最大不同 Lot 数")
     parser.add_argument("--reuse-rule", required=True, help="allow_reuse/no_reuse 或 允许复用/不允许复用")
-    parser.add_argument("--backend", default="auto", choices=["auto", "cpsat", "heuristic"])
+    parser.add_argument("--backend", default="auto", choices=["auto", "cpsat", "heuristic", "large_batch"])
     parser.add_argument("--time-limit", type=int, default=300)
     parser.add_argument("--max-batches", type=int, default=None)
     parser.add_argument("--candidate-limit", type=int, default=20000)
@@ -814,6 +1139,7 @@ def main() -> None:
     parser.add_argument("--max-combo-items", type=int, default=8)
     parser.add_argument("--max-side-items", type=int, default=18)
     parser.add_argument("--node-limit", type=int, default=200000)
+    parser.add_argument("--large-item-threshold", type=int, default=800)
     parser.add_argument("--out", required=True, help="输出 solution.json")
     args = parser.parse_args()
     solution = solve_allocation(
@@ -830,6 +1156,7 @@ def main() -> None:
         args.max_combo_items,
         args.max_side_items,
         args.node_limit,
+        args.large_item_threshold,
     )
     save_json(solution, args.out)
     print(

@@ -1,9 +1,58 @@
 ---
 name: semiconductor-die-allocation-cn
-description: 用于半导体晶圆 Die 分配和母批规划的稳定求解 Skill。适用于包含“原始数据”和“配die 规则表”的 Excel 工作簿，需要按 PACKAGE/供应商匹配层数配比，按用户选择的 Bin Grade 过滤 Die，处理母批 Unit 上限、Lot 数上限、Lot 是否复用、所选等级 Lot 必须配完、wafer/grade 可复用、单母批损耗约束，并输出可审计的 CP-SAT 或整数规划配 Die 方案。
+description: 用于半导体晶圆 Die 分配和母批规划的稳定求解 Skill，内置工程化 Python 脚本。适用于包含“原始数据”和“配die 规则表”的 Excel 工作簿，需要按 PACKAGE/供应商匹配层数配比，按用户选择的 Bin Grade 过滤 Die，处理母批 Unit 上限、Lot 数上限、Lot 是否复用、所选等级 Lot 必须配完、wafer/grade 可复用、单母批损耗约束，并输出可审计的 JSON/Excel 配 Die 方案。
 ---
 
 # 半导体晶圆 Die 分配
+
+## 工程化入口
+
+优先使用总入口脚本端到端运行；只有在排查某一步时才单独运行 01-05 脚本。
+
+```bash
+python scripts/run_allocation.py \
+  --workbook input.xlsx \
+  --package "目标PACKAGE" \
+  --supplier "目标供应商" \
+  --target-units 40k \
+  --grades 1,2,3 \
+  --loss-cap 30 \
+  --unit-cap 4.5k \
+  --lot-cap 5 \
+  --reuse-rule allow_reuse \
+  --out-dir outputs/run-001
+```
+
+固定输出：
+
+- `01_validated.json`：工作簿校验和标准化结果
+- `02_matched_rule.json`：规则表匹配结果和层数配比
+- `03_supply.json`：过滤后的最小供应单元和总量校验
+- `04_solution.json`：求解结果、母批分配和校验结果
+- `05_allocation_report.xlsx`：业务可读 Excel 报告
+- `05_allocation_report.json`：扁平化审计报告
+
+单步脚本：
+
+- `scripts/01_validate_workbook.py`：读取并校验 Excel
+- `scripts/02_match_rule.py`：匹配 `PACKAGE + 供应商` 对应的 `层数配比`
+- `scripts/03_build_supply.py`：按 Bin Grade 构建 `Fab LotID + T7 Code + Bin Grade` 最小供应单元
+- `scripts/04_solve_allocation.py`：按目标阶段和兜底阶段求解
+- `scripts/05_export_report.py`：导出可审计报告
+
+求解后端：
+
+- 默认 `--backend auto`：当最小供应单元数或 Lot 数超过阈值时自动使用 `large_batch`；否则优先使用 OR-Tools CP-SAT，缺少 OR-Tools 时使用候选搜索兜底
+- `--backend large_batch`：大表模式，先生成高质量候选母批/计划，再选择非冲突计划；适合数据很多时稳定产出可行解
+- `--backend cpsat`：强制使用 OR-Tools CP-SAT，适合小到中等规模、需要精确优化的场景
+- `--backend heuristic`：强制使用候选搜索，适合小样例、调试和依赖不完整环境
+
+大表参数：
+
+- `--large-item-threshold 800`：`auto` 模式下，最小供应单元数超过该值时走 `large_batch`
+- `--candidate-limit 20000`：大数据候选母批/计划上限
+- `--max-combo-lots 5`：大数据模式下单个候选母批最多组合的连续 Lot 数；严格 Lot 数阶段仍受 `--lot-cap` 限制
+- `--max-side-items 18`：工艺 A/B 侧精确枚举分配的最大单元数，超过后使用确定性贪心侧分配
 
 ## 固定执行流程
 
@@ -52,20 +101,22 @@ description: 用于半导体晶圆 Die 分配和母批规划的稳定求解 Skil
    - 如果 `Q < T * (rA + rB)`，说明仅从总量看目标也不可能满足，直接进入兜底最大化求解
    - 否则进入目标满足求解
 
-8. 根据 `references/allocation-model.md` 建立优化模型。实现或解释求解逻辑前，必须先读取该文件。
+8. 根据 `references/allocation-model.md` 建立优化模型。实现或解释求解逻辑前，必须先读取该文件；工程实现位于 `scripts/semidie/solver.py`。
 
 9. 按固定顺序求解：
    - 目标阶段，严格 Lot 数上限：要求总 Unit 数 `>= T`、单母批损耗 `<= L`、单母批 Unit 数 `<= A`、单母批不同 Lot 数 `<= B`
    - 目标阶段，放宽 Lot 数上限：仅当严格 Lot 数上限无解时使用；总 Unit、损耗和 Unit 上限仍是硬约束，允许 Lot 数超限并最小化超限量
    - 兜底阶段，严格 Lot 数上限：仅当目标阶段无法达到 `T` 时使用；在单母批损耗 `<= L` 前提下最大化总 Unit 数
    - 兜底阶段，放宽 Lot 数上限：仅当严格兜底也无解时使用
+   - 大表时使用同样阶段顺序，但候选母批由 `large_batch` 生成；结果是可行启发式方案，不声明全局最优
 
 10. 使用确定性求解设置：
     - 优先使用 OR-Tools CP-SAT 处理整数模型
     - 随机种子固定为 `0`
     - 搜索线程数固定为 `1`
     - 默认时间上限为 `300` 秒，除非用户指定其他时间
-    - 输出求解状态：`OPTIMAL`、`FEASIBLE`、`INFEASIBLE` 或 `TIME_LIMIT_WITH_INCUMBENT`
+    - 输出求解状态：`OPTIMAL`、`FEASIBLE`、`INFEASIBLE` 或求解器返回的等价状态
+    - 大表 `large_batch` 后端必须输出 warning，说明其为两阶段启发式可行解
 
 11. 输出必须可审计：
     - 输入摘要：产品、供应商、层数配比、目标 Unit、Bin Grade、损耗上限、Unit 上限、Lot 数上限、复用规则
