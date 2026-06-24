@@ -1,130 +1,112 @@
 ---
-name: die-lot-planner-fast
-description: Plan semiconductor Die mother lots quickly from Excel or CSV data. Use when a user needs to group records with PACKAGE, 供应商, Fab LotID, Bin Grade, Bin Quanity, and T7 Code into mother lots by PACKAGE, supplier, and a two-part layer ratio from a sheet named "配 Die 规则表"; enforce per-mother-lot waste limits, optional Fab LotID reuse, produce each mother lot's Lot list, and provide best-effort alternatives plus a summary when targets are not met.
+name: semiconductor-die-allocation-cn
+description: 用于半导体晶圆 Die 分配和母批规划的稳定求解 Skill。适用于包含“原始数据”和“配die 规则表”的 Excel 工作簿，需要按 PACKAGE/供应商匹配层数配比，按用户选择的 Bin Grade 过滤 Die，处理母批 Unit 上限、Lot 数上限、Lot 是否复用、所选等级 Lot 必须配完、wafer/grade 可复用、单母批损耗约束，并输出可审计的 CP-SAT 或整数规划配 Die 方案。
 ---
 
-# Die Lot Planner Fast
+# 半导体晶圆 Die 分配
 
-## Overview
+## 固定执行流程
 
-Use this skill to create mother-lot allocation outputs from raw bin inventory and a simple rule table. Prefer the bundled Python script over rewriting the algorithm.
+严格按以下步骤执行晶圆 Die 分配。除非用户明确只要求说明、评审或改文档，否则不要跳过步骤。
 
-## Required Input Collection Before Running
+1. 收集必要输入：
+   - Excel 工作簿，必须包含 `原始数据` 和 `配die 规则表`
+   - 目标 `PACKAGE` 和 `供应商`；如果用户允许，也可以对所有无歧义组合分别求解
+   - 目标 Unit 数 `T`
+   - 用户选择的 Bin Grade，合法值为 `1` 到 `9` 以及 `X`
+   - 单个母批最大 Die 损耗 `L`
+   - 单个母批最大 Unit 数 `A`
+   - 单个母批最大不同 `Fab LotID` 数 `B`
+   - Lot 复用规则：`允许复用` 或 `不允许复用`
 
-When this skill is triggered, do not run the script immediately. First check whether the user has provided all required inputs. Ask follow-up questions for missing required items, and only run the script after the required choices are explicit.
+2. 只在缺少必要输入时询问用户。不要自行推断目标 Unit 数、Bin Grade、损耗上限、母批 Unit 上限、Lot 数上限或复用规则。
 
-Collect or confirm these inputs:
+3. 读取并校验工作簿：
+   - `原始数据` 必须包含列：`PACKAGE`、`供应商`、`Fab LotID`、`Bin Grade`、`Bin Quanity`、`T7 Code`
+   - `配die 规则表` 必须包含列：`PACKAGE`、`供应商`、`层数配比`
+   - `Bin Quanity` 必须是非负整数；为空、负数或非数字的行必须报错
+   - `Bin Grade` 先去除首尾空格并转大写；合法等级只能是 `1` 到 `9` 或 `X`
 
-| Input | Required | Notes |
-|---|---:|---|
-| Input file path | Yes | Excel/CSV/TSV path; Excel is recommended. |
-| Raw data sheet name | Yes | For example `原始数据`. Do not guess unless the user explicitly allows auto-detection. |
-| Rule sheet name | Yes | Usually `配 Die 规则表`, but still confirm. |
-| Total Unit demand | Yes | Maps to `--total-units`; this is the cumulative Unit demand for the full run, not the target for each mother lot. |
-| Maximum waste die per mother lot | Yes | Maps to `--max-waste`; do not silently use the default. |
-| Whether Fab LotID reuse is allowed | Yes | User must choose allowed or not allowed. |
-| Bin Grade eligibility | Yes | For example all grades, or only `Bin Grade <= 1/2`. |
-| Output file path | Yes | Excel/JSON/CSV; recommend Excel, but confirm the path. |
-| Output detail requirement | Yes | Confirm whether to output each mother lot's Lot list; normally yes. |
-| Failure handling | Yes | Confirm best-effort alternative, optimization suggestions, and summary; this skill recommends all three. |
-| Raw column names or mapping | Conditional | If fields are not exactly `PACKAGE`, `供应商`, `Fab LotID`, `Bin Grade`, `Bin Quanity`, `T7 Code`, ask for mappings. |
-| Rule column names or mapping | Conditional | If fields are not exactly `PACKAGE`, `供应商`, `层数配比`, ask for mappings. |
-| `beam_width` | Optional | Ask only when the user cares about speed/search quality; otherwise use the script default. |
+4. 匹配配 Die 规则：
+   - `供应商` 使用去除首尾空格后的精确匹配
+   - `PACKAGE` 按固定顺序匹配：
+     1. 归一化精确匹配：转大写，并移除空格、连字符、下划线、斜杠、括号和标点
+     2. 归一化包含匹配：仅当唯一候选存在互相包含关系时接受
+     3. 模糊匹配：使用 `WRatio` 或 `token_set_ratio`；仅接受最高分 `>= 85` 且比第二名至少高 `5` 分的结果
+   - 如果没有候选，或存在并列/歧义，停止并让用户选择规则行
+   - 将 `层数配比` 解析成两个正整数 `rA:rB`；不接受 0、负数、小数或超过两段的比例
 
-Use this concise prompt when the user has not supplied enough information:
+5. 构建最小供应单元：
+   - 将 `原始数据` 过滤到匹配的 `PACKAGE` 范围、匹配的 `供应商`、用户选择的 Bin Grade
+   - 按 `Fab LotID + T7 Code + Bin Grade` 聚合重复行，并对 `Bin Quanity` 求和
+   - 每条聚合后的记录是一个最小供应单元，字段为 `lot`、`wafer`、`grade`、`qty`
+   - 默认以该最小供应单元整体分配：一个单元要么分配给一个母批的一种工艺侧，要么在其 Lot 未被选中时不分配。除非用户明确允许按 Die 颗数拆分，否则不要把同一个 `wafer + Bin Grade` 拆成多份
 
-```text
-请补齐/确认以下信息后我再运行 die-lot-planner-fast：
+6. 执行“所选等级 Lot 必须配完”规则：
+   - 一个 Lot 要么完全不用，要么该 Lot 下属于用户所选 Bin Grade 的所有最小供应单元都必须被分配
+   - 用户未选择的 Bin Grade 不参与本次计算，也不会触发 Lot 必须配完
 
-1. 输入文件路径：
-2. 原始数据 sheet 名称：
-3. 配 Die 规则表 sheet 名称：
-4. 总 Unit 需求：
-5. 每个母批最大浪费 Die 数：
-6. Fab LotID 是否允许复用：允许 / 不允许
-7. Bin Grade 使用范围：全部 / 只用 <= ?
-8. 输出文件路径：
-9. 是否输出每个母批 Lot 清单：是 / 否
-10. 若不满足目标，是否输出最佳替代方案 + 优化建议 + summary：是 / 否
-11. 字段名是否就是 PACKAGE、供应商、Fab LotID、Bin Grade、Bin Quanity、T7 Code：是 / 否；如否请给字段映射
-12. 规则表字段名是否就是 PACKAGE、供应商、层数配比：是 / 否；如否请给字段映射
-```
+7. 做前置校验：
+   - 计算所选等级总 Die 数 `Q`
+   - 计算目标需求总 Die 数 `T * (rA + rB)`
+   - 如果 `Q < T * (rA + rB)`，说明仅从总量看目标也不可能满足，直接进入兜底最大化求解
+   - 否则进入目标满足求解
 
-If the user has already supplied some items, ask only for the missing ones.
+8. 根据 `references/allocation-model.md` 建立优化模型。实现或解释求解逻辑前，必须先读取该文件。
 
-Core rules:
-- The rule sheet is named `配 Die 规则表` by default and has exactly these logical columns: `PACKAGE`, `供应商`, `层数配比`.
-- `层数配比` is a two-number ratio such as `2:6`; each completed Unit consumes 2 units from bucket 1 and 6 units from bucket 2.
-- The raw data must contain `PACKAGE`, `供应商`, `Fab LotID`, `Bin Grade`, `Bin Quanity`, and `T7 Code`.
-- `Bin Grade` is the die quality grade; `1` is the best. By default all grades are eligible and better grades are considered first. Use `--max-bin-grade` when only grades up to a threshold are allowed.
-- `Bin Quanity` is the bin quantity used as the die count.
-- `T7 Code` is the wafer's unique identifier. The algorithm never splits one `T7 Code` row across buckets or mother lots.
-- The raw data does not need an A/B process field. Assign each `T7 Code` row as a whole to bucket 1 or bucket 2 during optimization.
-- The user provides total Unit demand as `total_units`, not a per-mother-lot target.
-- The script creates mother lots one by one, subtracting each mother lot's Unit from the remaining demand. It stops once cumulative Unit reaches `total_units` or no valid mother lot can be formed.
-- For each `PACKAGE + 供应商` group, a necessary feasibility condition for the total demand is `total_units * (ratio_1 + ratio_2) <= sum(Bin Quanity)`. If this fails, the total Unit count is impossible from available quantity alone.
-- Each mother lot may waste at most `max_waste` die, default `30`.
-- Optimize in this order: maximize completed Unit count, then minimize waste.
-- If no formal mother lot can be found, output the best-effort alternative with the largest Unit count that still satisfies `WasteDie <= max_waste`. Do not prefer zero waste over a much smaller Unit count.
-- Always include a user-readable summary of what was matched or why it was not matched.
-- If Fab LotID reuse is disabled, a `Fab LotID` may appear in only one mother lot. If reuse is enabled, different `T7 Code` rows with the same `Fab LotID` may appear in different mother lots.
+9. 按固定顺序求解：
+   - 目标阶段，严格 Lot 数上限：要求总 Unit 数 `>= T`、单母批损耗 `<= L`、单母批 Unit 数 `<= A`、单母批不同 Lot 数 `<= B`
+   - 目标阶段，放宽 Lot 数上限：仅当严格 Lot 数上限无解时使用；总 Unit、损耗和 Unit 上限仍是硬约束，允许 Lot 数超限并最小化超限量
+   - 兜底阶段，严格 Lot 数上限：仅当目标阶段无法达到 `T` 时使用；在单母批损耗 `<= L` 前提下最大化总 Unit 数
+   - 兜底阶段，放宽 Lot 数上限：仅当严格兜底也无解时使用
 
-## Quick Start
+10. 使用确定性求解设置：
+    - 优先使用 OR-Tools CP-SAT 处理整数模型
+    - 随机种子固定为 `0`
+    - 搜索线程数固定为 `1`
+    - 默认时间上限为 `300` 秒，除非用户指定其他时间
+    - 输出求解状态：`OPTIMAL`、`FEASIBLE`、`INFEASIBLE` 或 `TIME_LIMIT_WITH_INCUMBENT`
 
-Run:
+11. 输出必须可审计：
+    - 输入摘要：产品、供应商、层数配比、目标 Unit、Bin Grade、损耗上限、Unit 上限、Lot 数上限、复用规则
+    - 规则匹配详情：匹配到的规则行和匹配方式
+    - 可行性摘要：所选 Die 总量、目标所需 Die 总量、是否达到目标、是否使用兜底方案
+    - 每个母批：Unit 数、A 侧 Die 数、B 侧 Die 数、损耗、不同 Lot 数、Lot 超限量、Lot 列表、wafer 列表、grade 列表、分配的最小供应单元
+    - 跨母批校验：所有被使用的所选等级 Lot 已配完；没有不允许的重复分配；没有硬损耗约束违规
+    - 最终汇总：总 Unit 数、超目标 Unit 数、总损耗、启用母批数、未使用 Lot
 
-```bash
-python scripts/plan_die_lots.py \
-  --input input.xlsx \
-  --output planned_mother_lots.xlsx \
-  --total-units 1000
-```
+## 复用规则
 
-Common options:
-- `--data-sheet SHEET`: raw inventory sheet. If omitted, the first sheet that is not `配 Die 规则表` is used.
-- `--rules-sheet SHEET`: defaults to `配 Die 规则表`.
-- `--total-units N`: cumulative Unit demand for this planning run.
-- `--target-units N`: deprecated alias for `--total-units`.
-- `--max-waste N`: defaults to `30`.
-- `--allow-lot-reuse`: allow the same `Fab LotID` to appear in different mother lots.
-- `--max-bin-grade N`: only use rows where `Bin Grade <= N`.
-- `--bin-quantity-col COL`, `--bin-grade-col COL`, `--t7-col COL`, `--lot-col COL`: use these only when the raw sheet has non-standard column names.
-- `--beam-width N`: breadth for the deep fallback search. The script first uses a faster subset-sum search; beam search runs only when the fast path cannot find a candidate.
+必须按以下口径处理：
 
-## Input Contract
+- `不允许复用`：一个被使用的 Lot 只能出现在一个母批中。由于该 Lot 内所选等级的单元必须全部分配到该母批，所以同一片 wafer 也只能出现在这个母批中。
+- `允许复用`：一个被使用的 Lot 可以跨多个母批；同一片 wafer 也可以因为不同 `wafer + Bin Grade` 单元被分配到不同母批。但同一个最小供应单元绝不能重复分配。
+- 两种模式下，只要 Lot 被使用，都必须配完该 Lot 在用户选择 Bin Grade 范围内的 Die；用户未选择的等级不参与配完约束。
 
-Read `references/input_contract.md` when adapting the script to a user's workbook, mapping unusual column names, or explaining required input fields.
+## 目标优先级
 
-Minimum raw data columns:
-- `PACKAGE`
-- `供应商`
-- `Fab LotID`
-- `Bin Grade`
-- `Bin Quanity`
-- `T7 Code`
+不要一开始就用任意权重把所有业务目标混在一起。必须先固定字典序优化顺序：
 
-## Outputs
+1. 优先满足目标 Unit 数
+2. 如果目标已满足，最小化超目标 Unit 数
+3. 最小化总 Die 损耗
+4. 仅在放宽 Lot 数阶段，最小化 Lot 数超限量
+5. 最小化启用母批数
+6. 只有当用户明确要求偏好高等级 Die 时，才按 `1 < 2 < ... < 9 < X` 最小化低等级使用；默认不要加入等级偏好
 
-The script writes:
-- `summary`: Chinese summary of the run conditions, formal match result, best-effort alternative when applicable, and where to inspect details.
-- `mother_lots`: one row per generated mother lot, including PACKAGE, supplier, ratio, Unit count, selected die, required die, waste, bucket totals, and lot count.
-- `lot_assignments`: the detailed Lot and `T7 Code` list for every mother lot.
-- `best_effort_matches`: when no formal match is found for a group, the largest Unit alternative found within the user's waste limit.
-- `best_effort_assignments`: detailed Lot and `T7 Code` list for each best-effort alternative.
-- `unused_inventory`: rows not allocated to any mother lot, including rows blocked by no-reuse rules.
-- `diagnostics`: input choices, warnings, and search parameters.
-- `optimization_suggestions`: practical suggestions when the data cannot satisfy the target, such as relaxing max waste, lowering target Units, allowing Fab LotID reuse, adding missing rules, or adding inventory to the limiting bucket.
+## 失败说明
 
-Always give the user the generated workbook and briefly mention the `summary` result. If `mother_lots` is empty but `best_effort_matches` is present, explain that the formal target was not found and that the alternative maximizes Unit while keeping `WasteDie <= max_waste`.
+如果找不到有效方案，按以下顺序说明阻塞原因：
 
-## Search Strategy
+1. 所选 Die 总量低于目标需求
+2. 找不到匹配的层数配比
+3. 所选等级 Lot 必须配完导致单母批损耗必然超过 `L`
+4. 单母批 Unit 上限 `A` 太小，无法容纳任何可行 Lot 组合
+5. 不允许复用规则阻断了原本在可复用场景下可行的分配
+6. 求解器超时且没有找到可行解
 
-The script uses a layered search to keep normal runs fast:
+如果目标无法满足但兜底阶段找到方案，不要称它为原目标的最优解。必须标注为：`在损耗约束下的最佳可行兜底方案`。
 
-1. Fast subset-sum search probes the current remaining Unit demand, then 90%, 80%, ..., 10% of that remaining demand. It separately builds bucket-1 and bucket-2 candidates and accepts only combinations with `WasteDie <= max_waste`.
-2. Deep beam search is used only as a fallback when the fast path cannot find a valid candidate.
-3. Best-effort alternatives also use the fast path first, so a zero-waste low-Unit result is not preferred over a larger Unit result that still respects the waste limit.
+## 参考文件
 
-## Editing Guidance
-
-Keep business rules in `SKILL.md` and deterministic behavior in `scripts/plan_die_lots.py`. If requirements change, update both the rule summary and the script defaults/options in the same edit.
+- 在建立、修改或解释数学模型前，读取 `references/allocation-model.md`。
