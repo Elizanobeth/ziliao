@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{REPORT_TITLE}}</title>
+  <style>
+    :root {
+      --ink: #17233c;
+      --muted: #5c6b82;
+      --line: #d8e0ea;
+      --page: #f6f8fb;
+      --panel: #ffffff;
+      --progress: #eaf4ff;
+      --issues: #fff5e8;
+      --help: #f4efff;
+      --plan: #ecfaf2;
+      --accent: #1f6fa8;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--page);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+        "Microsoft YaHei", Arial, sans-serif;
+      line-height: 1.55;
+    }
+
+    .report {
+      width: min(1180px, calc(100% - 48px));
+      margin: 28px auto 48px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      box-shadow: 0 14px 36px rgba(23, 35, 60, 0.08);
+    }
+
+    .top-rule {
+      height: 8px;
+      background: var(--accent);
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      padding: 28px 34px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.2;
+      letter-spacing: 0;
+      font-weight: 750;
+    }
+
+    .meta {
+      display: flex;
+      align-items: flex-end;
+      gap: 18px;
+      color: var(--muted);
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .scope {
+      padding: 0 34px 24px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    main {
+      padding: 0 34px 34px;
+    }
+
+    .report-section {
+      display: grid;
+      grid-template-columns: 126px 1fr;
+      gap: 24px;
+      padding: 22px 24px;
+      border: 1px solid var(--line);
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .report-section + .report-section {
+      margin-top: 16px;
+    }
+
+    .tone-progress { background: var(--progress); }
+    .tone-issues { background: var(--issues); }
+    .tone-help { background: var(--help); }
+    .tone-plan { background: var(--plan); }
+    .tone-empty { background: #f8fafc; }
+
+    h2 {
+      margin: 2px 0 0;
+      font-size: 19px;
+      line-height: 1.35;
+      letter-spacing: 0;
+      font-weight: 720;
+    }
+
+    .report-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .report-item {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 10px;
+      font-size: 15px;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .report-item + .report-item {
+      margin-top: 8px;
+    }
+
+    .item-index {
+      color: var(--accent);
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .item-text {
+      overflow-wrap: anywhere;
+    }
+
+    footer {
+      display: flex;
+      justify-content: space-between;
+      padding: 16px 34px 24px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @media print {
+      body {
+        background: #ffffff;
+      }
+
+      .report {
+        width: 100%;
+        margin: 0;
+        border: 0;
+        box-shadow: none;
+      }
+
+      .report-section {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      @page {
+        size: A4 landscape;
+        margin: 12mm;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .report {
+        width: 100%;
+        margin: 0;
+        border-left: 0;
+        border-right: 0;
+      }
+
+      header {
+        grid-template-columns: 1fr;
+      }
+
+      .meta {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .report-section {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <article class="report">
+    <div class="top-rule"></div>
+    <header>
+      <h1>{{REPORT_TITLE}}</h1>
+      <div class="meta">
+        <span>{{REPORT_WEEK}}</span>
+        <span>{{GENERATED_DATE}}</span>
+      </div>
+    </header>
+    <div class="scope">汇报范围：{{SCOPE}}</div>
+    <main>
+      {{REPORT_SECTIONS}}
+    </main>
+    <footer>
+      <span>GSC 周报</span>
+      <span>{{GENERATED_DATE}}</span>
+    </footer>
+  </article>
+</body>
+</html>

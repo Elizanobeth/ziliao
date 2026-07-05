@@ -1,0 +1,4 @@
+interface:
+  display_name: "GSC 周报小助手"
+  short_description: "从团队周报表格生成GSC PPT或HTML周报"
+  default_prompt: "使用 $gsc-weekly-report 根据团队周报表格生成指定周次的 GSC HTML 或 PPT 周报。"
