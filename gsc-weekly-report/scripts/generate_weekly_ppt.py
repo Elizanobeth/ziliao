@@ -15,19 +15,11 @@ from typing import Any
 try:
     from pptx import Presentation
     from pptx.enum.shapes import MSO_SHAPE_TYPE
-    from pptx.oxml.ns import qn
 except ImportError as exc:  # pragma: no cover
     raise SystemExit("Missing dependency: python-pptx. Install python-pptx or use the Codex bundled Python runtime.") from exc
 
 
 PLACEHOLDER_RE = re.compile(r"\{\{[A-Z0-9_]+\}\}")
-BULLET_TAGS = {
-    qn("a:buAutoNum"),
-    qn("a:buBlip"),
-    qn("a:buChar"),
-    qn("a:buFont"),
-    qn("a:buNone"),
-}
 
 CATEGORIES = {
     "main_progress": {
@@ -104,23 +96,29 @@ def replace_text(text: str, replacements: dict[str, str]) -> str:
     return text
 
 
+def paragraph_font_snapshot(paragraph: Any) -> dict[str, Any]:
+    for run in paragraph.runs:
+        font = run.font
+        color = None
+        try:
+            color = font.color.rgb
+        except AttributeError:
+            color = None
+        return {
+            "name": font.name,
+            "size": font.size,
+            "bold": font.bold,
+            "italic": font.italic,
+            "underline": font.underline,
+            "color": color,
+        }
+    return {}
+
+
 def font_snapshot(text_frame: Any) -> dict[str, Any]:
     for paragraph in text_frame.paragraphs:
-        for run in paragraph.runs:
-            font = run.font
-            color = None
-            try:
-                color = font.color.rgb
-            except AttributeError:
-                color = None
-            return {
-                "name": font.name,
-                "size": font.size,
-                "bold": font.bold,
-                "italic": font.italic,
-                "underline": font.underline,
-                "color": color,
-            }
+        if snapshot := paragraph_font_snapshot(paragraph):
+            return snapshot
     return {}
 
 
@@ -140,22 +138,11 @@ def apply_font(run: Any, snapshot: dict[str, Any]) -> None:
         font.color.rgb = snapshot["color"]
 
 
-def paragraph_properties_snapshot(text_frame: Any) -> Any | None:
-    for paragraph in text_frame.paragraphs:
-        paragraph_properties = paragraph._p.pPr  # noqa: SLF001 - python-pptx has no public pPr API.
-        if paragraph_properties is not None:
-            return copy.deepcopy(paragraph_properties)
-    return None
-
-
-def without_bullet_properties(snapshot: Any | None) -> Any | None:
-    if snapshot is None:
+def paragraph_properties_snapshot(paragraph: Any) -> Any | None:
+    paragraph_properties = paragraph._p.pPr  # noqa: SLF001 - python-pptx has no public pPr API.
+    if paragraph_properties is None:
         return None
-    copied = copy.deepcopy(snapshot)
-    for child in list(copied):
-        if child.tag in BULLET_TAGS:
-            copied.remove(child)
-    return copied
+    return copy.deepcopy(paragraph_properties)
 
 
 def apply_paragraph_properties(paragraph: Any, snapshot: Any | None) -> None:
@@ -167,20 +154,42 @@ def apply_paragraph_properties(paragraph: Any, snapshot: Any | None) -> None:
     paragraph._p.insert(0, copy.deepcopy(snapshot))  # noqa: SLF001
 
 
-def set_text_preserving_style(text_frame: Any, text: str) -> None:
-    style = font_snapshot(text_frame)
-    paragraph_style = paragraph_properties_snapshot(text_frame)
-    blank_paragraph_style = without_bullet_properties(paragraph_style)
-    alignment = text_frame.paragraphs[0].alignment if text_frame.paragraphs else None
+def set_text_records(text_frame: Any, records: list[dict[str, Any]]) -> None:
     text_frame.clear()
-    lines = text.splitlines() or [""]
-    for index, line in enumerate(lines):
+    for index, record in enumerate(records or [{"text": "", "font": {}, "style": None, "alignment": None}]):
         paragraph = text_frame.paragraphs[0] if index == 0 else text_frame.add_paragraph()
-        apply_paragraph_properties(paragraph, paragraph_style if line.strip() else blank_paragraph_style)
-        paragraph.alignment = alignment
+        apply_paragraph_properties(paragraph, record.get("style"))
+        paragraph.alignment = record.get("alignment")
         run = paragraph.add_run()
-        run.text = line
-        apply_font(run, style)
+        run.text = record.get("text", "")
+        apply_font(run, record.get("font", {}))
+
+
+def replacement_records_for_text_frame(text_frame: Any, replacements: dict[str, str]) -> tuple[bool, list[dict[str, Any]]]:
+    fallback_font = font_snapshot(text_frame)
+    changed = False
+    records: list[dict[str, Any]] = []
+    for paragraph in text_frame.paragraphs:
+        original_text = paragraph.text
+        updated_text = replace_text(original_text, replacements)
+        if updated_text != original_text:
+            changed = True
+
+        paragraph_style = paragraph_properties_snapshot(paragraph)
+        paragraph_font = paragraph_font_snapshot(paragraph) or fallback_font
+        lines = updated_text.splitlines() or [""]
+
+        for line in lines:
+            records.append(
+                {
+                    "text": line,
+                    "font": paragraph_font,
+                    "style": paragraph_style,
+                    "alignment": paragraph.alignment,
+                }
+            )
+
+    return changed, records
 
 
 def iter_shapes(shapes: Any):
@@ -193,11 +202,10 @@ def iter_shapes(shapes: Any):
 def replace_in_text_frame(shape: Any, replacements: dict[str, str]) -> int:
     if not getattr(shape, "has_text_frame", False):
         return 0
-    original = shape.text
-    updated = replace_text(original, replacements)
-    if updated == original:
+    changed, records = replacement_records_for_text_frame(shape.text_frame, replacements)
+    if not changed:
         return 0
-    set_text_preserving_style(shape.text_frame, updated)
+    set_text_records(shape.text_frame, records)
     return 1
 
 
