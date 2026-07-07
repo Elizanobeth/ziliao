@@ -410,7 +410,7 @@
 
         <section id="files">
           <h2>3. 你需要准备什么文件</h2>
-          <p>你需要准备一个 Excel 文件，后缀一般是 <code>.xlsx</code>。这个文件里面必须有两个 Sheet：</p>
+          <p>你需要准备一个 Excel 文件，后缀一般是 <code>.xlsx</code>。运行时可以填本地文件路径，也可以填一个放入浏览器后会直接下载 Excel 的 URL。这个文件里面必须有两个 Sheet：</p>
           <table>
             <thead>
               <tr>
@@ -435,6 +435,10 @@
           <div class="callout warn">
             <strong>Sheet 名必须完全一致。</strong>
             例如 <code>原始資料</code>、<code>原始 数据</code>、<code>配Die规则表</code> 都不行。大小写、空格、中文都要按要求来。
+          </div>
+          <div class="callout">
+            <strong>URL 也可以用。</strong>
+            如果你的 Excel 在系统里生成了下载链接，可以把这个链接填到 <code>--workbook</code>。但它必须是真正的 Excel 下载链接；如果打开后是登录页、网页预览或网盘页面，工具会读取失败。
           </div>
         </section>
 
@@ -555,11 +559,11 @@
             </thead>
             <tbody>
               <tr>
-                <td>Excel 文件路径</td>
+                <td>Excel 文件路径或 URL</td>
                 <td><code>--workbook</code></td>
-                <td>输入工作簿的位置。</td>
-                <td><code>input.xlsx</code></td>
-                <td>用你的真实 Excel 文件路径。</td>
+                <td>输入工作簿的位置，可以是本地文件，也可以是可下载 Excel 的链接。</td>
+                <td><code>input.xlsx</code> 或 <code>https://example.com/input.xlsx</code></td>
+                <td>URL 必须放进浏览器后能直接下载 Excel。</td>
               </tr>
               <tr>
                 <td>产品</td>
@@ -1238,7 +1242,7 @@
 
             <div class="step">
               <h3>准备一条最基础命令</h3>
-              <p>下面是模板。你只需要把里面的 Excel 路径、PACKAGE、供应商、目标 Unit、Grade、约束改成你的真实值。</p>
+              <p>下面是模板。你只需要把里面的 Excel 路径或 URL、PACKAGE、供应商、目标 Unit、Grade、约束改成你的真实值。</p>
               <pre><code>python scripts/run_allocation.py \
   --workbook input.xlsx \
   --package "目标PACKAGE" \
@@ -1323,6 +1327,11 @@
           <div class="callout">
             <strong>路径里有空格怎么办？</strong>
             用英文双引号包起来，例如 <code>--workbook "/Users/lisa/My Data/input file.xlsx"</code>。
+          </div>
+
+          <div class="callout">
+            <strong>如果 Excel 是下载链接怎么办？</strong>
+            直接把链接填到 <code>--workbook</code> 后面即可，例如 <code>--workbook "https://example.com/input.xlsx"</code>。这个链接必须是浏览器打开后会下载 Excel 的链接；如果打开后是网页预览、登录页或网盘页面，需要先换成真实下载链接。
           </div>
         </section>
 

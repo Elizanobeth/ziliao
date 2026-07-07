@@ -15,7 +15,7 @@ def main() -> None:
     import sys
 
     parser = argparse.ArgumentParser(description="端到端运行半导体晶圆 Die 母批分配。")
-    parser.add_argument("--workbook", required=True, help="输入 Excel 工作簿路径")
+    parser.add_argument("--workbook", required=True, help="输入 Excel 工作簿路径或可下载 URL")
     parser.add_argument("--package", required=True, help="目标 PACKAGE")
     parser.add_argument("--supplier", required=True, help="目标供应商")
     parser.add_argument("--target-units", required=True, help="目标 Unit 数，例如 40000 或 40k")

@@ -36,7 +36,7 @@
 
 必须收集以下 10 项：
 
-1. workbook：Excel 工作簿路径或上传文件
+1. workbook：Excel 工作簿本地路径、上传文件或可直接下载 Excel 的 URL
 2. package：目标 PACKAGE
 3. supplier：供应商
 4. target_units：目标 Unit 数，例如 40000 或 40k
@@ -52,7 +52,7 @@
 首轮提问模板：
 
 请先提供以下信息，我才能开始计算：
-1. Excel 文件路径或上传文件
+1. Excel 文件路径、上传文件或可直接下载 Excel 的 URL
 2. PACKAGE
 3. 供应商
 4. 目标 Unit 数，例如 40000 或 40k
@@ -628,4 +628,3 @@ reuse_rule 映射：
 1. {out_dir}/04_solution.json
 2. {out_dir}/05_allocation_report.xlsx
 ```
-

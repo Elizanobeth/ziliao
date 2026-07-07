@@ -23,6 +23,8 @@ python scripts/run_allocation.py \
   --out-dir outputs/run-001
 ```
 
+`--workbook` 支持本地 Excel 路径，也支持放入浏览器后可直接下载 Excel 的 `http/https` URL。
+
 固定输出：
 
 - `01_validated.json`：工作簿校验和标准化结果
@@ -34,7 +36,7 @@ python scripts/run_allocation.py \
 
 单步脚本：
 
-- `scripts/01_validate_workbook.py`：读取并校验 Excel
+- `scripts/01_validate_workbook.py`：读取并校验 Excel；`--workbook` 支持本地路径或可直接下载 Excel 的 `http/https` URL
 - `scripts/02_match_rule.py`：匹配 `PACKAGE + 供应商` 对应的 `层数配比`
 - `scripts/03_build_supply.py`：按 Bin Grade 构建 `Fab LotID + T7 Code + Bin Grade` 最小供应单元
 - `scripts/04_solve_allocation.py`：按最接近目标 Unit 的口径求解
@@ -64,7 +66,7 @@ python scripts/run_allocation.py \
 严格按以下步骤执行晶圆 Die 分配。除非用户明确只要求说明、评审或改文档，否则不要跳过步骤。
 
 1. 收集必要输入：
-   - Excel 工作簿，必须包含 `原始数据` 和 `配die 规则表`
+   - Excel 工作簿本地路径，或可直接下载 Excel 的 `http/https` URL；工作簿必须包含 `原始数据` 和 `配die 规则表`
    - 目标 `PACKAGE` 和 `供应商`；如果用户允许，也可以对所有无歧义组合分别求解
    - 目标 Unit 数 `T`
    - 用户选择的 Bin Grade，合法值为 `1` 到 `9` 以及 `X`
