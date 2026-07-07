@@ -1,0 +1,1614 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>半导体晶圆 Die 分配工具使用说明 - 超级小白版</title>
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --paper: #ffffff;
+      --ink: #18202a;
+      --muted: #596573;
+      --line: #d9dee7;
+      --soft: #eef3f7;
+      --blue: #174f8a;
+      --green: #1d6b4f;
+      --amber: #8a5a12;
+      --red: #a33a32;
+      --code: #111827;
+      --code-bg: #f1f4f8;
+      --shadow: 0 12px 32px rgba(22, 31, 43, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+      line-height: 1.72;
+      letter-spacing: 0;
+    }
+
+    a {
+      color: var(--blue);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 60px;
+    }
+
+    .hero {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      padding: 34px 38px;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      margin: 0 0 14px;
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1.2;
+      color: #0f172a;
+      letter-spacing: 0;
+    }
+
+    .hero p {
+      max-width: 960px;
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 17px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    nav {
+      position: sticky;
+      top: 16px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      padding: 18px;
+      max-height: calc(100vh - 32px);
+      overflow: auto;
+    }
+
+    nav h2 {
+      margin: 0 0 10px;
+      font-size: 16px;
+      color: #0f172a;
+    }
+
+    nav ol {
+      margin: 0;
+      padding-left: 22px;
+    }
+
+    nav li {
+      margin: 8px 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    main {
+      display: grid;
+      gap: 18px;
+    }
+
+    section {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      padding: 28px 32px;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 25px;
+      line-height: 1.3;
+      color: #0f172a;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 24px 0 10px;
+      font-size: 19px;
+      line-height: 1.35;
+      color: #13243a;
+      letter-spacing: 0;
+    }
+
+    h4 {
+      margin: 18px 0 8px;
+      font-size: 16px;
+      color: #172033;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 9px 0;
+    }
+
+    ul,
+    ol {
+      margin: 10px 0 14px;
+      padding-left: 24px;
+    }
+
+    li {
+      margin: 6px 0;
+    }
+
+    .lead {
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .callout {
+      border-left: 5px solid var(--blue);
+      background: #edf5fc;
+      padding: 14px 16px;
+      margin: 16px 0;
+    }
+
+    .callout.warn {
+      border-left-color: var(--amber);
+      background: #fff6e6;
+    }
+
+    .callout.good {
+      border-left-color: var(--green);
+      background: #ecf8f2;
+    }
+
+    .callout.danger {
+      border-left-color: var(--red);
+      background: #fff0ee;
+    }
+
+    .callout strong {
+      color: #111827;
+    }
+
+    code {
+      color: var(--code);
+      background: var(--code-bg);
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 0.94em;
+    }
+
+    pre {
+      background: #111827;
+      color: #f8fafc;
+      padding: 16px;
+      overflow: auto;
+      border-radius: 6px;
+      line-height: 1.55;
+      font-size: 14px;
+    }
+
+    pre code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+      border-radius: 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0 20px;
+      font-size: 14px;
+    }
+
+    th,
+    td {
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      background: var(--soft);
+      color: #142033;
+      font-weight: 700;
+    }
+
+    tbody tr:nth-child(even) td {
+      background: #fbfcfd;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin: 14px 0;
+    }
+
+    .mini {
+      border: 1px solid var(--line);
+      background: #fbfcfd;
+      padding: 14px;
+    }
+
+    .mini strong {
+      display: block;
+      margin-bottom: 4px;
+      color: #111827;
+    }
+
+    .checklist li::marker {
+      color: var(--green);
+    }
+
+    .step {
+      counter-increment: step;
+      border: 1px solid var(--line);
+      background: #fbfcfd;
+      padding: 18px;
+      margin: 14px 0;
+    }
+
+    .step h3 {
+      margin-top: 0;
+    }
+
+    .step h3::before {
+      content: counter(step) ". ";
+      color: var(--blue);
+    }
+
+    .steps {
+      counter-reset: step;
+    }
+
+    .kbd {
+      border: 1px solid #b7bfcc;
+      background: #f8fafc;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 0.9em;
+    }
+
+    .footer {
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+      padding: 16px 0 0;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      nav {
+        position: static;
+        max-height: none;
+      }
+
+      .mini-grid {
+        grid-template-columns: 1fr;
+      }
+
+      section,
+      .hero {
+        padding: 22px;
+      }
+    }
+
+    @media print {
+      body {
+        background: #ffffff;
+      }
+
+      .page {
+        width: 100%;
+        padding: 0;
+      }
+
+      nav {
+        display: none;
+      }
+
+      .layout {
+        display: block;
+      }
+
+      section,
+      .hero {
+        box-shadow: none;
+        border: 1px solid #cccccc;
+        break-inside: avoid;
+      }
+
+      pre {
+        white-space: pre-wrap;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <h1>半导体晶圆 Die 分配工具使用说明</h1>
+      <p>超级小白版。目标是让完全没接触过这个工具的人，也能知道数据怎么准备、参数怎么填、命令怎么跑、结果怎么看、哪些地方最容易出错。</p>
+      <p>适用对象：使用 <code>semiconductor-die-allocation-cn</code> Skill 处理包含 <code>原始数据</code> 和 <code>配die 规则表</code> 两个 Sheet 的 Excel 工作簿。</p>
+    </header>
+
+    <div class="layout">
+      <nav aria-label="目录">
+        <h2>目录</h2>
+        <ol>
+          <li><a href="#what">这个工具到底做什么</a></li>
+          <li><a href="#mental-model">先用一句话理解业务</a></li>
+          <li><a href="#files">你需要准备什么文件</a></li>
+          <li><a href="#columns">Excel 两个 Sheet 怎么填</a></li>
+          <li><a href="#inputs">运行前必须确定的参数</a></li>
+          <li><a href="#backend">backend 怎么选</a></li>
+          <li><a href="#principles">这个 Skill 的求解原理</a></li>
+          <li><a href="#run">一步一步运行</a></li>
+          <li><a href="#examples">完整例子</a></li>
+          <li><a href="#outputs">输出文件怎么看</a></li>
+          <li><a href="#rules">关键业务规则解释</a></li>
+          <li><a href="#warnings">注意事项和避坑</a></li>
+          <li><a href="#errors">常见报错怎么处理</a></li>
+          <li><a href="#qa">运行后怎么自查</a></li>
+          <li><a href="#glossary">术语表</a></li>
+        </ol>
+      </nav>
+
+      <main>
+        <section id="what">
+          <h2>1. 这个工具到底做什么</h2>
+          <p>这个工具用来解决“晶圆 Die 怎么分配到多个母批里，才能尽量接近客户要的 Unit 数，同时尽量少浪费 Die”的问题。</p>
+          <p>它会读取一个 Excel 文件，从里面找到某个产品、某个供应商、某些 Bin Grade 的 Die 数量，然后按照规则表里的层数配比，比如 <code>2:6</code>，自动规划每个母批用哪些 Lot、哪些 wafer、哪些 Bin Grade，以及这些 Die 分到工艺 A 还是工艺 B。</p>
+          <div class="callout good">
+            <strong>你可以把它理解成一个自动配料工具。</strong>
+            客户要做一定数量的 Unit，每个 Unit 都需要 A 工艺 Die 和 B 工艺 Die。Excel 里有很多 Lot、wafer、Bin Grade 的库存，这个工具帮你挑组合。
+          </div>
+        </section>
+
+        <section id="mental-model">
+          <h2>2. 先用一句话理解业务</h2>
+          <p>一个 Unit 需要两类 Die，比例由规则表决定；每个 Lot 一旦被选中，就要把用户选择的 Bin Grade 范围内的 Die 配完；每个母批有 Unit 上限、Lot 数上限和损耗上限；最后总 Unit 数要尽量接近目标。</p>
+          <div class="mini-grid">
+            <div class="mini">
+              <strong>层数配比</strong>
+              <span>例如 <code>2:6</code>，表示 1 个 Unit 需要 2 颗 A 工艺 Die 和 6 颗 B 工艺 Die。</span>
+            </div>
+            <div class="mini">
+              <strong>母批</strong>
+              <span>一次分配结果里会有多个母批，每个母批有自己的 Unit 数、Lot 列表和损耗。</span>
+            </div>
+            <div class="mini">
+              <strong>目标</strong>
+              <span>不是必须大于目标，而是尽量接近目标。低一点或高一点都可以，谁更接近谁优先。</span>
+            </div>
+          </div>
+        </section>
+
+        <section id="files">
+          <h2>3. 你需要准备什么文件</h2>
+          <p>你需要准备一个 Excel 文件，后缀一般是 <code>.xlsx</code>。这个文件里面必须有两个 Sheet：</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Sheet 名</th>
+                <th>作用</th>
+                <th>小白解释</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>原始数据</code></td>
+                <td>存放每个 PACKAGE、供应商、Lot、wafer、Bin Grade 的 Die 数量。</td>
+                <td>这张表就是“库存表”。工具从这里找可用 Die。</td>
+              </tr>
+              <tr>
+                <td><code>配die 规则表</code></td>
+                <td>存放每个 PACKAGE、供应商对应的层数配比。</td>
+                <td>这张表就是“配方表”。工具从这里知道 1 个 Unit 要几颗 A、几颗 B。</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="callout warn">
+            <strong>Sheet 名必须完全一致。</strong>
+            例如 <code>原始資料</code>、<code>原始 数据</code>、<code>配Die规则表</code> 都不行。大小写、空格、中文都要按要求来。
+          </div>
+        </section>
+
+        <section id="columns">
+          <h2>4. Excel 两个 Sheet 怎么填</h2>
+
+          <h3>4.1 <code>原始数据</code> 必须有这些列</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>列名</th>
+                <th>必须吗</th>
+                <th>含义</th>
+                <th>例子</th>
+                <th>注意事项</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>PACKAGE</code></td>
+                <td>必须</td>
+                <td>产品类型或封装名。</td>
+                <td><code>PKG-D400</code>、<code>PKG D400 RevC</code></td>
+                <td>可以和规则表不完全一样，工具会做模糊匹配，但不要太离谱。</td>
+              </tr>
+              <tr>
+                <td><code>供应商</code></td>
+                <td>必须</td>
+                <td>供应商名称。</td>
+                <td><code>中芯国际</code>、<code>台积电</code></td>
+                <td>这个字段按精确匹配处理，建议两个 Sheet 写法保持一致。</td>
+              </tr>
+              <tr>
+                <td><code>Fab LotID</code></td>
+                <td>必须</td>
+                <td>Lot 编号。</td>
+                <td><code>FAB-SMIC-2618-0001</code></td>
+                <td>同一个 Lot 一旦参与分配，就要配完用户选择 Grade 范围内的 Die。</td>
+              </tr>
+              <tr>
+                <td><code>Bin Grade</code></td>
+                <td>必须</td>
+                <td>Die 等级。</td>
+                <td><code>1</code>、<code>2</code>、<code>9</code>、<code>X</code></td>
+                <td>只允许 <code>1</code> 到 <code>9</code> 和 <code>X</code>。</td>
+              </tr>
+              <tr>
+                <td><code>Bin Quanity</code></td>
+                <td>必须</td>
+                <td>该 Grade 的 Die 数量。</td>
+                <td><code>2130</code></td>
+                <td>注意列名就是 <code>Quanity</code>，不是 <code>Quantity</code>。数量必须是非负整数。</td>
+              </tr>
+              <tr>
+                <td><code>T7 Code</code></td>
+                <td>必须</td>
+                <td>wafer 唯一识别码。</td>
+                <td><code>T7-D400-000001-01</code></td>
+                <td>工具用 <code>Fab LotID + T7 Code + Bin Grade</code> 作为最小供应单元。</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>4.2 <code>配die 规则表</code> 必须有这些列</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>列名</th>
+                <th>必须吗</th>
+                <th>含义</th>
+                <th>例子</th>
+                <th>注意事项</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>PACKAGE</code></td>
+                <td>必须</td>
+                <td>规则表里的产品类型。</td>
+                <td><code>PKG-D400</code></td>
+                <td>工具会用用户输入的 PACKAGE 在这里先找对应规则。</td>
+              </tr>
+              <tr>
+                <td><code>供应商</code></td>
+                <td>必须</td>
+                <td>供应商名称。</td>
+                <td><code>力积电</code></td>
+                <td>必须能和原始数据、用户输入对上。</td>
+              </tr>
+              <tr>
+                <td><code>层数配比</code></td>
+                <td>必须</td>
+                <td>一个 Unit 需要的 A/B 工艺 Die 比例。</td>
+                <td><code>2:6</code>、<code>4:4</code></td>
+                <td>只能是两个正整数，中间用冒号。不能写 <code>2/6</code>、<code>2：0</code> 或 <code>2.5:5.5</code>。</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="callout danger">
+            <strong>最常见的 Excel 问题：</strong>
+            列名写错、Sheet 名写错、数量列有空值、数量列有小数、供应商名称多了空格、Bin Grade 写成了不支持的值。
+          </div>
+        </section>
+
+        <section id="inputs">
+          <h2>5. 运行前必须确定的参数</h2>
+          <p>运行工具时，你需要告诉它下面这些信息。不要随便猜，尤其是损耗、Unit 上限、Lot 上限和复用规则。</p>
+          <table>
+            <thead>
+              <tr>
+                <th>参数</th>
+                <th>命令里怎么写</th>
+                <th>意思</th>
+                <th>例子</th>
+                <th>怎么决定</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Excel 文件路径</td>
+                <td><code>--workbook</code></td>
+                <td>输入工作簿的位置。</td>
+                <td><code>input.xlsx</code></td>
+                <td>用你的真实 Excel 文件路径。</td>
+              </tr>
+              <tr>
+                <td>产品</td>
+                <td><code>--package</code></td>
+                <td>你要配哪个 PACKAGE。</td>
+                <td><code>"PKG D400 RevC"</code></td>
+                <td>可以写原始数据里的名称，也可以写规则表里的名称；工具会匹配。</td>
+              </tr>
+              <tr>
+                <td>供应商</td>
+                <td><code>--supplier</code></td>
+                <td>你要配哪个供应商的数据。</td>
+                <td><code>"力积电"</code></td>
+                <td>必须和表格里的供应商一致。</td>
+              </tr>
+              <tr>
+                <td>目标 Unit 数</td>
+                <td><code>--target-units</code></td>
+                <td>客户希望得到多少 Unit。</td>
+                <td><code>40000</code> 或 <code>40k</code></td>
+                <td><code>40k</code> 表示 40000。</td>
+              </tr>
+              <tr>
+                <td>Bin Grade</td>
+                <td><code>--grades</code></td>
+                <td>只使用哪些等级的 Die。</td>
+                <td><code>1,2,3</code></td>
+                <td>只会配完你选择范围内的 Die，未选择的 Grade 不参与。</td>
+              </tr>
+              <tr>
+                <td>单母批最大损耗</td>
+                <td><code>--loss-cap</code></td>
+                <td>每个母批最多允许浪费多少颗 Die。</td>
+                <td><code>30</code></td>
+                <td>注意是每个母批，不是所有母批合计。</td>
+              </tr>
+              <tr>
+                <td>单母批最大 Unit</td>
+                <td><code>--unit-cap</code></td>
+                <td>一个母批最多能出多少 Unit。</td>
+                <td><code>4500</code> 或 <code>4.5k</code></td>
+                <td>如果设太小，可能找不到方案。</td>
+              </tr>
+              <tr>
+                <td>单母批最大 Lot 数</td>
+                <td><code>--lot-cap</code></td>
+                <td>一个母批最多允许多少个不同 Lot。</td>
+                <td><code>5</code></td>
+                <td>如果和 Unit 上限冲突，工具会先保证 Unit 相关硬约束，再尝试放宽 Lot 数。</td>
+              </tr>
+              <tr>
+                <td>Lot 复用规则</td>
+                <td><code>--reuse-rule</code></td>
+                <td>Lot 是否允许跨母批。</td>
+                <td><code>allow_reuse</code> 或 <code>no_reuse</code></td>
+                <td>可以写中文：<code>允许复用</code> 或 <code>不允许复用</code>。</td>
+              </tr>
+              <tr>
+                <td>输出目录</td>
+                <td><code>--out-dir</code></td>
+                <td>结果文件放在哪里。</td>
+                <td><code>outputs/run-001</code></td>
+                <td>每次运行建议换一个新目录，避免覆盖旧结果。</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="backend">
+          <h2>6. backend 怎么选</h2>
+          <p><code>backend</code> 是“求解方式”。当前只有三个正式选项：<code>auto</code>、<code>cpsat</code>、<code>large_batch</code>。</p>
+          <table>
+            <thead>
+              <tr>
+                <th>backend</th>
+                <th>适合什么情况</th>
+                <th>输出状态可能是什么</th>
+                <th>小白建议</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>auto</code></td>
+                <td>默认选择。小数据优先精确搜索；数据大或搜索空间太大时切到大表模式。</td>
+                <td><code>OPTIMAL</code> 或 <code>FEASIBLE</code></td>
+                <td>第一次使用就选它。</td>
+              </tr>
+              <tr>
+                <td><code>cpsat</code></td>
+                <td>强制精确搜索。适合小数据、需要证明最优的情况。</td>
+                <td><code>OPTIMAL</code>、<code>SEARCH_LIMIT</code>、报搜索空间过大</td>
+                <td>只有数据规模可控、你确实要精确最优时再用。</td>
+              </tr>
+              <tr>
+                <td><code>large_batch</code></td>
+                <td>大表模式。适合行数很多、Lot 很多、最小供应单元很多的业务数据。</td>
+                <td><code>FEASIBLE</code> 或 <code>INFEASIBLE</code></td>
+                <td>数据很多时用它，速度更稳，但不声明数学全局最优。</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="callout warn">
+            <strong>只使用这三个正式选项。</strong>
+            命令里的 <code>--backend</code> 只能填写 <code>auto</code>、<code>cpsat</code> 或 <code>large_batch</code>。
+          </div>
+          <h3>几个状态是什么意思</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>状态</th>
+                <th>意思</th>
+                <th>能不能用</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>OPTIMAL</code></td>
+                <td>在当前模型和当前搜索空间内，已经证明是最优。</td>
+                <td>可以作为精确最优结果使用。</td>
+              </tr>
+              <tr>
+                <td><code>FEASIBLE</code></td>
+                <td>找到了满足硬约束的可行方案，但不声明全局最优。</td>
+                <td>业务上通常可以看，但要知道它不是数学证明最优。</td>
+              </tr>
+              <tr>
+                <td><code>INFEASIBLE</code></td>
+                <td>没有找到可行方案。</td>
+                <td>不能直接用，需要调整条件或检查数据。</td>
+              </tr>
+              <tr>
+                <td><code>SEARCH_LIMIT</code></td>
+                <td>搜索达到上限，没法证明最优。</td>
+                <td>要么放宽搜索上限，要么使用 <code>large_batch</code>。</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="principles">
+          <h2>7. 这个 Skill 的求解原理</h2>
+          <p class="lead">这一节讲“工具为什么能算出结果”。尽量不用数学语言，先讲大流程，再讲大表模式 <code>large_batch</code> 怎么找候选母批，最后讲精确模式 <code>cpsat</code> 怎么完整搜索并证明最优。</p>
+
+          <h3>7.1 总体流程：先整理数据，再求解，再校验</h3>
+          <p>这个 Skill 不是一上来就直接配 Die。它会按固定顺序做 5 件事：</p>
+          <table>
+            <thead>
+              <tr>
+                <th>步骤</th>
+                <th>做什么</th>
+                <th>小白理解</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1. 校验 Excel</td>
+                <td>检查 Sheet、列名、数量、Bin Grade 是否合法。</td>
+                <td>先确认“库存表”和“配方表”能不能用。</td>
+              </tr>
+              <tr>
+                <td>2. 匹配规则</td>
+                <td>按 PACKAGE + 供应商找到层数配比。</td>
+                <td>先知道 1 个 Unit 到底要几颗 A、几颗 B。</td>
+              </tr>
+              <tr>
+                <td>3. 构建供应单元</td>
+                <td>只保留用户选择的 Grade，并按 <code>Fab LotID + T7 Code + Bin Grade</code> 聚合。</td>
+                <td>把原始明细整理成一块块“可分配材料”。</td>
+              </tr>
+              <tr>
+                <td>4. 求解分配</td>
+                <td>根据 backend 选择精确搜索或大表搜索。</td>
+                <td>开始挑哪些 Lot / wafer / Grade 放进哪些母批。</td>
+              </tr>
+              <tr>
+                <td>5. 校验并导出</td>
+                <td>检查重复分配、Lot 是否配完、损耗和 Unit 上限是否满足。</td>
+                <td>算完后再复查一遍，最后生成 Excel 报告。</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="callout">
+            <strong>关键点：</strong>
+            求解器给出的结果不会直接“裸奔”给用户。它会再经过 <code>checks</code> 校验，确认所选 Grade、Lot 配完、重复分配、单母批损耗、单母批 Unit 上限等规则是否满足。
+          </div>
+
+          <h3>7.2 什么叫“候选母批”</h3>
+          <p>候选母批可以理解为“一个可能可用的母批组合”。它还不是最终答案，只是一个候选。</p>
+          <p>一个候选母批里面会记录这些信息：</p>
+          <table>
+            <thead>
+              <tr>
+                <th>信息</th>
+                <th>含义</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>包含哪些 Lot</td>
+                <td>这个母批用了哪些 <code>Fab LotID</code>。</td>
+              </tr>
+              <tr>
+                <td>包含哪些最小供应单元</td>
+                <td>具体用了哪些 <code>Fab LotID + T7 Code + Bin Grade</code>。</td>
+              </tr>
+              <tr>
+                <td>A 侧 / B 侧怎么分</td>
+                <td>每个供应单元分到 A 工艺侧还是 B 工艺侧。</td>
+              </tr>
+              <tr>
+                <td>能做多少 Unit</td>
+                <td>由 A 侧数量、B 侧数量、层数配比和 <code>unit_cap</code> 共同决定。</td>
+              </tr>
+              <tr>
+                <td>损耗是多少</td>
+                <td>实际投入 Die 数减去理论消耗 Die 数。</td>
+              </tr>
+              <tr>
+                <td>Lot 是否超限</td>
+                <td>候选母批不同 Lot 数是否超过 <code>lot_cap</code>。</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>7.3 一个候选母批怎样才算合格</h3>
+          <p>工具生成候选母批后，会立刻检查它是否合格。不合格的候选不会进入后面的选择阶段。</p>
+          <table>
+            <thead>
+              <tr>
+                <th>检查项</th>
+                <th>要求</th>
+                <th>不满足会怎样</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>A/B 工艺数量</td>
+                <td>A 侧 Die 数必须足够支撑 <code>rA * Unit</code>，B 侧 Die 数必须足够支撑 <code>rB * Unit</code>。</td>
+                <td>这个候选不能用。</td>
+              </tr>
+              <tr>
+                <td>Unit 上限</td>
+                <td>候选母批的 Unit 数不能超过 <code>unit_cap</code>。</td>
+                <td>Unit 会被限制在上限以内。</td>
+              </tr>
+              <tr>
+                <td>损耗上限</td>
+                <td>候选母批损耗必须小于等于 <code>loss_cap</code>。</td>
+                <td>超过则丢弃。</td>
+              </tr>
+              <tr>
+                <td>Lot 数上限</td>
+                <td>严格阶段不同 Lot 数必须小于等于 <code>lot_cap</code>。</td>
+                <td>严格阶段丢弃；放宽阶段会记录 Lot 超限量。</td>
+              </tr>
+              <tr>
+                <td>至少能做 1 个 Unit</td>
+                <td>候选母批必须能生产正数 Unit。</td>
+                <td>不能做 Unit 的候选会丢弃。</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>7.4 A 侧和 B 侧怎么分</h3>
+          <p>一个候选母批拿到一组供应单元后，还要决定哪些放 A 侧、哪些放 B 侧。</p>
+          <p>工具会按层数配比尽量把 A/B 两侧分得合理，并在可行前提下优先选择：</p>
+          <ol>
+            <li>Unit 数更高的分法。</li>
+            <li>损耗更低的分法。</li>
+            <li>A/B 比例更接近层数配比的分法。</li>
+          </ol>
+          <p>如果候选里的供应单元数量不多，工具会枚举 A/B 分法；如果供应单元很多，工具会用稳定的确定性分法，把数量尽量往 <code>rA : rB</code> 靠近。这样大表不会因为 A/B 分边而变得特别慢。</p>
+
+          <h3>7.5 <code>large_batch</code> 为什么要先生成候选母批</h3>
+          <p>大表里 Lot 和 wafer 很多，如果把所有供应单元和所有母批的所有可能分配都列出来，组合数量会非常夸张，计算可能跑不完。</p>
+          <p><code>large_batch</code> 的思路是：</p>
+          <ol>
+            <li>先生成一批质量较高、看起来有希望的候选母批。</li>
+            <li>再从这些候选母批里挑互相不冲突的一组。</li>
+            <li>最后比较哪组结果更接近目标 Unit、损耗更低、Lot 超限更少。</li>
+          </ol>
+          <div class="callout warn">
+            <strong>所以 <code>large_batch</code> 很适合大数据稳定出方案。</strong>
+            但它不会枚举所有可能组合，因此结果状态是 <code>FEASIBLE</code>，不能说成数学全局最优。
+          </div>
+
+          <h3>7.6 <code>large_batch</code> 怎么生成候选母批</h3>
+          <p>大表模式下，工具主要按 Lot 来生成候选母批。它会先计算每个 Lot 的总 Die 数，然后用几种固定排序去看 Lot 的组合。</p>
+          <table>
+            <thead>
+              <tr>
+                <th>排序方式</th>
+                <th>为什么这么排</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Lot 总 Die 数从大到小</td>
+                <td>优先尝试大 Lot，可能更快凑出较大的母批。</td>
+              </tr>
+              <tr>
+                <td>Lot 总 Die 数从小到大</td>
+                <td>小 Lot 有时更容易减少超配和损耗。</td>
+              </tr>
+              <tr>
+                <td>Lot 总量对 <code>rA + rB</code> 的余数从小到大</td>
+                <td>余数小的 Lot 组合更可能减少除不尽造成的损耗。</td>
+              </tr>
+              <tr>
+                <td>Lot 名称字典序</td>
+                <td>保证结果稳定，同样输入下顺序固定。</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p>在每一种排序里，工具会先用“连续窗口”的方式生成基础候选：</p>
+          <ol>
+            <li>从排序后的第 1 个 Lot 开始，尝试 1 个 Lot、2 个 Lot、3 个 Lot……</li>
+            <li>再从第 2 个 Lot 开始重复同样操作。</li>
+            <li>窗口最多包含多少个 Lot，由 <code>max_combo_lots</code> 控制。</li>
+            <li>严格 Lot 数阶段，窗口大小不能超过 <code>lot_cap</code>。</li>
+            <li>放宽 Lot 数阶段，窗口可以适当超过 <code>lot_cap</code>，但会记录 Lot 超限。</li>
+            <li>重复出现过的 Lot 组合会跳过，避免重复计算。</li>
+            <li>候选数量达到 <code>candidate_limit</code> 后停止生成。</li>
+          </ol>
+
+          <div class="callout">
+            <strong>连续窗口是什么意思？</strong>
+            假设排序后是 Lot A、Lot B、Lot C、Lot D，窗口组合会尝试 A，A+B，A+B+C，然后 B，B+C，B+C+D。这样比所有 Lot 任意组合快很多，也更稳定。
+          </div>
+
+          <p>为了避免候选太少，现在 <code>large_batch</code> 还会额外生成两类非连续候选：</p>
+          <table>
+            <thead>
+              <tr>
+                <th>扩展方式</th>
+                <th>怎么选</th>
+                <th>为什么有用</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>非连续近邻组合</td>
+                <td>在排序后的一个小范围窗口里，允许跳过中间 Lot，尝试非连续 Lot 组合。</td>
+                <td>避免只因为 Lot 排在中间不同，就错过更低损耗或更接近目标的组合。</td>
+              </tr>
+              <tr>
+                <td>余数优化组合</td>
+                <td>优先挑选总量对 <code>rA + rB</code> 余数较友好的 Lot 组合。</td>
+                <td>余数更友好的组合，通常更容易减少除不尽带来的 Die 损耗。</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="callout warn">
+            <strong>非连续扩展不是无限全组合。</strong>
+            它仍然受 <code>candidate_limit</code> 控制，并且会限制非连续组合的规模。这样可以增加候选丰富度，同时避免大表计算失控。
+          </div>
+
+          <h3>7.7 <code>allow_reuse</code> 时有什么特殊处理</h3>
+          <p>如果允许复用，同一个 Lot 可以跨多个母批，但仍然必须保证：这个 Lot 在用户选择 Grade 范围内的供应单元要被完整覆盖，且同一个最小供应单元不能重复。</p>
+          <p>因此 <code>large_batch</code> 在 <code>allow_reuse</code> 时会多做一步：</p>
+          <ol>
+            <li>先尝试整 Lot 候选。</li>
+            <li>如果某个 Lot 不能作为单个整 Lot 候选进入方案，就尝试把这个 Lot 内的供应单元切成几个母批候选。</li>
+            <li>切分时会按几种固定顺序尝试：数量从大到小、数量从小到大、Grade 顺序结合数量排序。</li>
+            <li>每个切出来的小候选也必须满足 Unit、损耗、A/B 分配等规则。</li>
+            <li>这些小候选合起来必须覆盖该 Lot 在所选 Grade 范围内的全部供应单元，才会作为一个计划进入选择阶段。</li>
+          </ol>
+          <p>这样做的目的，是让允许复用场景下同一个 Lot 可以被拆到多个母批，但仍然不破坏“Lot 所选 Grade 必须配完”和“同一最小供应单元不能重复”的规则。</p>
+
+          <h3>7.8 怎么从候选母批里挑最终方案</h3>
+          <p>候选母批生成后，工具会把候选包装成“计划”，然后从计划里挑一组不冲突的方案。</p>
+          <p>选择时先按下面顺序排序：</p>
+          <ol>
+            <li>单位损耗低的优先，也就是 <code>loss / units</code> 小的优先。</li>
+            <li>Lot 超限少的优先。</li>
+            <li>Unit 数高的优先。</li>
+            <li>启用母批少的优先。</li>
+            <li>最后按计划 ID 保持稳定顺序。</li>
+          </ol>
+          <p>然后逐个尝试加入计划：</p>
+          <table>
+            <thead>
+              <tr>
+                <th>检查</th>
+                <th>规则</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>最小供应单元冲突</td>
+                <td>如果一个计划用了已经被选过的供应单元，就跳过。</td>
+              </tr>
+              <tr>
+                <td>不允许复用时的 Lot 冲突</td>
+                <td><code>no_reuse</code> 下，如果计划用了已经被选过的 Lot，就跳过。</td>
+              </tr>
+              <tr>
+                <td>目标接近度</td>
+                <td>如果加入这个计划会让整体目标更差，通常跳过。</td>
+              </tr>
+              <tr>
+                <td>达到目标附近</td>
+                <td>如果已经达到或超过目标，先停止继续加入，再做后续修剪。</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>7.9 为什么选完后还要“修剪”</h3>
+          <p>有时连续加入候选后，总 Unit 可能超过目标，或者某个已选计划让整体离目标更远。工具会再尝试删除已选计划：</p>
+          <ol>
+            <li>把已选计划逐个拿掉试一下。</li>
+            <li>如果拿掉后整体更接近目标，或者损耗、Lot 超限、母批数更好，就真的删除。</li>
+            <li>重复这个过程，直到删不动为止。</li>
+          </ol>
+          <p>这一步可以减少明显不必要的超配，让结果更贴近目标 Unit。</p>
+
+          <h3>7.10 严格 Lot 数阶段和放宽 Lot 数阶段</h3>
+          <p><code>large_batch</code> 会按两个阶段尝试：</p>
+          <table>
+            <thead>
+              <tr>
+                <th>阶段</th>
+                <th>含义</th>
+                <th>结果怎么看</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>严格 Lot 数阶段</td>
+                <td>每个母批不同 Lot 数必须小于等于 <code>lot_cap</code>。</td>
+                <td>如果这个阶段找到好方案，通常优先。</td>
+              </tr>
+              <tr>
+                <td>放宽 Lot 数阶段</td>
+                <td>允许母批 Lot 数超过 <code>lot_cap</code>，但会记录 <code>lot_overflow</code>。</td>
+                <td>只有当它能带来更接近目标的结果时才可能被选中。</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>最后工具会比较两个阶段的结果，按固定目标优先级选择更好的那个：先看 Unit 差距，再看总损耗，再看 Lot 超限，再看母批数。</p>
+
+          <h3>7.11 哪些参数会影响 <code>large_batch</code> 的结果</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>参数</th>
+                <th>影响</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>candidate-limit</code></td>
+                <td>候选母批最多生成多少个。太小可能错过好组合，太大计算更慢。</td>
+              </tr>
+              <tr>
+                <td><code>max-combo-lots</code></td>
+                <td>单个候选最多尝试多少个 Lot。连续窗口会按这个上限走；非连续扩展会额外做固定保护，避免大表失控。</td>
+              </tr>
+              <tr>
+                <td><code>max-side-items</code></td>
+                <td>A/B 侧精确枚举分配的最大供应单元数。超过后使用确定性分法。</td>
+              </tr>
+              <tr>
+                <td><code>loss-cap</code></td>
+                <td>越严格，候选越少；越放宽，候选可能更多，但损耗也可能增加。</td>
+              </tr>
+              <tr>
+                <td><code>unit-cap</code></td>
+                <td>限制单母批最大 Unit，影响候选能做多大。</td>
+              </tr>
+              <tr>
+                <td><code>lot-cap</code></td>
+                <td>限制单母批 Lot 数，影响严格阶段候选数量。</td>
+              </tr>
+              <tr>
+                <td><code>grades</code></td>
+                <td>决定哪些 Die 进入计算，直接影响可用总量和 Lot 配完范围。</td>
+              </tr>
+              <tr>
+                <td><code>reuse-rule</code></td>
+                <td>决定计划之间能否共享 Lot，影响组合自由度。</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>7.12 <code>cpsat</code> 是什么</h3>
+          <p><code>cpsat</code> 是精确搜索后端。当前 Skill 里的 <code>cpsat</code> 不依赖 OR-Tools，而是使用纯 Python 完整枚举 + 分支定界来求解。</p>
+          <p>它和 <code>large_batch</code> 最大的区别是：</p>
+          <table>
+            <thead>
+              <tr>
+                <th>对比项</th>
+                <th><code>cpsat</code></th>
+                <th><code>large_batch</code></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>搜索方式</td>
+                <td>在上限允许范围内完整枚举候选母批，并用分支定界选择最优组合。</td>
+                <td>生成一批高质量候选母批，再用确定性规则挑可行方案。</td>
+              </tr>
+              <tr>
+                <td>结果状态</td>
+                <td>完整搜索完成且未触发上限时，可以输出 <code>OPTIMAL</code>。</td>
+                <td>输出 <code>FEASIBLE</code>，不声明全局最优。</td>
+              </tr>
+              <tr>
+                <td>适合规模</td>
+                <td>适合小数据、组合数量可控的场景。</td>
+                <td>适合大表、Lot 多、wafer 多、最小供应单元多的场景。</td>
+              </tr>
+              <tr>
+                <td>遇到组合爆炸</td>
+                <td>会报搜索空间超过上限，或者返回 <code>SEARCH_LIMIT</code>。</td>
+                <td>会继续尝试生成有限候选，给出稳定可行解。</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="callout">
+            <strong>为什么还叫 <code>cpsat</code>？</strong>
+            名字保留了“精确约束求解”的含义，但当前实现是纯 Python 精确搜索，不需要安装 OR-Tools。
+          </div>
+
+          <h3>7.13 <code>cpsat</code> 怎么生成候选母批：不允许复用</h3>
+          <p>如果 <code>reuse_rule=no_reuse</code>，同一个 Lot 只能出现在一个母批里，所以精确模式会按 Lot 组合来枚举候选母批。</p>
+          <p>它会这样做：</p>
+          <ol>
+            <li>先把可用供应单元按 Lot 分组。</li>
+            <li>严格 Lot 数阶段，只枚举 1 个 Lot、2 个 Lot……直到 <code>lot_cap</code> 个 Lot 的组合。</li>
+            <li>放宽 Lot 数阶段，会枚举更多 Lot 组合，并记录超出 <code>lot_cap</code> 的数量。</li>
+            <li>如果需要枚举的 Lot 组合数超过 <code>exact-max-combinations</code>，就停止并报“搜索空间过大”。</li>
+            <li>每个 Lot 组合会先检查总 Die 数是否可能放进一个母批。</li>
+            <li>通过初筛后，再做 A/B 侧精确分配，判断它能不能成为一个合格候选母批。</li>
+          </ol>
+          <p>这就是为什么小数据时 <code>cpsat</code> 可以证明最优：它不是只看几个看起来不错的组合，而是在上限内把所有相关 Lot 组合都试过。</p>
+
+          <h3>7.14 <code>cpsat</code> 怎么生成候选母批：允许复用</h3>
+          <p>如果 <code>reuse_rule=allow_reuse</code>，同一个 Lot 可以跨母批，所以不能只按 Lot 组合枚举。此时精确模式会按“最小供应单元”组合来枚举。</p>
+          <p>最小供应单元仍然是：</p>
+          <pre><code>Fab LotID + T7 Code + Bin Grade</code></pre>
+          <p>枚举逻辑是：</p>
+          <ol>
+            <li>把所有最小供应单元按数量、Lot、wafer、Grade 排成固定顺序。</li>
+            <li>递归尝试不同供应单元组合。</li>
+            <li>如果某个组合总 Die 数已经超过单母批最大可容纳量，就停止往这个方向继续加。</li>
+            <li>严格 Lot 数阶段，如果组合里的不同 Lot 数超过 <code>lot_cap</code>，就跳过。</li>
+            <li>枚举前会先做快速计数预检；如果组合数量已经超过 <code>exact-max-combinations</code>，直接报搜索空间过大。</li>
+            <li>通过组合数量检查后，才真正生成候选，并做 A/B 侧精确分配。</li>
+          </ol>
+          <div class="callout warn">
+            <strong><code>allow_reuse + cpsat</code> 更容易组合爆炸。</strong>
+            因为它不是按 Lot 组合，而是按更细的最小供应单元组合来枚举。大表时通常建议使用 <code>auto</code> 或 <code>large_batch</code>。
+          </div>
+
+          <h3>7.15 <code>cpsat</code> 的 A/B 侧为什么更精确</h3>
+          <p>在 <code>cpsat</code> 中，一个候选母批拿到一组供应单元后，会用类似 subset-sum 的方式精确寻找 A 侧 Die 数。</p>
+          <p>通俗讲，它会尝试：</p>
+          <ol>
+            <li>这些供应单元里，哪些放 A 侧。</li>
+            <li>剩下的自然放 B 侧。</li>
+            <li>计算 A 侧和 B 侧分别能支撑多少 Unit。</li>
+            <li>计算损耗是否小于等于 <code>loss_cap</code>。</li>
+            <li>在所有可行 A/B 分法里，优先选 Unit 数最高、损耗最低、A/B 比例最贴近层数配比的分法。</li>
+          </ol>
+          <p>如果候选母批的总 Die 数超过 <code>exact-side-sum-limit</code>，工具会停止并提示 A/B 精确分配空间过大。这样做是为了避免在特别大的候选上无限计算。</p>
+
+          <h3>7.16 <code>cpsat</code> 怎么从候选母批里选最终方案</h3>
+          <p>生成候选母批后，<code>cpsat</code> 会用分支定界来选择最终方案。你可以把它理解成“每个候选都认真考虑选或不选，但会剪掉明显不可能更好的路”。</p>
+          <p>它会按下面方式搜索：</p>
+          <table>
+            <thead>
+              <tr>
+                <th>步骤</th>
+                <th>说明</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>候选排序</td>
+                <td>先按 Unit 数高、损耗低、Lot 超限少等规则排序，让好候选优先被尝试。</td>
+              </tr>
+              <tr>
+                <td>尝试选择</td>
+                <td>对每个候选，递归尝试“选它”和“不选它”两条路。</td>
+              </tr>
+              <tr>
+                <td>冲突检查</td>
+                <td>同一个最小供应单元不能重复选；<code>no_reuse</code> 下同一个 Lot 也不能重复选。</td>
+              </tr>
+              <tr>
+                <td>Lot 配完检查</td>
+                <td><code>allow_reuse</code> 下，如果某个 Lot 被碰到，最终必须覆盖该 Lot 在所选 Grade 范围内的全部供应单元。</td>
+              </tr>
+              <tr>
+                <td>目标比较</td>
+                <td>比较 <code>abs(total_units - target_units)</code>、总损耗、Lot 超限、母批数和是否超目标。</td>
+              </tr>
+              <tr>
+                <td>剪枝</td>
+                <td>如果剩下候选就算全加上也不可能超过当前最好结果，就提前停止这条路。</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>7.17 <code>cpsat</code> 的最优目标顺序</h3>
+          <p><code>cpsat</code> 不是简单追求 Unit 越多越好，而是按固定顺序比较方案：</p>
+          <ol>
+            <li>总 Unit 离目标 Unit 越近越好。</li>
+            <li>如果 Unit 差距一样，总损耗越小越好。</li>
+            <li>如果进入放宽 Lot 数阶段，Lot 超限越少越好。</li>
+            <li>如果还一样，启用母批数越少越好。</li>
+            <li>如果仍然一样，优先选择不超过目标的方案，减少超配。</li>
+          </ol>
+          <p>所以目标 10000 时，9900 和 10100 的 Unit 差距一样；如果其他指标也一样，工具会优先选 9900，避免超配。</p>
+
+          <h3>7.18 <code>cpsat</code> 什么时候能说 <code>OPTIMAL</code></h3>
+          <p>只有同时满足下面条件，<code>cpsat</code> 才能输出 <code>OPTIMAL</code>：</p>
+          <ol>
+            <li>候选母批枚举没有超过 <code>exact-max-combinations</code>。</li>
+            <li>A/B 侧精确分配没有超过 <code>exact-side-sum-limit</code>。</li>
+            <li>分支定界选择阶段没有超过 <code>node-limit</code>。</li>
+            <li>搜索完整结束，并找到了当前目标顺序下最好的方案。</li>
+          </ol>
+          <p>如果触发上限，工具不会假装最优。它会：</p>
+          <table>
+            <thead>
+              <tr>
+                <th>情况</th>
+                <th>工具行为</th>
+                <th>用户怎么处理</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>候选组合超过上限</td>
+                <td>报搜索空间过大。</td>
+                <td>改用 <code>auto</code> 或 <code>large_batch</code>，或提高 <code>exact-max-combinations</code>。</td>
+              </tr>
+              <tr>
+                <td>A/B 侧分配超过上限</td>
+                <td>报 subset-sum 空间过大。</td>
+                <td>改用 <code>large_batch</code>，或提高 <code>exact-side-sum-limit</code>。</td>
+              </tr>
+              <tr>
+                <td>分支定界超过节点上限</td>
+                <td>返回 <code>SEARCH_LIMIT</code>，不声明最优。</td>
+                <td>提高 <code>node-limit</code>，或改用 <code>large_batch</code>。</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="callout good">
+            <strong><code>cpsat</code> 一句话总结：</strong>
+            它在可承受规模内完整枚举候选母批，再用分支定界选择最接近目标的全局最优方案。它更精确，但对数据规模更敏感。
+          </div>
+
+          <div class="callout good">
+            <strong>一句话总结：</strong>
+            小数据想证明最优，用 <code>cpsat</code>；大数据想稳定出可行方案，用 <code>large_batch</code>；不确定时用 <code>auto</code>，让工具自己选择。
+          </div>
+        </section>
+
+        <section id="run">
+          <h2>8. 一步一步运行</h2>
+          <div class="steps">
+            <div class="step">
+              <h3>确认你在哪个目录运行</h3>
+              <p>建议在 Skill 目录运行。这个目录里能看到 <code>scripts</code> 文件夹。</p>
+              <pre><code>cd /Users/lisa/Documents/Codex/2026-06-25/die-die-unit-unit-die-wafer-5/outputs/semiconductor-die-allocation-cn</code></pre>
+              <p>如果你不会用命令行，可以把这段复制到终端里，按 <span class="kbd">Enter</span>。</p>
+            </div>
+
+            <div class="step">
+              <h3>准备一条最基础命令</h3>
+              <p>下面是模板。你只需要把里面的 Excel 路径、PACKAGE、供应商、目标 Unit、Grade、约束改成你的真实值。</p>
+              <pre><code>python scripts/run_allocation.py \
+  --workbook input.xlsx \
+  --package "目标PACKAGE" \
+  --supplier "目标供应商" \
+  --target-units 40k \
+  --grades 1,2,3 \
+  --loss-cap 30 \
+  --unit-cap 4.5k \
+  --lot-cap 5 \
+  --reuse-rule allow_reuse \
+  --backend auto \
+  --out-dir outputs/run-001</code></pre>
+            </div>
+
+            <div class="step">
+              <h3>第一次建议用 <code>backend auto</code></h3>
+              <p><code>auto</code> 会自己判断：能精确就精确，太大就切大表模式。这样最不容易卡住。</p>
+            </div>
+
+            <div class="step">
+              <h3>每次运行换一个输出目录</h3>
+              <p>例如第一次用 <code>outputs/run-001</code>，第二次用 <code>outputs/run-002</code>。这样方便比较结果，也避免覆盖文件。</p>
+            </div>
+
+            <div class="step">
+              <h3>看到 OK 才说明跑完</h3>
+              <p>成功时会看到类似：</p>
+              <pre><code>OK: 端到端分配完成 status=OPTIMAL phase=closest_strict_lot_cap_exact total_units=8638</code></pre>
+              <p>如果看到 <code>ERROR:</code>，说明没有正常完成。先看错误文字，再到本文“常见报错怎么处理”部分排查。</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="examples">
+          <h2>9. 完整例子</h2>
+
+          <h3>例子 A：普通使用，自动选择后端</h3>
+          <p>适合第一次试跑。</p>
+          <pre><code>python scripts/run_allocation.py \
+  --workbook /Users/lisa/Documents/Codex/2026-07-07/die-die-unit-unit-die-wafer/outputs/semiconductor_die_allocation_mock_8000.xlsx \
+  --package "PKG D400 RevC" \
+  --supplier "力积电" \
+  --target-units 8000 \
+  --grades 1,2,3 \
+  --loss-cap 30 \
+  --unit-cap 4.5k \
+  --lot-cap 5 \
+  --reuse-rule no_reuse \
+  --backend auto \
+  --out-dir outputs/run-d400-auto</code></pre>
+
+          <h3>例子 B：大表直接使用 <code>large_batch</code></h3>
+          <p>适合数据很多、追求稳定快速出可行方案。</p>
+          <pre><code>python scripts/run_allocation.py \
+  --workbook /path/to/input.xlsx \
+  --package "PKG C300 Pilot" \
+  --supplier "力积电" \
+  --target-units 8000 \
+  --grades 1,2,3,4,5,6,7,8,9,X \
+  --loss-cap 30 \
+  --unit-cap 4.5k \
+  --lot-cap 5 \
+  --reuse-rule allow_reuse \
+  --backend large_batch \
+  --out-dir outputs/run-c300-large</code></pre>
+
+          <h3>例子 C：强制精确搜索</h3>
+          <p>适合小数据。大数据强制 <code>cpsat</code> 可能报组合过大，这是正常保护。</p>
+          <pre><code>python scripts/run_allocation.py \
+  --workbook /path/to/input.xlsx \
+  --package "PKG A100" \
+  --supplier "中芯国际" \
+  --target-units 4000 \
+  --grades 1,2 \
+  --loss-cap 30 \
+  --unit-cap 4.5k \
+  --lot-cap 5 \
+  --reuse-rule no_reuse \
+  --backend cpsat \
+  --out-dir outputs/run-a100-exact</code></pre>
+
+          <div class="callout">
+            <strong>路径里有空格怎么办？</strong>
+            用英文双引号包起来，例如 <code>--workbook "/Users/lisa/My Data/input file.xlsx"</code>。
+          </div>
+        </section>
+
+        <section id="outputs">
+          <h2>10. 输出文件怎么看</h2>
+          <p>每次运行成功后，输出目录里会有这些文件。</p>
+          <table>
+            <thead>
+              <tr>
+                <th>文件名</th>
+                <th>给谁看</th>
+                <th>主要内容</th>
+                <th>小白怎么看</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>01_validated.json</code></td>
+                <td>工程排查</td>
+                <td>Excel 校验后的标准化数据。</td>
+                <td>一般不用看。出列名、Sheet 名、数量格式问题时才看。</td>
+              </tr>
+              <tr>
+                <td><code>02_matched_rule.json</code></td>
+                <td>业务确认</td>
+                <td>匹配到哪条层数配比规则。</td>
+                <td>确认 PACKAGE、供应商、层数配比是否对。</td>
+              </tr>
+              <tr>
+                <td><code>03_supply.json</code></td>
+                <td>业务确认</td>
+                <td>过滤后的可用 Die、Lot 数、wafer 数、总量。</td>
+                <td>确认选择的 Grade 和供应商后，可用 Die 总量够不够。</td>
+              </tr>
+              <tr>
+                <td><code>04_solution.json</code></td>
+                <td>工程和审计</td>
+                <td>完整求解结果，包括每个母批和每条分配。</td>
+                <td>内容最完整，但 JSON 对小白不友好。</td>
+              </tr>
+              <tr>
+                <td><code>05_allocation_report.xlsx</code></td>
+                <td>业务用户</td>
+                <td>Excel 版结果报告。</td>
+                <td>优先看这个。</td>
+              </tr>
+              <tr>
+                <td><code>05_allocation_report.json</code></td>
+                <td>系统集成</td>
+                <td>扁平化审计报告。</td>
+                <td>一般不用看。</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3><code>05_allocation_report.xlsx</code> 里面的 Sheet</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Sheet</th>
+                <th>内容</th>
+                <th>最重要的列</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>summary</code></td>
+                <td>整体摘要。</td>
+                <td><code>status</code>、<code>backend</code>、<code>target_units</code>、<code>total_units</code>、<code>unit_gap</code>、<code>total_loss</code>。</td>
+              </tr>
+              <tr>
+                <td><code>batches</code></td>
+                <td>每个母批的汇总。</td>
+                <td><code>mother_batch_id</code>、<code>unit_count</code>、<code>loss</code>、<code>distinct_lot_count</code>、<code>lots</code>。</td>
+              </tr>
+              <tr>
+                <td><code>assignments</code></td>
+                <td>每个最小供应单元分到哪个母批、哪一侧工艺。</td>
+                <td><code>mother_batch_id</code>、<code>lot</code>、<code>wafer</code>、<code>grade</code>、<code>qty</code>、<code>side</code>。</td>
+              </tr>
+              <tr>
+                <td><code>checks</code></td>
+                <td>自动校验结果。</td>
+                <td><code>ok</code>。如果有 <code>false</code>，就要排查。</td>
+              </tr>
+              <tr>
+                <td><code>warnings</code></td>
+                <td>警告和说明。</td>
+                <td>看是否提示使用了 <code>large_batch</code>，是否没有声明全局最优。</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="callout good">
+            <strong>最小阅读顺序：</strong>
+            先看 <code>summary</code>，确认总 Unit 和目标差距；再看 <code>batches</code>，确认每个母批损耗、Lot 数；最后看 <code>checks</code>，确认没有校验失败。
+          </div>
+        </section>
+
+        <section id="rules">
+          <h2>11. 关键业务规则解释</h2>
+
+          <h3>11.1 只配用户选择的 Bin Grade</h3>
+          <p>如果你输入 <code>--grades 1,2,3</code>，工具只看 1、2、3 这三个等级。4、5、6、7、8、9、X 都不参与本次计算。</p>
+          <p>Lot 必须配完，也只针对你选择的 Grade 范围。也就是说，Lot 下未选择的 Grade 不会被强制配完。</p>
+
+          <h3>11.2 最小供应单元是什么</h3>
+          <p>工具会把 <code>Fab LotID + T7 Code + Bin Grade</code> 聚合成一个最小供应单元。默认情况下，这个单元是整体分配的，不会拆成半个给这个母批、半个给那个母批。</p>
+
+          <h3>11.3 不允许复用</h3>
+          <p>如果写 <code>--reuse-rule no_reuse</code>，一个被使用的 Lot 只能出现在一个母批中。因为 Lot 一旦被选中，该 Lot 在所选 Grade 范围内的所有最小供应单元都要配完，所以同一片 wafer 也只会出现在这个母批里。</p>
+
+          <h3>11.4 允许复用</h3>
+          <p>如果写 <code>--reuse-rule allow_reuse</code>，同一个 Lot 可以出现在多个母批中。同一片 wafer 也可能因为不同 Bin Grade 被分到不同母批。但是同一个最小供应单元不能重复分配。</p>
+
+          <h3>11.5 损耗约束是单母批约束</h3>
+          <p><code>--loss-cap 30</code> 表示每个母批最多浪费 30 颗 Die，不是所有母批加起来最多 30。比如两个母批分别损耗 20 和 27，总损耗是 47，但每个母批都没有超过 30，所以仍然符合这个约束。</p>
+
+          <h3>11.6 目标 Unit 是“最接近”，不是“必须大于”</h3>
+          <p>现在的目标是最小化 <code>abs(总 Unit - 目标 Unit)</code>。例如目标是 10000，结果 9900 和 10100 的差距都是 100。如果其他条件相同，工具会优先选择不超过目标的方案，减少超配。</p>
+        </section>
+
+        <section id="warnings">
+          <h2>12. 注意事项和避坑</h2>
+          <ol class="checklist">
+            <li><strong>不要把 <code>Bin Quanity</code> 改成 <code>Bin Quantity</code>。</strong> 当前工具按业务表字段读取，列名必须是 <code>Bin Quanity</code>。</li>
+            <li><strong>供应商名称要统一。</strong> <code>台积电</code> 和 <code>TSMC</code> 不会被当成同一个供应商，除非表里本来就是同一个写法。</li>
+            <li><strong>PACKAGE 可以模糊匹配，但不要依赖它猜复杂歧义。</strong> 如果同一个供应商下有多个非常相似的 PACKAGE，最好输入更明确的名称。</li>
+            <li><strong>每次运行都换输出目录。</strong> 否则新结果可能覆盖旧结果。</li>
+            <li><strong>大表不要强行用 <code>cpsat</code>。</strong> 精确搜索在大表上可能组合爆炸，这是数学问题，不是代码坏了。</li>
+            <li><strong><code>large_batch</code> 是可行解，不是全局最优证明。</strong> 它适合业务大数据稳定出结果，但不要把 <code>FEASIBLE</code> 写成 <code>OPTIMAL</code>。</li>
+            <li><strong>如果总 Die 数不够，工具仍会找最接近目标的方案。</strong> 这时不要说“满足目标”，应说“当前约束下最接近目标”。</li>
+            <li><strong>如果 <code>checks</code> 里有 <code>false</code>，不要直接使用结果。</strong> 先排查校验失败原因。</li>
+            <li><strong>如果损耗看起来超过上限，先看是不是总损耗。</strong> 上限是单母批上限，总损耗可以大于单母批上限。</li>
+            <li><strong>不要手改中间 JSON 后继续跑，除非你很清楚自己在做什么。</strong> 小白只建议用总入口脚本端到端跑。</li>
+          </ol>
+        </section>
+
+        <section id="errors">
+          <h2>13. 常见报错怎么处理</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>看到的现象</th>
+                <th>可能原因</th>
+                <th>怎么处理</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>提示缺少 Sheet</td>
+                <td>Excel 里没有 <code>原始数据</code> 或 <code>配die 规则表</code>。</td>
+                <td>检查 Sheet 名，必须一字不差。</td>
+              </tr>
+              <tr>
+                <td>提示缺少字段</td>
+                <td>列名写错或漏列。</td>
+                <td>按本文第 4 节检查所有必填列。</td>
+              </tr>
+              <tr>
+                <td><code>Bin Quanity 必须是非负整数</code></td>
+                <td>数量列有空值、负数、小数、文本。</td>
+                <td>回 Excel 修正数量列，只保留 0 或正整数。</td>
+              </tr>
+              <tr>
+                <td><code>非法 Bin Grade</code></td>
+                <td>Grade 不是 <code>1</code> 到 <code>9</code> 或 <code>X</code>。</td>
+                <td>统一 Grade 写法，去掉异常值。</td>
+              </tr>
+              <tr>
+                <td>找不到供应商</td>
+                <td>用户输入的供应商和 Excel 不一致。</td>
+                <td>复制 Excel 里的供应商原文再运行。</td>
+              </tr>
+              <tr>
+                <td>PACKAGE 模糊匹配失败或歧义</td>
+                <td>同一供应商下多个 PACKAGE 太像，工具不敢猜。</td>
+                <td>输入更完整的 PACKAGE，或清理规则表里的重复/歧义项。</td>
+              </tr>
+              <tr>
+                <td>搜索空间超过上限</td>
+                <td>强制 <code>cpsat</code> 时组合太多。</td>
+                <td>改用 <code>--backend auto</code> 或 <code>--backend large_batch</code>；确实要精确时再提高上限。</td>
+              </tr>
+              <tr>
+                <td><code>INFEASIBLE</code></td>
+                <td>在当前约束下找不到可行方案。</td>
+                <td>检查 Grade 是否太少、损耗上限是否太严、Unit 上限是否太小、Lot 上限是否太小。</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="qa">
+          <h2>14. 运行后怎么自查</h2>
+          <p>给小白的最简单检查流程如下：</p>
+          <ol>
+            <li>打开 <code>05_allocation_report.xlsx</code>。</li>
+            <li>进入 <code>summary</code>，看 <code>status</code>。如果是 <code>OPTIMAL</code> 或 <code>FEASIBLE</code>，说明有结果；如果是 <code>INFEASIBLE</code>，说明没有可用方案。</li>
+            <li>看 <code>backend</code>。如果是 <code>large_batch</code>，记住它是大表可行解，不是全局最优证明。</li>
+            <li>看 <code>target_units</code>、<code>total_units</code>、<code>unit_gap</code>。这三个值告诉你目标是多少、实际配了多少、差多少。</li>
+            <li>看 <code>batches</code>，确认每个母批的 <code>loss</code> 是否小于等于你输入的 <code>loss_cap</code>。</li>
+            <li>看 <code>batches</code>，确认每个母批的 <code>distinct_lot_count</code> 是否合理。</li>
+            <li>看 <code>checks</code>，筛选 <code>ok = false</code>。如果没有 false，说明自动校验通过。</li>
+            <li>看 <code>warnings</code>，确认有没有重要提示，比如大表模式、搜索空间过大、没有声明全局最优。</li>
+          </ol>
+          <div class="callout good">
+            <strong>一条简单判断：</strong>
+            <code>checks</code> 没有 false，且 <code>summary</code> 的结果你能接受，这份方案才可以进入业务复核。
+          </div>
+        </section>
+
+        <section id="glossary">
+          <h2>15. 术语表</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>术语</th>
+                <th>解释</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Die</td>
+                <td>晶圆上的颗粒。本工具按数量进行分配。</td>
+              </tr>
+              <tr>
+                <td>wafer</td>
+                <td>晶圆片。表里用 <code>T7 Code</code> 表示唯一 wafer。</td>
+              </tr>
+              <tr>
+                <td>Lot</td>
+                <td>生产批次。表里用 <code>Fab LotID</code> 表示。</td>
+              </tr>
+              <tr>
+                <td>母批</td>
+                <td>工具输出中的一组分配结果，用来满足一部分 Unit 需求。</td>
+              </tr>
+              <tr>
+                <td>Bin Grade</td>
+                <td>Die 等级，允许 <code>1</code> 到 <code>9</code> 和 <code>X</code>。</td>
+              </tr>
+              <tr>
+                <td>层数配比</td>
+                <td>一个 Unit 需要的 A/B 工艺 Die 比例，例如 <code>2:6</code>。</td>
+              </tr>
+              <tr>
+                <td>最小供应单元</td>
+                <td><code>Fab LotID + T7 Code + Bin Grade</code> 聚合后的记录。</td>
+              </tr>
+              <tr>
+                <td>损耗</td>
+                <td>某个母批中实际投入 Die 数减去 Unit 理论消耗 Die 数。</td>
+              </tr>
+              <tr>
+                <td>复用</td>
+                <td>Lot 是否允许跨多个母批出现。</td>
+              </tr>
+              <tr>
+                <td>全局最优</td>
+                <td>在当前模型和搜索空间内，已经证明没有更好的方案。</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section>
+          <h2>16. 最后一页：小白运行前检查清单</h2>
+          <ol class="checklist">
+            <li>Excel 是否包含 <code>原始数据</code> 和 <code>配die 规则表</code> 两个 Sheet。</li>
+            <li>两个 Sheet 的必填列是否都存在，列名是否完全一致。</li>
+            <li><code>Bin Quanity</code> 是否都是非负整数。</li>
+            <li><code>Bin Grade</code> 是否只包含 <code>1</code> 到 <code>9</code> 和 <code>X</code>。</li>
+            <li>供应商名称是否和 Excel 里一致。</li>
+            <li>目标 PACKAGE 是否能明确匹配到规则表中的一条层数配比。</li>
+            <li>目标 Unit 数、选择 Grade、损耗上限、Unit 上限、Lot 上限是否已经由业务确认。</li>
+            <li>复用规则是否已经确认：<code>allow_reuse</code> 还是 <code>no_reuse</code>。</li>
+            <li>第一次运行是否使用 <code>--backend auto</code>。</li>
+            <li>输出目录是否是新的目录。</li>
+            <li>运行完成后是否检查 <code>summary</code>、<code>batches</code>、<code>checks</code>、<code>warnings</code>。</li>
+          </ol>
+        </section>
+      </main>
+    </div>
+
+    <p class="footer">文档版本：超级小白版。适配当前 Skill：semiconductor-die-allocation-cn。正式业务使用前，请由业务负责人确认输入参数和输出结果。</p>
+  </div>
+</body>
+</html>

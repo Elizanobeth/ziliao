@@ -1,0 +1,7 @@
+interface:
+  display_name: "半导体 Die 分配"
+  short_description: "Stable wafer Die allocation planning"
+  default_prompt: "使用 $semiconductor-die-allocation-cn 根据 Excel 工作簿求解晶圆 Die 母批分配方案。"
+
+policy:
+  allow_implicit_invocation: true
