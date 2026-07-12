@@ -14,13 +14,13 @@ Agent 平台可能以 URL 而不是附件的形式提供三张表。构造 JSON 
 先执行表格预处理：
 
 ```text
-python3 scripts/preprocess_tables.py --input url_payload.json --output normalized_payload.json
+python3 scripts/preprocess_tables.py --input url_payload.json --output preprocessed.xlsx
 ```
 
 再执行分配计算：
 
 ```text
-python3 scripts/allocate_die.py --input normalized_payload.json --output result.json
+python3 scripts/allocate_die.py --input preprocessed.xlsx --parameters allocation_parameters.json --output result.json
 ```
 
 要求预处理脚本完成以下工作：
@@ -30,12 +30,17 @@ python3 scripts/allocate_die.py --input normalized_payload.json --output result.
 - 读取指定的 Excel Sheet；未指定时读取第一个 Sheet；
 - 按 UTF-8、GB18030、Big5、Latin-1 顺序尝试解码文本；
 - 统一中英文列名别名；
-- 删除空行和完全重复行；
+- 对 table1 删除空行但保留原始非空行，不删除重复明细；对 table2、table3 可删除完全重复行；
 - 记录文件格式、脱敏后的来源路径、字节数、SHA-256、警告和错误；
 - 不输出 URL 查询参数，避免泄露签名或凭证；
 - 不得静默修复缺失字段或有歧义的数据。
 
-如果 XLSX/XLS 缺少 Python 依赖，使用 Agent 平台提供的表格运行时将工作簿转换为相同的标准 JSON，或者安装对应依赖。不要让语言模型手工复制大规模表格数据。
+脚本使用 Python 标准库读取和生成 XLSX；如果输入是旧式 XLS，使用 Agent 平台提供的表格运行时转换为 XLSX/CSV。不要让语言模型手工复制大规模表格数据。
+
+预处理输出为一个 Excel 工作簿：
+
+- `预处理表`：严格 9 列，顺序为 `PACKAGE`、`供应商`、`Fab LotID`、`Bin Grade`、`Bin Quanity`、`T7 Code`、`Lot Wafer QTY`、`Create Date`、`Wafer Sale`；行数与第一张表的非空数据行数一致；
+- `层数配比`：输出 `PACKAGE`、`供应商`、`层数配比`、匹配到的 PACKAGE、匹配得分和匹配状态。
 
 ## 必需输入
 
@@ -71,7 +76,7 @@ python3 scripts/allocate_die.py --input normalized_payload.json --output result.
 2. 预处理存在错误时停止；检查必需字段、Bin Grade、重复 T7 Code、缺失 Lot 关联和配比匹配。
 3. 预检查选定 Bin Grade 的总 Die 供应量，并解释立即可见的短缺。
 4. 按 `Wafer Sale=N` 优先、`Create Date` 较早优先和 Wafer 数量倍数 Tip 的顺序生成候选 Lot，同时检查 A/B 角色平衡和损耗限制。
-5. 使用 `scripts/allocate_die.py` 构造 Custom Lot。默认使用纯 Python 启发式算法；只有平台已有 OR-Tools 且用户需要精确求解时，才指定 `--solver cp-sat`。
+5. 使用 `scripts/allocate_die.py --input preprocessed.xlsx --parameters allocation_parameters.json` 构造 Custom Lot。默认使用纯 Python 启发式算法；只有平台已有 OR-Tools 且用户需要精确求解时，才指定 `--solver cp-sat`。
 6. 按以下顺序优化：总 Unit 数与目标的绝对偏差、总损耗、`N` Lot 优先级、生产日期、Custom Lot 数量、Lot 数超限程度。
 7. 同时使用 `a` 和 `b` 作为硬约束无解时，保持 `a`、损耗、整片 Wafer、T7 Code 唯一、配比和总 Unit 浮动约束不变，只放宽 `b`，并报告放宽前后的限制。
 8. 独立复核每个 Custom Lot。不能只依据求解器状态判断结果正确。

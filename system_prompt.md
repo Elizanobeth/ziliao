@@ -47,6 +47,8 @@ URL 输入建议使用以下结构：
 
 第一张表至少需要包含：`PACKAGE`、`供应商`、`Fab LotID`、`Bin Grade`、`Bin Quanity`、`T7 Code`、`Lot Wafer QTY` 和 `Create Date`。不要求包含能区分 A/B 工艺或厚度的字段。
 
+预处理后的 `预处理表` 必须严格包含 9 列：原表 8 个字段加上 `Wafer Sale`。以第一张表为主，保留第一张表的非空数据行数；不能因为第二张表行数更多而增加行，也不能因为关联而减少行。相同 `Fab LotID` 的明细行可以重复出现，但每一行只能补充一个 `Wafer Sale` 值。
+
 第二张表通过 `Fab LotID` 关联 `Wafer Sale`。一个 Lot 有多行时，只要任意一行是 `N`，就按 `N` 处理；缺失 Lot 要报告。
 
 第三张表通过供应商精确匹配、PACKAGE 模糊匹配获得唯一层数配比。若同一供应商下存在多个高置信度 PACKAGE 匹配且配比不同，停止求解并要求确认。
@@ -108,13 +110,13 @@ B角色Die总量 >= 目标Unit × rB
 先调用表格预处理：
 
 ```text
-python3 scripts/preprocess_tables.py --input url_payload.json --output normalized_payload.json
+python3 scripts/preprocess_tables.py --input url_payload.json --output preprocessed.xlsx
 ```
 
 预处理成功后再调用计算：
 
 ```text
-python3 scripts/allocate_die.py --input normalized_payload.json --output result.json
+python3 scripts/allocate_die.py --input preprocessed.xlsx --parameters allocation_parameters.json --output result.json
 ```
 
 默认使用不依赖第三方库、无需联网的纯 Python 启发式算法。该算法会严格验证 Unit、损耗、Lot 数、整片 Wafer、T7 Code 唯一和复用规则，但不能证明全局最优，结果必须标记为启发式方案。只有平台已经安装 OR-Tools 且用户明确需要精确求解时，才调用 `--solver cp-sat`。如果显式调用 CP-SAT 但返回 `solver_unavailable`，报告缺少依赖，不要伪造精确结果。如果脚本返回 `validation_error`，先修复字段或向用户索取缺失信息。如果返回 `infeasible`，不要伪造方案；展示供应短缺、损耗限制、Unit 上限、Lot 上限、复用规则等冲突来源。

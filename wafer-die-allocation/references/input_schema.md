@@ -31,10 +31,11 @@ For signed URLs or private endpoints, put short-lived request headers inside the
 Run:
 
 ```text
-python3 scripts/preprocess_tables.py --input url_request.json --output normalized_payload.json
+python3 scripts/preprocess_tables.py --input url_request.json --output preprocessed.xlsx
+python3 scripts/allocate_die.py --input preprocessed.xlsx --parameters allocation_parameters.json --output result.json
 ```
 
-The result contains `table1`, `table2`, `table3`, `parameters`, and a `preprocess` object with `status`, source metadata, warnings, and errors.
+The XLSX result contains a `预处理表` sheet with exactly nine columns and the same non-empty row count as table1, plus a `层数配比` sheet. Supply allocation parameters separately to `allocate_die.py` through `--parameters`.
 
 ## Normalized input schema
 

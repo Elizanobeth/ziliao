@@ -177,6 +177,22 @@ def read_json(path: str) -> Dict[str, Any]:
     return payload
 
 
+def read_input(path: str) -> Dict[str, Any]:
+    """Read either the normalized JSON contract or the preprocessed XLSX."""
+    if Path(path).suffix.casefold() != ".xlsx":
+        return read_json(path)
+    try:
+        from preprocess_tables import read_xlsx_sheets
+    except ImportError as exc:
+        raise ValueError("unable to load the built-in XLSX reader") from exc
+    sheets = read_xlsx_sheets(Path(path).read_bytes())
+    table1 = sheets.get("预处理表")
+    table3 = sheets.get("层数配比")
+    if table1 is None or table3 is None:
+        raise ValueError("preprocessed XLSX must contain sheets 预处理表 and 层数配比")
+    return {"table1": table1, "table2": [], "table3": table3, "parameters": {}}
+
+
 def normalize_payload(payload: Dict[str, Any]) -> Tuple[Dict[str, Any], List[Wafer], Dict[str, Any], List[str], List[str]]:
     errors: List[str] = []
     warnings: List[str] = []
@@ -246,8 +262,11 @@ def normalize_payload(payload: Dict[str, Any]) -> Tuple[Dict[str, Any], List[Waf
             g = grade(first_value(row, "grade"))
             q = integer_number(first_value(row, "quantity"), f"table1 row {idx} Bin Quantity")
             date = str(first_value(row, "date", "")).strip()
+            row_sale = str(first_value(row, "sale", "")).strip().upper()
+            mapped_sale = sale_by_lot.get(lot_id, "")
+            resolved_sale = "N" if "N" in {row_sale, mapped_sale} else "Y" if "Y" in {row_sale, mapped_sale} else "UNKNOWN"
             if wafer_id not in by_wafer:
-                by_wafer[wafer_id] = Wafer(wafer_id, lot_id, row_package, row_supplier, date, sale_by_lot.get(lot_id, "UNKNOWN"))
+                by_wafer[wafer_id] = Wafer(wafer_id, lot_id, row_package, row_supplier, date, resolved_sale)
             wafer = by_wafer[wafer_id]
             metadata = (wafer.lot_id, norm_text(wafer.package), norm_text(wafer.supplier))
             incoming = (lot_id, norm_text(row_package), norm_text(row_supplier))
@@ -669,7 +688,8 @@ def demo_payload() -> Dict[str, Any]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Allocate whole wafers into Custom Lots")
-    parser.add_argument("--input", help="normalized JSON payload")
+    parser.add_argument("--input", help="preprocessed XLSX or normalized JSON payload")
+    parser.add_argument("--parameters", help="JSON parameter file or inline JSON for allocation constraints")
     parser.add_argument("--output", help="output JSON path; defaults to stdout")
     parser.add_argument("--solver", choices=["auto", "cp-sat", "greedy"], default="auto")
     parser.add_argument("--demo", action="store_true", help="run a small built-in example")
@@ -677,9 +697,15 @@ def main() -> int:
     if args.demo:
         payload = demo_payload()
     elif args.input:
-        payload = read_json(args.input)
+        payload = read_input(args.input)
     else:
         parser.error("provide --input or --demo")
+    if args.parameters:
+        parameter_source = Path(args.parameters)
+        if parameter_source.exists():
+            payload["parameters"] = json.loads(parameter_source.read_text(encoding="utf-8"))
+        else:
+            payload["parameters"] = json.loads(args.parameters)
     output = solve(payload, args.solver)
     text = json.dumps(output, ensure_ascii=False, indent=2, default=str)
     if args.output:
