@@ -1,0 +1,4 @@
+interface:
+  display_name: "Wafer Die Allocation"
+  short_description: "Preprocess table URLs and optimize wafer die allocation"
+  default_prompt: "Use $wafer-die-allocation to download and normalize three table URLs, then produce auditable Custom Lot assignments."
